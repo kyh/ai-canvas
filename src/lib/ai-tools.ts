@@ -48,14 +48,19 @@ export const aiTools = {
       return createBlockWithId(block, frameBlockSchemaWithoutId);
     },
   }),
-  // generateImageBlock: tool({
-  //   description:
-  //     "Generate an image block. Use placeholder URLs like 'https://via.placeholder.com/400' for now.",
-  //   inputSchema: imageBlockSchemaWithoutId,
-  //   execute: async (block) => {
-  //     return createBlockWithId(block, imageBlockSchemaWithoutId);
-  //   },
-  // }),
+  generateImageBlock: tool({
+    description:
+      "Generate an image block. Use placeholder URLs like 'https://via.placeholder.com/400' for now.",
+    inputSchema: imageBlockSchemaWithoutId,
+    execute: async (block) => {
+      // TODO: We can generate an actual image and base64 it into the block
+      return createBlockWithId(block, imageBlockSchemaWithoutId);
+    },
+  }),
+  // Oher tools:
+  // - viewCanvas - Allows the llm to view the canvas state, convert canvas into an image and pass it to the llm
+  // - deleteBlock
+  // - moveBlock
 } as const;
 
 // Export the type of tools for use in useChat
