@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import type Konva from 'konva';
-import { create } from 'zustand';
-import { v4 as uuid } from 'uuid';
+import type Konva from "konva";
+import { create } from "zustand";
+import { v4 as uuid } from "uuid";
 import type {
   IEditorBlockFrame,
   IEditorBlockImage,
@@ -10,24 +10,31 @@ import type {
   IEditorBlocks,
   IEditorSize,
   Template,
-} from '@/lib/schema';
-import { frameBlockSchema, imageBlockSchema, textBlockSchema } from '@/lib/schema';
-import { loadFontsForBlocks } from './services/fonts';
-import { downloadStageAsImage, exportCanvasAsJson } from './services/export';
+} from "@/lib/schema";
+import {
+  frameBlockSchema,
+  imageBlockSchema,
+  textBlockSchema,
+} from "@/lib/schema";
+import { loadFontsForBlocks } from "./services/fonts";
+import { downloadStageAsImage, exportCanvasAsJson } from "./services/export";
 import {
   ensureBlockDefaults,
   parseBlock,
   parseTemplate,
   MAX_IMAGE_DIMENSION,
-} from './services/templates';
-import { centerBlockInViewport, centerStageWithinContainer } from './utils/canvas-math';
+} from "./services/templates";
+import {
+  centerBlockInViewport,
+  centerStageWithinContainer,
+} from "./utils/canvas-math";
 
-type HistoryEntry = Pick<Template, 'blocks' | 'size' | 'background'>;
+type HistoryEntry = Pick<Template, "blocks" | "size" | "background">;
 
 interface EditorCanvasState {
   size: IEditorSize;
   background?: string;
-  mode: 'move' | 'select';
+  mode: "move" | "select";
   isTextEditing: boolean;
   zoom: number;
   stagePosition: { x: number; y: number };
@@ -51,7 +58,7 @@ interface EditorState {
 interface EditorActions {
   setStage: (stage: Konva.Stage | null) => void;
   setSelectedIds: (ids: string[]) => void;
-  setMode: (mode: 'move' | 'select') => void;
+  setMode: (mode: "move" | "select") => void;
   setIsTextEditing: (value: boolean) => void;
   setStageZoom: (zoom: number) => void;
   setStagePosition: (position: { x: number; y: number }) => void;
@@ -73,7 +80,10 @@ interface EditorActions {
   bringBackwardBlock: (id: string) => void;
   bringToBackBlock: (id: string) => void;
   setBlockPosition: (id: string, position: { x: number; y: number }) => void;
-  setBlockSize: (id: string, size: { width?: number | null; height?: number | null }) => void;
+  setBlockSize: (
+    id: string,
+    size: { width?: number | null; height?: number | null }
+  ) => void;
   addBlock: (block: IEditorBlocks) => void;
   loadTemplate: (template: Template) => void;
   handleUndo: () => void;
@@ -84,8 +94,10 @@ interface EditorActions {
 
 export type EditorStore = EditorState & EditorActions;
 
-const clone = <T,>(value: T): T =>
-  typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+const clone = <T>(value: T): T =>
+  typeof structuredClone === "function"
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
 
 const createSnapshot = (state: EditorState): HistoryEntry => ({
   blocks: state.blockOrder
@@ -101,7 +113,11 @@ export const selectOrderedBlocks = (state: EditorState): IEditorBlocks[] =>
 
 const blocksArray = selectOrderedBlocks;
 
-const calculateViewportCenteredPosition = (state: EditorState, width: number, height: number) =>
+const calculateViewportCenteredPosition = (
+  state: EditorState,
+  width: number,
+  height: number
+) =>
   centerBlockInViewport(
     {
       stage: state.stage,
@@ -111,14 +127,19 @@ const calculateViewportCenteredPosition = (state: EditorState, width: number, he
       canvasSize: state.canvas.size,
     },
     width,
-    height,
+    height
   );
 
 const computeCenteredStagePosition = (state: EditorState) => {
   const {
     canvas: { size, containerSize, zoom },
   } = state;
-  if (!containerSize.width || !containerSize.height || !size.width || !size.height) {
+  if (
+    !containerSize.width ||
+    !containerSize.height ||
+    !size.width ||
+    !size.height
+  ) {
     return null;
   }
   return centerStageWithinContainer({
@@ -129,7 +150,8 @@ const computeCenteredStagePosition = (state: EditorState) => {
 };
 
 const buildInitialState = (template?: Template): EditorState => {
-  const { canvasSize, background, blocksById, blockOrder } = parseTemplate(template);
+  const { canvasSize, background, blocksById, blockOrder } =
+    parseTemplate(template);
 
   return {
     blocksById,
@@ -139,7 +161,7 @@ const buildInitialState = (template?: Template): EditorState => {
     canvas: {
       size: canvasSize,
       background,
-      mode: 'select',
+      mode: "select",
       isTextEditing: false,
       zoom: 1,
       stagePosition: { x: 0, y: 0 },
@@ -186,7 +208,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   setSelectedIds: (ids) => {
     set((state) => {
-      if (state.selectedIds.length === ids.length && state.selectedIds.every((value, index) => value === ids[index])) {
+      if (
+        state.selectedIds.length === ids.length &&
+        state.selectedIds.every((value, index) => value === ids[index])
+      ) {
         return state;
       }
       return { ...state, selectedIds: ids };
@@ -201,7 +226,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       return {
         ...state,
         canvas: { ...state.canvas, mode },
-        ...(mode === 'move' ? { selectedIds: [] } : {}),
+        ...(mode === "move" ? { selectedIds: [] } : {}),
       };
     });
   },
@@ -213,12 +238,16 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         : {
             ...state,
             canvas: { ...state.canvas, isTextEditing: value },
-          },
+          }
     );
   },
 
   setStageZoom: (zoom) => {
-    set((state) => (state.canvas.zoom === zoom ? state : { ...state, canvas: { ...state.canvas, zoom } }));
+    set((state) =>
+      state.canvas.zoom === zoom
+        ? state
+        : { ...state, canvas: { ...state.canvas, zoom } }
+    );
   },
 
   setStagePosition: (position) => {
@@ -245,7 +274,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   setHoveredId: (id) => {
-    set((state) => (state.hoveredId === id ? state : { ...state, hoveredId: id }));
+    set((state) =>
+      state.hoveredId === id ? state : { ...state, hoveredId: id }
+    );
   },
 
   setCanvasContainerSize: (size) => {
@@ -264,7 +295,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           canvas: nextCanvas,
         };
       }
-      const position = computeCenteredStagePosition({ ...state, canvas: nextCanvas });
+      const position = computeCenteredStagePosition({
+        ...state,
+        canvas: nextCanvas,
+      });
       if (!position) {
         return {
           ...state,
@@ -289,7 +323,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         return state;
       }
       const current = state.canvas.stagePosition;
-      if (current.x === position.x && current.y === position.y && state.canvas.hasCentered) {
+      if (
+        current.x === position.x &&
+        current.y === position.y &&
+        state.canvas.hasCentered
+      ) {
         return state;
       }
       return {
@@ -315,7 +353,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         size: nextSize,
         hasCentered: false,
       };
-      const position = computeCenteredStagePosition({ ...state, canvas: nextCanvas });
+      const position = computeCenteredStagePosition({
+        ...state,
+        canvas: nextCanvas,
+      });
       const centeredCanvas = position
         ? {
             ...nextCanvas,
@@ -361,21 +402,24 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const defaultBlock = ensureBlockDefaults(
         textBlockSchema.parse({
           id: uuid(),
-          type: 'text',
+          type: "text",
           label: `Text ${blocks.length + 1}`,
           ...position,
           width: 320,
           height: 52,
-          text: 'New text',
-          color: '#1f2933',
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+          text: "New text",
+          color: "#1f2933",
           fontSize: 24,
           lineHeight: 32,
           letterSpacing: 0,
-          textAlign: 'left',
-          font: { family: 'Poppins', weight: '500' },
+          textAlign: "left",
+          font: { family: "Poppins", weight: "500" },
           visible: true,
           opacity: 100,
-        } satisfies IEditorBlockText),
+        } satisfies IEditorBlockText)
       );
 
       return {
@@ -386,7 +430,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         },
         blockOrder: [...state.blockOrder, defaultBlock.id],
         selectedIds: [defaultBlock.id],
-        canvas: { ...state.canvas, mode: 'select' },
+        canvas: { ...state.canvas, mode: "select" },
         history: {
           undo: [snapshot, ...state.history.undo],
           redo: [],
@@ -403,20 +447,23 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const defaultBlock = ensureBlockDefaults(
         frameBlockSchema.parse({
           id: uuid(),
-          type: 'frame',
+          type: "frame",
           label: `Frame ${blocks.length + 1}`,
           ...position,
           width: 240,
           height: 240,
-          background: '#ffffff',
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+          background: "#ffffff",
           border: {
-            color: '#d1d5db',
+            color: "#d1d5db",
             width: 1,
           },
           radius: { tl: 16, tr: 16, br: 16, bl: 16 },
           visible: true,
           opacity: 100,
-        } satisfies IEditorBlockFrame),
+        } satisfies IEditorBlockFrame)
       );
 
       return {
@@ -427,7 +474,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         },
         blockOrder: [...state.blockOrder, defaultBlock.id],
         selectedIds: [defaultBlock.id],
-        canvas: { ...state.canvas, mode: 'select' },
+        canvas: { ...state.canvas, mode: "select" },
         history: {
           undo: [snapshot, ...state.history.undo],
           redo: [],
@@ -443,22 +490,29 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const scaledWidth = Math.max(1, Math.round(width * scale));
       const scaledHeight = Math.max(1, Math.round(height * scale));
       const blocks = blocksArray(state);
-      const position = calculateViewportCenteredPosition(state, scaledWidth, scaledHeight);
+      const position = calculateViewportCenteredPosition(
+        state,
+        scaledWidth,
+        scaledHeight
+      );
 
       const defaultBlock = ensureBlockDefaults(
         imageBlockSchema.parse({
           id: uuid(),
-          type: 'image',
+          type: "image",
           label: `Image ${blocks.length + 1}`,
           ...position,
           width: scaledWidth,
           height: scaledHeight,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
           url,
-          fit: 'contain',
-          position: 'center',
+          fit: "contain",
+          position: "center",
           visible: true,
           opacity: 100,
-        } satisfies IEditorBlockImage),
+        } satisfies IEditorBlockImage)
       );
 
       return {
@@ -469,7 +523,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         },
         blockOrder: [...state.blockOrder, defaultBlock.id],
         selectedIds: [defaultBlock.id],
-        canvas: { ...state.canvas, mode: 'select' },
+        canvas: { ...state.canvas, mode: "select" },
         history: {
           undo: [snapshot, ...state.history.undo],
           redo: [],
@@ -523,7 +577,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const rest = { ...state.blocksById };
       delete rest[id];
       const nextOrder = state.blockOrder.filter((blockId) => blockId !== id);
-      const nextSelected = state.selectedIds.filter((blockId) => blockId !== id);
+      const nextSelected = state.selectedIds.filter(
+        (blockId) => blockId !== id
+      );
       const nextHovered = state.hoveredId === id ? null : state.hoveredId;
       return {
         ...state,
@@ -550,8 +606,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       idsToRemove.forEach((blockId) => {
         delete nextBlocksById[blockId];
       });
-      const nextOrder = state.blockOrder.filter((blockId) => !idsToRemove.has(blockId));
-      const nextHovered = idsToRemove.has(state.hoveredId ?? '') ? null : state.hoveredId;
+      const nextOrder = state.blockOrder.filter(
+        (blockId) => !idsToRemove.has(blockId)
+      );
+      const nextHovered = idsToRemove.has(state.hoveredId ?? "")
+        ? null
+        : state.hoveredId;
       return {
         ...state,
         blocksById: nextBlocksById,
@@ -598,7 +658,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const nextBlock = ensureBlockDefaults({
         ...block,
         ...values,
-      });
+      } as IEditorBlocks);
       return {
         ...state,
         blocksById: {
@@ -621,7 +681,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       }
       const snapshot = createSnapshot(state);
       const nextOrder = [...state.blockOrder];
-      [nextOrder[index], nextOrder[index + 1]] = [nextOrder[index + 1], nextOrder[index]];
+      [nextOrder[index], nextOrder[index + 1]] = [
+        nextOrder[index + 1],
+        nextOrder[index],
+      ];
       return {
         ...state,
         blockOrder: nextOrder,
@@ -662,7 +725,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       }
       const snapshot = createSnapshot(state);
       const nextOrder = [...state.blockOrder];
-      [nextOrder[index], nextOrder[index - 1]] = [nextOrder[index - 1], nextOrder[index]];
+      [nextOrder[index], nextOrder[index - 1]] = [
+        nextOrder[index - 1],
+        nextOrder[index],
+      ];
       return {
         ...state,
         blockOrder: nextOrder,
@@ -702,7 +768,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         return state;
       }
       const snapshot = createSnapshot(state);
-      const nextBlock = { ...block, x: Math.round(position.x), y: Math.round(position.y) };
+      const nextBlock = {
+        ...block,
+        x: Math.round(position.x),
+        y: Math.round(position.y),
+      };
       return {
         ...state,
         blocksById: {
@@ -726,8 +796,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const snapshot = createSnapshot(state);
       const nextBlock = {
         ...block,
-        ...(typeof size.width === 'number' ? { width: Math.max(1, size.width) } : {}),
-        ...(typeof size.height === 'number' ? { height: Math.max(1, size.height) } : {}),
+        ...(typeof size.width === "number"
+          ? { width: Math.max(1, size.width) }
+          : {}),
+        ...(typeof size.height === "number"
+          ? { height: Math.max(1, size.height) }
+          : {}),
       };
       return {
         ...state,
@@ -808,7 +882,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       }
       const [snapshot, ...remainingUndo] = state.history.undo;
       const redoSnapshot = createSnapshot(state);
-      const nextBlocksById = snapshot.blocks.reduce<Record<string, IEditorBlocks>>((acc, block) => {
+      const nextBlocksById = snapshot.blocks.reduce<
+        Record<string, IEditorBlocks>
+      >((acc, block) => {
         acc[block.id] = block;
         return acc;
       }, {});
@@ -851,7 +927,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       }
       const [snapshot, ...remainingRedo] = state.history.redo;
       const undoSnapshot = createSnapshot(state);
-      const nextBlocksById = snapshot.blocks.reduce<Record<string, IEditorBlocks>>((acc, block) => {
+      const nextBlocksById = snapshot.blocks.reduce<
+        Record<string, IEditorBlocks>
+      >((acc, block) => {
         acc[block.id] = block;
         return acc;
       }, {});
@@ -910,17 +988,19 @@ const selectBlocksForFonts = (state: EditorState) =>
   state.blockOrder.map((id) => state.blocksById[id]).filter(Boolean);
 
 const blocksAreEqual = (prev: IEditorBlocks[], next: IEditorBlocks[]) =>
-  prev.length === next.length && prev.every((block, index) => block === next[index]);
+  prev.length === next.length &&
+  prev.every((block, index) => block === next[index]);
 
 void loadFontsForBlocks(selectBlocksForFonts(useEditorStore.getState()));
 
-useEditorStore.subscribe(
-  selectBlocksForFonts,
-  (blocks) => {
+let prevBlocks = selectBlocksForFonts(useEditorStore.getState());
+useEditorStore.subscribe((state) => {
+  const blocks = selectBlocksForFonts(state);
+  if (!blocksAreEqual(prevBlocks, blocks)) {
+    prevBlocks = blocks;
     void loadFontsForBlocks(blocks);
-  },
-  { equalityFn: blocksAreEqual }
-);
+  }
+});
 
 export const editorStoreApi = useEditorStore;
 

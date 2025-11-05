@@ -16,7 +16,7 @@ const inputVariants = cva(
     defaultVariants: {
       variant: "sm",
     },
-  },
+  }
 );
 
 export interface InputProps
@@ -40,7 +40,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       minusNumber,
       ...props
     },
-    ref,
+    ref
   ) => {
     return (
       <div className="w-full flex items-center relative inputWrapper">
@@ -65,7 +65,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ) : (
           <>
             {type === "number" && (
-              <div className="flex-col z-2 bg-gray border-l border-foreground/5 items-center justify-center absolute right-[2px] top-[1px] bottom-[1px] hidden numberHandlers rounded-tr-[3px] rounded-br-[3px]">
+              <div className="flex-col z-2 bg-gray border-l border-foreground/5 items-center justify-center absolute right-[2px] top-px bottom-px hidden numberHandlers rounded-tr-[3px] rounded-br-[3px]">
                 <div
                   onClick={plusNumber}
                   onKeyDown={plusNumber}
@@ -88,7 +88,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  },
+  }
 );
 Input.displayName = "Input";
 
@@ -99,6 +99,7 @@ export function NumberInput({
   className,
   min,
   max,
+  step,
 }: {
   onChange: (value: number) => void;
   value?: number;
@@ -106,7 +107,10 @@ export function NumberInput({
   className?: string;
   min?: number;
   max?: number;
+  step?: number;
 }) {
+  const stepValue = step || 1;
+
   return (
     <Input
       type="number"
@@ -118,21 +122,22 @@ export function NumberInput({
       }}
       min={min}
       max={max}
+      step={step}
       value={value}
       leftChild={leftChild}
       className={className}
       plusNumber={() => {
         if (max === undefined) {
-          onChange((value || 0) + 1);
+          onChange((value || 0) + stepValue);
         } else if (max !== value) {
-          onChange((value || 0) + 1);
+          onChange((value || 0) + stepValue);
         }
       }}
       minusNumber={() => {
         if (min === undefined) {
-          onChange((value || 0) - 1);
+          onChange((value || 0) - stepValue);
         } else if (min !== value) {
-          onChange((value || 0) - 1);
+          onChange((value || 0) - stepValue);
         }
       }}
       onBlur={() => {
