@@ -34,9 +34,9 @@ function Canvas({ template }: CanvasProps) {
   }
 
   return (
-    <div className="editor-canvas-wrapper h-screen">
+    <div className="editor-canvas-wrapper h-screen bg-slate-100 dark:bg-slate-900">
       <EditorHeader />
-      <div className="flex h-[calc(100vh-60px)]">
+      <div className="flex h-screen">
         <EditorLeftSide />
         <EditorCanvas />
         <EditorRightSide />

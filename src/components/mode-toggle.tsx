@@ -11,12 +11,12 @@ export function ModeToggle() {
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       variant="outline"
       size="icon"
-      className="size-8"
+      className="size-10"
     >
       {theme === "dark" ? (
-        <Sun className="h-4 w-4" />
+        <Sun className="h-5 w-5" />
       ) : (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-5 w-5" />
       )}
     </Button>
   );

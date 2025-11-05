@@ -1,15 +1,15 @@
-import * as React from 'react';
-import { HiDotsHorizontal } from 'react-icons/hi';
-import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import * as React from "react";
+import { HiDotsHorizontal } from "react-icons/hi";
+import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   BackIcon,
   BackwardIcon,
@@ -17,11 +17,11 @@ import {
   DuplicateIcon,
   FarwardIcon,
   FrontIcon,
-} from '@/components/ui/icons';
-import type { IEditorBlocks } from '@/lib/schema';
-import { BlockIcon } from '../utils';
-import { useEditorStore } from '../use-editor';
-import { shallow } from 'zustand/shallow';
+} from "@/components/ui/icons";
+import type { IEditorBlocks } from "@/lib/schema";
+import { BlockIcon } from "../utils";
+import { useEditorStore } from "../use-editor";
+import { shallow } from "zustand/shallow";
 
 interface BlockItemProps extends React.HTMLAttributes<HTMLDivElement> {
   block: IEditorBlocks;
@@ -58,7 +58,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
       onMouseLeave,
       ...props
     },
-    ref,
+    ref
   ) => {
     const [label, setLabel] = React.useState(block.label);
     const [editable, setEditable] = React.useState(false);
@@ -80,12 +80,11 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
       <div
         ref={ref}
         className={cn(
-          'sidebar-item relative flex min-h-8 items-center justify-between border border-transparent pl-4 pr-3 transition-all hover:border-primary',
+          "sidebar-item group/item relative mx-2 my-0.5",
           {
-            'opacity-40': !block.visible,
-            'bg-muted': selected,
+            "opacity-40": !block.visible,
           },
-          className,
+          className
         )}
         data-block-id={block.id}
         onMouseEnter={(event) => {
@@ -102,22 +101,40 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
       >
         <button
           type="button"
-          className="absolute inset-0 z-[1] cursor-pointer rounded-none"
+          className={cn(
+            "group/button flex items-center gap-3 w-full p-[3px] border rounded-xl transition-colors group-hover/item:bg-muted",
+            {
+              "bg-muted border-border/60": selected,
+              "border-transparent": !selected,
+            }
+          )}
           onClick={handleSelect}
           aria-label={`Select ${block.label}`}
-        />
-        <div className="relative z-[2] flex items-center gap-1.5">
-          <div className="opacity-50">{BlockIcon(block.type)}</div>
+        >
+          <div
+            className={cn(
+              "flex justify-center items-center shrink-0 size-8 rounded-lg transition-all group-hover/item:bg-background",
+              {
+                "bg-background shadow-sm": selected,
+                "bg-muted": !selected,
+              }
+            )}
+          >
+            <div className="text-base opacity-70">{BlockIcon(block.type)}</div>
+          </div>
           <input
             type="text"
             value={label}
             onChange={(event) => setLabel(event.target.value)}
             className={cn(
-              'sidebar-item-label-input h-6 w-auto cursor-default overflow-hidden text-ellipsis border border-transparent bg-transparent px-1 text-sm outline-hidden',
-              { 'border-foreground/30 bg-background': editable },
+              "sidebar-item-label-input flex-1 h-6 cursor-default overflow-hidden text-ellipsis border border-transparent bg-transparent px-1 text-sm text-foreground outline-hidden rounded-md truncate",
+              { "border-border bg-muted cursor-text": editable }
             )}
             readOnly={!editable}
-            onDoubleClick={() => setEditable(true)}
+            onDoubleClick={(event) => {
+              event.stopPropagation();
+              setEditable(true);
+            }}
             onFocus={(event) => event.stopPropagation()}
             onClick={(event) => event.stopPropagation()}
             onBlur={() => {
@@ -127,7 +144,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               }
             }}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
+              if (event.key === "Enter") {
                 setEditable(false);
                 if (block.label !== label) {
                   onRename?.(block.id, label);
@@ -135,12 +152,15 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               }
             }}
           />
-        </div>
+        </button>
         <DropdownMenu>
-          <DropdownMenuTrigger className="sidebar-item-actions relative z-[3] invisible" asChild>
+          <DropdownMenuTrigger
+            className="sidebar-item-actions absolute top-1/2 right-3 -translate-y-1/2 z-[3] invisible"
+            asChild
+          >
             <button
               type="button"
-              className="rounded p-1 text-foreground/70 transition hover:bg-accent"
+              className="rounded-lg p-1.5 text-foreground/50 transition-all hover:bg-muted hover:text-foreground"
               onClick={(event) => {
                 event.stopPropagation();
                 handleSelect();
@@ -164,7 +184,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               ) : (
                 <AiOutlineEye className="mr-2 h-5 w-5" />
               )}
-              {block.visible ? 'Hide' : 'Show'}
+              {block.visible ? "Hide" : "Show"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onBringForward?.(block.id)}>
@@ -187,19 +207,22 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
         </DropdownMenu>
       </div>
     );
-  },
+  }
 );
 
-BlockItem.displayName = 'BlockItem';
+BlockItem.displayName = "BlockItem";
 
 function EditorLeftSide() {
   const blocks = useEditorStore(
-    (state) => state.blockOrder.map((id) => state.blocksById[id]).filter(Boolean),
-    (prev, next) => prev.length === next.length && prev.every((value, index) => value === next[index]),
+    (state) =>
+      state.blockOrder.map((id) => state.blocksById[id]).filter(Boolean),
+    (prev, next) =>
+      prev.length === next.length &&
+      prev.every((value, index) => value === next[index])
   );
   const [selectedIds, setSelectedIds] = useEditorStore(
     (state) => [state.selectedIds, state.setSelectedIds],
-    shallow,
+    shallow
   );
   const [
     setHoveredId,
@@ -223,7 +246,7 @@ function EditorLeftSide() {
       state.bringToTopBlock,
       state.bringToBackBlock,
     ],
-    shallow,
+    shallow
   );
 
   const handleSelect = React.useCallback(
@@ -233,11 +256,11 @@ function EditorLeftSide() {
       }
       setSelectedIds([block.id]);
     },
-    [setSelectedIds],
+    [setSelectedIds]
   );
 
   return (
-    <div className="editor-left-side relative z-20 flex w-64 flex-col border-r border-border bg-background">
+    <div className="editor-left-side fixed left-3 top-3 bottom-3 z-20 flex w-64 flex-col border border-border/50 bg-background/95 backdrop-blur shadow-xl rounded-[1.25rem] overflow-hidden">
       <p className="p-4 pb-3 text-sm font-semibold">Layers</p>
       <ScrollArea>
         {blocks.map((block) => (

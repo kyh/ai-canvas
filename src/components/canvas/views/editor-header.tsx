@@ -31,15 +31,15 @@ function EditorHeader({ className }: { className?: string }) {
   const downloadImage = useEditorStore((state) => state.downloadImage);
 
   return (
-    <div
-      className={
-        cn(
-          "relative z-20 flex h-[60px] items-center justify-between border-b border-border bg-background px-4",
-          className
-        )
-      }
-    >
-      <div className="flex items-center gap-4">
+    <>
+      <div
+        className={
+          cn(
+            "fixed top-3 left-1/2 z-20 -translate-x-1/2 flex items-center gap-2 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-[1.25rem] p-2",
+            className
+          )
+        }
+      >
         <ButtonsGroup
           buttons={[
             {
@@ -79,8 +79,7 @@ function EditorHeader({ className }: { className?: string }) {
             },
           ]}
         />
-      </div>
-      <div className="flex items-center gap-4">
+        <div className="w-px h-6 bg-border mx-1" />
         <ButtonsGroup
           buttons={[
             {
@@ -97,12 +96,13 @@ function EditorHeader({ className }: { className?: string }) {
             },
           ]}
         />
-      </div>
-      <div className="flex items-center gap-4">
-        <ModeToggle />
-        <Button className="gap-2 rounded-lg h-8" onClick={downloadImage}>
-          <FiDownload /> Export
-        </Button>
+        <div className="w-px h-6 bg-border mx-1" />
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+          <Button className="gap-2 rounded-xl h-10 px-6" onClick={downloadImage}>
+            <FiDownload /> Export
+          </Button>
+        </div>
       </div>
       <input
         type="file"
@@ -130,7 +130,7 @@ function EditorHeader({ className }: { className?: string }) {
           }
         }}
       />
-    </div>
+    </>
   );
 }
 

@@ -120,7 +120,7 @@
   }
 
   select {
-    @apply h-7 rounded-md border border-border bg-gray text-xs px-1.5 outline-hidden focus-within:border-primary appearance-none pr-4 w-full disabled:cursor-not-allowed disabled:opacity-50;
+    @apply h-7 rounded-lg border border-border bg-muted/50 text-xs px-2 outline-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 appearance-none pr-6 w-full disabled:cursor-not-allowed disabled:opacity-50 transition-colors;
   }
 
   input[type="range"] {
@@ -201,10 +201,6 @@
 
 .sidebar-item:hover .sidebar-item-actions {
   visibility: visible;
-}
-
-.sidebar-item:hover .sidebar-item-label-input {
-  width: 154px;
 }
 
 .canvas-stage {

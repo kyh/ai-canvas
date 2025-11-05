@@ -5,7 +5,7 @@ import { TriangleDownIcon, TriangleUpIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 
 const inputVariants = cva(
-  "flex w-full border border-border rounded-md bg-gray transition-colors file:border-0 file:bg-transparent file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50",
+  "flex w-full border border-border rounded-lg bg-muted/50 transition-colors file:border-0 file:bg-transparent file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {

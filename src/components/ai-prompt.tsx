@@ -14,7 +14,6 @@ import { useEditorStore } from "./canvas/use-editor";
 export default function AIPrompt() {
   const [input, setInput] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = React.useState(false);
   const addBlock = useEditorStore((state) => state.addBlock);
 
   const { sendMessage, status } = useChat<CustomUIMessage>({
@@ -68,14 +67,11 @@ export default function AIPrompt() {
 
   return (
     <div
-      className={cn(
-        "fixed bottom-4 left-1/2 z-50 w-full max-w-2xl -translate-x-1/2 transform transition-all duration-200 ease-out",
-        isExpanded ? "translate-y-0" : "translate-y-0"
-      )}
+      className="fixed bottom-3 left-1/2 z-50 w-full max-w-2xl -translate-x-1/2"
     >
-      <div className="mx-4 rounded-lg border border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 shadow-lg">
+      <div className="mx-4 rounded-3xl border border-border/50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 shadow-2xl">
         {error && (
-          <div className="flex items-center justify-between border-b border-border bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          <div className="flex items-center justify-between border-b border-border bg-destructive/10 px-5 py-2.5 text-sm text-destructive rounded-t-3xl">
             <span>{error}</span>
             <button
               onClick={() => setError(null)}
@@ -85,43 +81,37 @@ export default function AIPrompt() {
             </button>
           </div>
         )}
-        <form onSubmit={handleSubmit} className="flex items-end gap-2 p-4">
-          <div className="flex-1">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setIsExpanded(true)}
-              placeholder="Describe the design you want to generate... (e.g., 'Create a modern landing page with a hero section, features list, and footer')"
-              disabled={isLoading}
-              rows={isExpanded ? 3 : 1}
-              className={cn(
-                "w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm",
-                "placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-                "transition-all duration-200 ease-out"
-              )}
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            size="icon"
-            className="h-9 w-9 shrink-0"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
+        <div className="pt-5 p-3">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Describe your 3D object or scene..."
+            disabled={isLoading}
+            rows={1}
+            className={cn(
+              "w-full bg-transparent !h-6 mb-8 pl-2 text-base text-foreground outline-none resize-none",
+              "placeholder:text-muted-foreground/50",
+              "disabled:cursor-not-allowed disabled:opacity-50"
             )}
-          </Button>
-        </form>
-        {isExpanded && !isLoading && (
-          <div className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
-            Press Enter to generate, Shift+Enter for new line
+          />
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={!input.trim() || isLoading}
+              size="icon"
+              variant={input.trim() ? "default" : "outline"}
+              className="w-10 h-10 p-0 rounded-xl ml-auto"
+            >
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5 -rotate-90" />
+              )}
+            </Button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

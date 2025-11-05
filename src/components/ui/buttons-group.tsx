@@ -16,7 +16,7 @@ interface ButtonsGroupProps {
 function ButtonsGroup(props: ButtonsGroupProps) {
   const { buttons } = props;
   return (
-    <div className="flex items-center rounded-md">
+    <div className="flex items-center gap-2">
       {buttons.map((button, index) => (
         <CustomTooltip key={index} content={button.label}>
           <Button
@@ -24,14 +24,13 @@ function ButtonsGroup(props: ButtonsGroupProps) {
             variant="ghost"
             disabled={button.disabled}
             className={cn(
-              "h-8 min-w-8 text-lg flex items-center justify-center p-0 rounded-none border border-border relative",
-              "focus:outline-hidden focus:border-primary focus:bg-primary/5 focus:z-2",
+              "size-10 text-lg flex items-center justify-center p-0 rounded-xl border transition-all",
+              "hover:bg-muted/80",
               {
-                "-ml-[1px]": index !== 0,
-                "bg-primary! text-primary-foreground border-primary":
+                "bg-muted border-border/80 shadow-[0_-1px_3px_0px_rgba(18,18,18,0.15)_inset,_0px_1.25px_1px_0px_#FFF_inset] dark:shadow-[0_-1px_3px_0px_rgba(255,255,255,0.05)_inset,_0px_1.25px_1px_0px_rgba(255,255,255,0.1)_inset]":
                   button.isActive,
-                "rounded-l-md": index === 0,
-                "rounded-r-md": index === buttons.length - 1,
+                "border-transparent":
+                  !button.isActive,
               },
             )}
           >

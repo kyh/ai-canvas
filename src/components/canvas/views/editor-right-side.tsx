@@ -22,7 +22,7 @@ function EditorRightSide({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative z-20 flex w-64 flex-col border-l border-border bg-background",
+        "fixed right-3 top-3 bottom-3 z-20 flex w-64 flex-col border border-border/50 bg-background/95 backdrop-blur shadow-xl rounded-[1.25rem] overflow-hidden",
         className
       )}
     >
