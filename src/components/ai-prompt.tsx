@@ -10,11 +10,14 @@ import type { ChatUIMessage } from "@/ai/messages/types";
 import type { DataPart } from "@/ai/messages/data-parts";
 import { Button } from "./ui/button";
 import { Loader2, Send } from "lucide-react";
-import { useEditorStore } from "./canvas/use-editor";
+import { useEditorStore, selectOrderedBlocks } from "./canvas/use-editor";
+import { captureStageAsImage } from "./canvas/services/export";
 
 export default function AIPrompt() {
   const [input, setInput] = React.useState("");
   const addBlock = useEditorStore((state) => state.addBlock);
+  const stage = useEditorStore((state) => state.stage);
+  const blocks = useEditorStore(selectOrderedBlocks);
 
   const { sendMessage, status } = useChat<ChatUIMessage>({
     onError: (error) => {
@@ -48,11 +51,36 @@ export default function AIPrompt() {
 
   const isLoading = status === "submitted" || status === "streaming";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    sendMessage({ text: input });
+    try {
+      // Capture canvas as image before sending
+      const canvasImage = await captureStageAsImage(stage, blocks);
+
+      if (canvasImage) {
+        // Create FileUIPart object with mediaType, url, and type
+        const filePart = {
+          type: "file" as const,
+          mediaType: "image/png" as const,
+          url: canvasImage,
+        };
+
+        // Send message with canvas image attached
+        sendMessage({
+          text: input,
+          files: [filePart],
+        });
+      } else {
+        // Fallback: send without image if capture fails
+        sendMessage({ text: input });
+      }
+    } catch (error) {
+      console.error("Failed to capture canvas image:", error);
+      // Fallback: send without image
+      sendMessage({ text: input });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
