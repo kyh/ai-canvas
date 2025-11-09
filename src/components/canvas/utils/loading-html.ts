@@ -49,8 +49,7 @@ export const LOADING_HTML = `<!DOCTYPE html>
 <body>
   <div class="container">
     <div class="spinner"></div>
-    <div class="text">Generating HTML...</div>
+    <div class="text">Building...</div>
   </div>
 </body>
 </html>`;
-

@@ -427,8 +427,15 @@ function ArrowNode({
 
 const HtmlContent = React.memo(
   ({ html }: { html: string }) => {
+    // Use a hash of the HTML as key to force iframe re-render when content changes
+    const htmlKey = React.useMemo(() => {
+      // Simple hash for key - forces re-render when HTML changes
+      return html.length + (html.substring(0, 100).replace(/\s/g, "").length % 1000);
+    }, [html]);
+
     return (
       <iframe
+        key={htmlKey}
         srcDoc={html}
         style={{
           width: "100%",
@@ -815,6 +822,8 @@ function EditorCanvas() {
   const transformerRef = React.useRef<Konva.Transformer | null>(null);
   const selectionStartRef = React.useRef<PointerPosition | null>(null);
   const selectionChangedRef = React.useRef(false);
+  const isAltDragRef = React.useRef(false);
+  const originalPositionsRef = React.useRef<Map<string, { x: number; y: number }>>(new Map());
   const storeApi = editorStoreApi;
 
   const [selectionRect, setSelectionRect] =
@@ -1463,21 +1472,105 @@ function EditorCanvas() {
 
   const handleNodeDragEnd = React.useCallback(
     (id: string, position: { x: number; y: number }) => {
-      const block = blocks.find((b) => b.id === id);
-      if (block?.type === "arrow") {
-        const arrowBlock = block as IEditorBlockArrow;
-        // Convert Group position back to block position
-        const blockPos = groupPositionToBlockPosition(
-          position.x,
-          position.y,
-          arrowBlock
-        );
-        setBlockPosition(id, blockPos);
+      // If Alt was pressed, copy instead of move
+      if (isAltDragRef.current) {
+        // Calculate the offset from the original position
+        const originalPos = originalPositionsRef.current.get(id);
+        if (!originalPos) {
+          // Fallback to normal drag if we don't have original position
+          isAltDragRef.current = false;
+          originalPositionsRef.current.clear();
+          const block = blocks.find((b) => b.id === id);
+          if (block?.type === "arrow") {
+            const arrowBlock = block as IEditorBlockArrow;
+            const blockPos = groupPositionToBlockPosition(
+              position.x,
+              position.y,
+              arrowBlock
+            );
+            setBlockPosition(id, blockPos);
+          } else {
+            setBlockPosition(id, position);
+          }
+          return;
+        }
+
+        // Calculate offset in block coordinate space
+        const draggedBlock = blocks.find((b) => b.id === id);
+        let offsetX: number;
+        let offsetY: number;
+        
+        if (draggedBlock?.type === "arrow") {
+          // For arrows, convert both positions to block coordinates
+          const arrowBlock = draggedBlock as IEditorBlockArrow;
+          const originalBlockPos = groupPositionToBlockPosition(
+            originalPos.x,
+            originalPos.y,
+            arrowBlock
+          );
+          const newBlockPos = groupPositionToBlockPosition(
+            position.x,
+            position.y,
+            arrowBlock
+          );
+          offsetX = newBlockPos.x - originalBlockPos.x;
+          offsetY = newBlockPos.y - originalBlockPos.y;
+        } else {
+          // For other blocks, positions are already in block coordinates
+          offsetX = position.x - originalPos.x;
+          offsetY = position.y - originalPos.y;
+        }
+
+        // Copy all selected blocks
+        copySelectedBlocks();
+        
+        // Calculate the minimum x and y from selected blocks to maintain relative positions
+        const selectedBlocks = blocks.filter((b) => selectedIds.includes(b.id));
+        const minX = Math.min(...selectedBlocks.map((b) => b.x));
+        const minY = Math.min(...selectedBlocks.map((b) => b.y));
+
+        // Paste at the new position
+        const pasteX = minX + offsetX;
+        const pasteY = minY + offsetY;
+        pasteBlocks({ x: pasteX, y: pasteY });
+
+        // Reset all selected blocks to their original positions
+        originalPositionsRef.current.forEach((originalPos, blockId) => {
+          const block = blocks.find((b) => b.id === blockId);
+          if (block?.type === "arrow") {
+            const arrowBlock = block as IEditorBlockArrow;
+            const blockPos = groupPositionToBlockPosition(
+              originalPos.x,
+              originalPos.y,
+              arrowBlock
+            );
+            setBlockPosition(blockId, blockPos);
+          } else {
+            setBlockPosition(blockId, originalPos);
+          }
+        });
+
+        // Reset Alt drag state
+        isAltDragRef.current = false;
+        originalPositionsRef.current.clear();
       } else {
-        setBlockPosition(id, position);
+        // Normal drag behavior
+        const block = blocks.find((b) => b.id === id);
+        if (block?.type === "arrow") {
+          const arrowBlock = block as IEditorBlockArrow;
+          // Convert Group position back to block position
+          const blockPos = groupPositionToBlockPosition(
+            position.x,
+            position.y,
+            arrowBlock
+          );
+          setBlockPosition(id, blockPos);
+        } else {
+          setBlockPosition(id, position);
+        }
       }
     },
-    [setBlockPosition, blocks]
+    [setBlockPosition, blocks, selectedIds, copySelectedBlocks, pasteBlocks]
   );
 
   const handleTransform = React.useCallback(() => {
@@ -1736,6 +1829,44 @@ function EditorCanvas() {
                   }
                   return [block.id];
                 });
+
+                // Check if Alt key is pressed
+                const isAltPressed = evt.evt.altKey;
+                if (isAltPressed) {
+                  isAltDragRef.current = true;
+                  // Store original positions of all selected blocks
+                  // Get current selected IDs from store to ensure we have the latest state
+                  const currentSelectedIds = storeApi.getState().selectedIds.includes(block.id)
+                    ? storeApi.getState().selectedIds
+                    : [block.id];
+                  originalPositionsRef.current.clear();
+                  currentSelectedIds.forEach((selectedId) => {
+                    const selectedBlock = blocks.find((b) => b.id === selectedId);
+                    if (selectedBlock) {
+                      if (selectedBlock.type === "arrow") {
+                        const arrowBlock = selectedBlock as IEditorBlockArrow;
+                        // For arrows, we need to get the Group position
+                        const groupPos = blockPositionToGroupPosition(
+                          arrowBlock.x,
+                          arrowBlock.y,
+                          arrowBlock
+                        );
+                        originalPositionsRef.current.set(selectedId, {
+                          x: groupPos.x,
+                          y: groupPos.y,
+                        });
+                      } else {
+                        originalPositionsRef.current.set(selectedId, {
+                          x: selectedBlock.x,
+                          y: selectedBlock.y,
+                        });
+                      }
+                    }
+                  });
+                } else {
+                  isAltDragRef.current = false;
+                  originalPositionsRef.current.clear();
+                }
               },
               onDragEnd: (position: { x: number; y: number }) =>
                 handleNodeDragEnd(block.id, position),

@@ -5,7 +5,6 @@ import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { blockSchema } from "@/lib/schema";
-import type { z } from "zod";
 import type { ChatUIMessage } from "@/ai/messages/types";
 import type { DataPart } from "@/ai/messages/data-parts";
 import { Button } from "./ui/button";
@@ -59,44 +58,33 @@ export default function AIPrompt() {
     onData: (dataPart) => {
       try {
         const data = dataPart.data as DataPart;
-        let block: z.infer<typeof blockSchema> | undefined;
-        let shouldUpdate = false;
-        let updateBlockId: string | undefined;
 
-        if (data["generate-text-block"]) {
-          block = data["generate-text-block"].block;
-        } else if (data["generate-frame-block"]) {
-          block = data["generate-frame-block"].block;
-        } else if (data["generate-image-block"]) {
-          block = data["generate-image-block"].block;
-        } else if (data["add-html-to-canvas"]) {
-          block = data["add-html-to-canvas"].block;
-          const htmlData = data["add-html-to-canvas"];
-          if (htmlData.status === "loading") {
-            shouldUpdate = false;
-          } else if (htmlData.status === "done" && htmlData.updateBlockId) {
-            shouldUpdate = true;
-            updateBlockId = htmlData.updateBlockId;
+        // Find which data part type exists
+        const dataPartType = (Object.keys(data) as Array<keyof DataPart>).find(
+          (key) => data[key] !== undefined
+        );
+
+        if (!dataPartType) return;
+
+        switch (dataPartType) {
+          case "generate-text-block":
+          case "generate-frame-block":
+          case "generate-image-block":
+          case "build-html-block": {
+            const block = blockSchema.parse(data[dataPartType]!.block);
+            addBlock(block);
+            break;
           }
-        }
 
-        if (block) {
-          const validatedBlock = blockSchema.parse(block);
-          if (shouldUpdate && updateBlockId) {
-            const existingBlock = blocks.find((b) => b.id === updateBlockId);
-            if (existingBlock) {
-              updateBlockValues(updateBlockId, validatedBlock);
-            } else {
-              addBlock(validatedBlock);
-            }
-          } else {
-            addBlock(validatedBlock);
+          case "update-html-block": {
+            const { updateBlockId, ...updates } = data[dataPartType]!;
+            updateBlockValues(updateBlockId, updates);
+            break;
           }
         }
       } catch (err) {
-        console.error("Failed to add generated block:", err, dataPart);
         toast.error(
-          err instanceof Error ? err.message : "Failed to add generated block"
+          err instanceof Error ? err.message : "Failed to process data part"
         );
       }
     },
@@ -155,8 +143,7 @@ export default function AIPrompt() {
         filePart ? { text: input, files: [filePart] } : { text: input },
         { body: buildRequestBody(selectionBounds) }
       );
-    } catch (error) {
-      console.error("Failed to capture canvas image:", error);
+    } catch {
       sendMessage({ text: input }, { body: buildRequestBody() });
     }
   };
