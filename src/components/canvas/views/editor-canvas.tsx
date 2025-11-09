@@ -35,7 +35,7 @@ import {
   groupPositionToBlockPosition,
   scaleArrowPoints,
 } from "../utils/arrow-bounds";
-import { editorStoreApi, selectOrderedBlocks } from "../use-editor";
+import { editorStoreApi, selectOrderedBlocks, useEditorStore } from "../use-editor";
 import {
   ensureBlockDefaults,
   MAX_IMAGE_DIMENSION,
@@ -897,9 +897,17 @@ function EditorCanvas() {
     [setStage]
   );
 
+  const copySelectedBlocks = useEditorStore((state) => state.copySelectedBlocks);
+  const pasteBlocks = useEditorStore((state) => state.pasteBlocks);
+  const stage = useEditorStore((state) => state.stage);
+
   useCanvasHotkeys({
     setMode,
     deleteSelectedBlocks,
+    copySelectedBlocks,
+    pasteBlocks,
+    stage,
+    zoom,
   });
 
   // Mode helpers

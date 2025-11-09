@@ -1,9 +1,14 @@
 import * as React from 'react';
 import { editorStoreApi } from '../use-editor';
+import type Konva from 'konva';
 
 interface UseCanvasHotkeysOptions {
   setMode: (mode: 'move' | 'select' | 'text' | 'frame' | 'arrow' | 'image' | 'html') => void;
   deleteSelectedBlocks: () => void;
+  copySelectedBlocks: () => void;
+  pasteBlocks: (position?: { x: number; y: number }) => void;
+  stage: Konva.Stage | null;
+  zoom: number;
 }
 
 const isEditableTarget = (target: EventTarget | null) => {
@@ -20,7 +25,30 @@ const isEditableTarget = (target: EventTarget | null) => {
   return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
 };
 
-export const useCanvasHotkeys = ({ setMode, deleteSelectedBlocks }: UseCanvasHotkeysOptions) => {
+const getPointerPosition = (stage: Konva.Stage | null) => {
+  if (!stage) {
+    return null;
+  }
+  const pointer = stage.getPointerPosition();
+  if (!pointer) {
+    return null;
+  }
+  return pointer;
+};
+
+const toCanvasCoordinates = (
+  stage: Konva.Stage,
+  position: { x: number; y: number },
+  zoom: number
+) => {
+  const stagePos = stage.position();
+  return {
+    x: (position.x - stagePos.x) / zoom,
+    y: (position.y - stagePos.y) / zoom,
+  };
+};
+
+export const useCanvasHotkeys = ({ setMode, deleteSelectedBlocks, copySelectedBlocks, pasteBlocks, stage, zoom }: UseCanvasHotkeysOptions) => {
   const spacePressedRef = React.useRef(false);
   const spacePrevModeRef = React.useRef<'move' | 'select' | 'text' | 'frame' | 'arrow' | 'image' | 'html' | null>(null);
 
@@ -51,6 +79,35 @@ export const useCanvasHotkeys = ({ setMode, deleteSelectedBlocks }: UseCanvasHot
         return;
       }
 
+      // Handle Cmd+C / Ctrl+C to copy selected blocks
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'c') {
+        if (isEditableTarget(event.target) || state.canvas.isTextEditing) {
+          return; // Let browser handle copy in input fields
+        }
+        if (state.selectedIds.length > 0) {
+          event.preventDefault();
+          copySelectedBlocks();
+        }
+        return;
+      }
+
+      // Handle Cmd+V / Ctrl+V to paste blocks
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'v') {
+        if (isEditableTarget(event.target) || state.canvas.isTextEditing) {
+          return; // Let browser handle paste in input fields
+        }
+        if (state.clipboard && state.clipboard.length > 0) {
+          event.preventDefault();
+          // Get pointer position on canvas for paste location
+          const pointer = getPointerPosition(stage);
+          const pastePosition = pointer && stage
+            ? toCanvasCoordinates(stage, pointer, zoom)
+            : undefined;
+          pasteBlocks(pastePosition);
+        }
+        return;
+      }
+
       if (event.code === 'Space') {
         if (event.metaKey || event.ctrlKey || event.altKey) {
           return;
@@ -69,6 +126,7 @@ export const useCanvasHotkeys = ({ setMode, deleteSelectedBlocks }: UseCanvasHot
         return;
       }
 
+      // Don't interfere with modifier keys for mode switching
       if (event.metaKey || event.ctrlKey || event.altKey) {
         return;
       }
@@ -149,5 +207,5 @@ export const useCanvasHotkeys = ({ setMode, deleteSelectedBlocks }: UseCanvasHot
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', resetSpaceMode);
     };
-  }, [deleteSelectedBlocks, setMode]);
+  }, [deleteSelectedBlocks, setMode, copySelectedBlocks, pasteBlocks, stage, zoom]);
 };

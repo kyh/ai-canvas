@@ -10,8 +10,15 @@ Use Add HTML To Canvas when:
 
 ## Workflow
 
-1. First, call `generateHTML` to analyze the image - this creates a loading placeholder block
-2. Then, call `addHTMLToCanvas` with the generated HTML and the `updateBlockId` from the loading block
+1. First, call `generateHTML` to analyze the image - this creates a loading placeholder block and returns its ID
+2. Then, call `addHTMLToCanvas` **exactly once** with:
+   - The generated HTML
+   - **REQUIRED**: The `updateBlockId` from the `generateHTML` response (you MUST include this)
+3. **CRITICAL**: 
+   - You MUST provide the `updateBlockId` - it is required, not optional
+   - Call this tool exactly ONCE per user request
+   - Do NOT call it multiple times
+   - Once you've added the HTML, the task is complete
 
 ## Required Properties
 
@@ -21,7 +28,7 @@ Use Add HTML To Canvas when:
 - **width, height**: Dimensions of the HTML block (should match the loading block dimensions)
 - **visible**: true (default)
 - **opacity**: 0-100 (100 = fully opaque)
-- **updateBlockId**: (Optional) ID of the loading block created by `generateHTML`. If provided, the existing block will be updated instead of creating a new one.
+- **updateBlockId**: **REQUIRED** - ID of the loading block created by `generateHTML`. You MUST include this ID to update the loading block. Do not omit this parameter.
 
 ## Positioning Logic
 
@@ -104,7 +111,14 @@ Assistant: I'll generate HTML for this form and add it to the canvas center.
 - label: "Contact Form"
 </example>
 
+## Important Notes
+
+- **Call this tool only once** per HTML generation task
+- Once you've called it with the complete HTML, do not call it again
+- The tool will update the loading block with your HTML
+- If you call it multiple times, only the first update will be applied (subsequent calls will be ignored)
+
 ## Summary
 
-Use Add HTML To Canvas to place generated HTML code on the canvas. Determine dimensions based on the HTML content, position to the right of selection if it exists, otherwise center on the canvas.
+Use Add HTML To Canvas to place generated HTML code on the canvas. Call it exactly once with the complete HTML and the `updateBlockId` from the loading block. Do not call it multiple times.
 

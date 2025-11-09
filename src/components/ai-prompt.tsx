@@ -8,7 +8,6 @@ import { blockSchema } from "@/lib/schema";
 import type { z } from "zod";
 import type { ChatUIMessage } from "@/ai/messages/types";
 import type { DataPart } from "@/ai/messages/data-parts";
-import type { IEditorBlockHtml } from "@/lib/schema";
 import { Button } from "./ui/button";
 import { Loader2, Send } from "lucide-react";
 import { useEditorStore } from "./canvas/use-editor";
@@ -17,6 +16,7 @@ import {
   captureSelectedBlocksAsImage,
   calculateSelectedBlocksBounds,
 } from "./canvas/services/export";
+import { EXPORT_PADDING } from "./canvas/utils/constants";
 import type { SelectionBounds } from "@/lib/types";
 import { ApiKeyDialog, OPENAI_API_KEY_STORAGE_KEY } from "./api-key-dialog";
 import { transport } from "./demo-transport";
@@ -32,7 +32,6 @@ export default function AIPrompt() {
   );
   const addBlock = useEditorStore((state) => state.addBlock);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
-  const blockOrder = useEditorStore((state) => state.blockOrder);
   const stage = useEditorStore((state) => state.stage);
   const blocks = useOrderedBlocks();
   const selectedIds = useEditorStore((state) => state.selectedIds);
@@ -41,7 +40,6 @@ export default function AIPrompt() {
     id: apiKey,
     transport: apiKey === "demo" ? transport : undefined,
     onError: (error) => {
-      // Check if error is authentication-related
       const errorMessage = error.message?.toLowerCase() || "";
       const isAuthError =
         errorMessage.includes("unauthorized") ||
@@ -51,7 +49,6 @@ export default function AIPrompt() {
         errorMessage.includes("403");
 
       if (isAuthError) {
-        // Remove invalid key from localStorage
         removeApiKey();
         toast.error("Invalid API key. Please enter a valid OpenAI API key.");
         setShowApiKeyModal(true);
@@ -76,50 +73,23 @@ export default function AIPrompt() {
           block = data["add-html-to-canvas"].block;
           const htmlData = data["add-html-to-canvas"];
           if (htmlData.status === "loading") {
-            // Create loading block
             shouldUpdate = false;
-          } else if (htmlData.status === "done") {
-            // Check if we should update an existing loading block
-            if (htmlData.updateBlockId) {
-              // Explicit updateBlockId provided
-              shouldUpdate = true;
-              updateBlockId = htmlData.updateBlockId;
-            } else {
-              // Find the most recent HTML block with loading content
-              // Use blockOrder to get proper creation order
-              const loadingHtmlBlocks = blocks
-                .filter((b) => b.type === "html")
-                .filter((b) => {
-                  const htmlBlock = b as IEditorBlockHtml;
-                  // Check if it's the loading HTML by looking for the spinner class
-                  return (
-                    htmlBlock.html.includes("spinner") &&
-                    htmlBlock.html.includes("Generating HTML...")
-                  );
-                })
-                .sort((a, b) => {
-                  // Sort by creation order using blockOrder
-                  const aIndex = blockOrder.indexOf(a.id);
-                  const bIndex = blockOrder.indexOf(b.id);
-                  return bIndex - aIndex; // Most recent first
-                });
-
-              if (loadingHtmlBlocks.length > 0) {
-                // Update the most recent loading block
-                shouldUpdate = true;
-                updateBlockId = loadingHtmlBlocks[0].id;
-              }
-            }
+          } else if (htmlData.status === "done" && htmlData.updateBlockId) {
+            shouldUpdate = true;
+            updateBlockId = htmlData.updateBlockId;
           }
         }
 
         if (block) {
           const validatedBlock = blockSchema.parse(block);
           if (shouldUpdate && updateBlockId) {
-            // Update existing block (loading -> done)
-            updateBlockValues(updateBlockId, validatedBlock);
+            const existingBlock = blocks.find((b) => b.id === updateBlockId);
+            if (existingBlock) {
+              updateBlockValues(updateBlockId, validatedBlock);
+            } else {
+              addBlock(validatedBlock);
+            }
           } else {
-            // Create new block
             addBlock(validatedBlock);
           }
         }
@@ -149,22 +119,18 @@ export default function AIPrompt() {
       let selectionBounds: SelectionBounds | null = null;
 
       if (mode === "build") {
-        // In build mode, capture only selected blocks (or full canvas if no selection)
         canvasImage = await captureSelectedBlocksAsImage(
           stage,
           blocks,
           selectedIds
         );
 
-        // Calculate selection bounds for positioning (without padding)
         if (selectedIds.length > 0) {
           const boundsWithPadding = calculateSelectedBlocksBounds(
             blocks,
             selectedIds
           );
           if (boundsWithPadding) {
-            // Remove padding to get actual selection bounds
-            const EXPORT_PADDING = 20;
             selectionBounds = {
               x: boundsWithPadding.x + EXPORT_PADDING,
               y: boundsWithPadding.y + EXPORT_PADDING,
@@ -174,7 +140,6 @@ export default function AIPrompt() {
           }
         }
       } else {
-        // In generate mode, capture full canvas (no selection = empty array)
         canvasImage = await captureSelectedBlocksAsImage(stage, blocks, []);
       }
 
@@ -186,14 +151,12 @@ export default function AIPrompt() {
           }
         : undefined;
 
-      // Send message with or without image
       sendMessage(
         filePart ? { text: input, files: [filePart] } : { text: input },
         { body: buildRequestBody(selectionBounds) }
       );
     } catch (error) {
       console.error("Failed to capture canvas image:", error);
-      // Fallback: send without image
       sendMessage({ text: input }, { body: buildRequestBody() });
     }
   };
@@ -221,7 +184,7 @@ export default function AIPrompt() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={handleTextareaFocus}
-              placeholder="Describe your 3D object or scene..."
+              placeholder="Describe what you want to create..."
               disabled={isLoading}
               rows={1}
               className={cn(

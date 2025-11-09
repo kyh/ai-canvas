@@ -57,6 +57,7 @@ interface EditorState {
   };
   stage: Konva.Stage | null;
   pendingImageData: { url: string; width: number; height: number } | null;
+  clipboard: IEditorBlocks[] | null;
 }
 
 interface EditorActions {
@@ -96,6 +97,8 @@ interface EditorActions {
   handleRedo: () => void;
   downloadImage: () => Promise<void>;
   exportToJson: () => void;
+  copySelectedBlocks: () => void;
+  pasteBlocks: (position?: { x: number; y: number }) => void;
 }
 
 export type EditorStore = EditorState & EditorActions;
@@ -180,6 +183,7 @@ const buildInitialState = (template?: Template): EditorState => {
     },
     stage: null,
     pendingImageData: null,
+    clipboard: null,
   };
 };
 
@@ -1074,6 +1078,71 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       blocks: blocksArray(state),
       size: state.canvas.size,
       background: state.canvas.background,
+    });
+  },
+
+  copySelectedBlocks: () => {
+    set((state) => {
+      if (state.selectedIds.length === 0) {
+        return state;
+      }
+      const copiedBlocks = state.selectedIds
+        .map((id) => state.blocksById[id])
+        .filter(Boolean)
+        .map((block) => clone(block));
+      return {
+        ...state,
+        clipboard: copiedBlocks,
+      };
+    });
+  },
+
+  pasteBlocks: (position?: { x: number; y: number }) => {
+    set((state) => {
+      if (!state.clipboard || state.clipboard.length === 0) {
+        return state;
+      }
+      const snapshot = createSnapshot(state);
+      const newBlocks: IEditorBlocks[] = [];
+      const newIds: string[] = [];
+
+      // Calculate the minimum x and y from copied blocks to maintain relative positions
+      const minX = Math.min(...state.clipboard.map((b) => b.x));
+      const minY = Math.min(...state.clipboard.map((b) => b.y));
+
+      // Use pointer position if provided, otherwise use offset from original position
+      const pasteX = position?.x ?? minX + 24;
+      const pasteY = position?.y ?? minY + 24;
+
+      state.clipboard.forEach((block) => {
+        const newId = generateId();
+        const newBlock = parseBlock({
+          ...clone(block),
+          id: newId,
+          x: block.x - minX + pasteX,
+          y: block.y - minY + pasteY,
+          label: `${block.label} Copy`,
+        });
+        newBlocks.push(newBlock);
+        newIds.push(newId);
+      });
+
+      // Add all new blocks
+      const newBlocksById = { ...state.blocksById };
+      newBlocks.forEach((block) => {
+        newBlocksById[block.id] = block;
+      });
+
+      return {
+        ...state,
+        blocksById: newBlocksById,
+        blockOrder: [...state.blockOrder, ...newIds],
+        selectedIds: newIds,
+        history: {
+          undo: [snapshot, ...state.history.undo],
+          redo: [],
+        },
+      };
     });
   },
 }));

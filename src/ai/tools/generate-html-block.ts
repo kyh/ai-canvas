@@ -1,43 +1,43 @@
 import type { UIMessage, UIMessageStreamWriter } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import { generateId } from "@/lib/id-generator";
-import { htmlBlockSchemaWithoutId, templateSchema } from "@/lib/schema";
+import { htmlBlockSchemaWithoutId } from "@/lib/schema";
 import { LOADING_HTML } from "@/components/canvas/utils/loading-html";
+import {
+  LOADING_HTML_BLOCK_WIDTH,
+  LOADING_HTML_BLOCK_HEIGHT,
+  getCanvasCenterPosition,
+} from "@/components/canvas/utils/constants";
+import type { SelectionBounds } from "@/lib/types";
+import { createBlockWithId } from "./utils";
 
 import type { DataPart } from "../messages/data-parts";
 import description from "./generate-html-block.md";
 
 type Params = {
   writer: UIMessageStreamWriter<UIMessage<never, DataPart>>;
-  selectionBounds?: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
+  selectionBounds?: SelectionBounds;
 };
 
 // Helper to create a loading HTML block
-const createLoadingBlock = (selectionBounds?: {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}) => {
+const createLoadingBlock = (selectionBounds?: SelectionBounds) => {
   // Calculate position: right of selection or center
+  const centerPos = getCanvasCenterPosition(
+    LOADING_HTML_BLOCK_WIDTH,
+    LOADING_HTML_BLOCK_HEIGHT
+  );
   const x = selectionBounds
     ? selectionBounds.x + selectionBounds.width + 30
-    : 440; // Center: (1280 - 400) / 2
-  const y = selectionBounds ? selectionBounds.y : 210; // Center: (720 - 300) / 2
+    : centerPos.x;
+  const y = selectionBounds ? selectionBounds.y : centerPos.y;
 
   const block = {
     type: "html" as const,
     label: "Generating HTML...",
     x,
     y,
-    width: 400,
-    height: 300,
+    width: LOADING_HTML_BLOCK_WIDTH,
+    height: LOADING_HTML_BLOCK_HEIGHT,
     rotation: 0,
     scaleX: 1,
     scaleY: 1,
@@ -52,12 +52,7 @@ const createLoadingBlock = (selectionBounds?: {
     radius: { tl: 16, tr: 16, br: 16, bl: 16 },
   };
 
-  const validatedBlock = htmlBlockSchemaWithoutId.parse(block);
-  const blockWithId = {
-    ...validatedBlock,
-    id: generateId(),
-  };
-  return templateSchema.shape.blocks.element.parse(blockWithId);
+  return createBlockWithId(block, htmlBlockSchemaWithoutId);
 };
 
 export const generateHTML = ({ writer, selectionBounds }: Params) =>

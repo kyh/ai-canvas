@@ -14,7 +14,9 @@ This tool has **no input parameters**. It automatically analyzes the image attac
 - Selected blocks from the canvas (in build mode with selection)
 - The full canvas (in build mode without selection)
 
-**IMPORTANT**: When you call this tool, it immediately creates a loading placeholder block on the canvas with a spinner. The tool returns the block ID of this loading block. You must use this ID when calling `addHTMLToCanvas` to update the loading block with your generated HTML.
+**CRITICAL**: When you call this tool, it immediately creates a loading placeholder block on the canvas with a spinner. The tool returns the block ID of this loading block. 
+
+**YOU MUST** use this ID when calling `addHTMLToCanvas` - it is required, not optional. Always pass the `updateBlockId` parameter with the ID returned by this tool.
 
 ## Your Task
 
@@ -36,11 +38,13 @@ When you call this tool, you should:
    - Embeds JavaScript in a `<script>` tag
    - Is self-contained (no external dependencies unless necessary)
 
-4. **Call `addHTMLToCanvas`** with:
+4. **Call `addHTMLToCanvas` exactly ONCE** with:
    - The generated HTML string
-   - The `updateBlockId` from the loading block
+   - **REQUIRED**: The `updateBlockId` from the loading block (you MUST include this)
    - Dimensions matching the loading block (400x300 default)
    - Position matching the loading block
+   
+**Remember**: Generate only ONE HTML block per user request. Call `addHTMLToCanvas` exactly once, then stop.
 
 ## HTML Structure
 

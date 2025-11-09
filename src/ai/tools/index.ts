@@ -25,9 +25,12 @@ export function generateTools({ writer }: WriterParams) {
 }
 
 export function buildTools({ writer, selectionBounds }: BuildParams) {
+  // Track which block IDs have been updated to prevent duplicates
+  const updatedBlockIds = new Set<string>();
+
   return {
     generateHTML: generateHTML({ writer, selectionBounds }),
-    addHTMLToCanvas: addHTMLToCanvas({ writer }),
+    addHTMLToCanvas: addHTMLToCanvas({ writer, updatedBlockIds }),
   };
 }
 
