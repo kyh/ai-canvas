@@ -36,19 +36,20 @@ const executeGenerateMode = ({
     throw new Error("OpenAI API key is required");
   }
 
-  const openai = createOpenAI({
-    apiKey: openaiApiKey,
-  });
-
-  const tools = generateTools({ writer });
+  const model =
+    openaiApiKey === process.env.SECRET_KEY
+      ? "anthropic/claude-haiku-4.5"
+      : createOpenAI({
+          apiKey: openaiApiKey,
+        })("gpt-5-mini");
 
   const result = streamText({
-    model: openai("gpt-5-mini"),
+    model,
     system: generatePrompt,
     messages: convertToModelMessages(messages),
     stopWhen: stepCountIs(5),
     toolChoice: "required",
-    tools,
+    tools: generateTools({ writer }),
     onError: () => {
       // Error handling is done via toast notifications in the UI
     },
@@ -76,9 +77,12 @@ const executeBuildMode = ({
     throw new Error("OpenAI API key is required");
   }
 
-  const openai = createOpenAI({
-    apiKey: openaiApiKey,
-  });
+  const model =
+    openaiApiKey === process.env.SECRET_KEY
+      ? "anthropic/claude-haiku-4.5"
+      : createOpenAI({
+          apiKey: openaiApiKey,
+        })("gpt-5-mini");
 
   // Create loading block immediately
   const loadingBlock = createLoadingBlock(selectionBounds);
@@ -97,7 +101,7 @@ const executeBuildMode = ({
 
   // Generate HTML as text
   const result = streamText({
-    model: openai("gpt-5-mini"),
+    model,
     system: buildPrompt,
     messages: convertToModelMessages(messages),
     onFinish: async ({ text }) => {
