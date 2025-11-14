@@ -38,10 +38,10 @@ const executeGenerateMode = ({
 
   const model =
     openaiApiKey === process.env.SECRET_KEY
-      ? "anthropic/claude-haiku-4.5"
+      ? "openai/gpt-5.1-instant"
       : createOpenAI({
           apiKey: openaiApiKey,
-        })("gpt-5-mini");
+        })("gpt-5.1-instant");
 
   const result = streamText({
     model,
