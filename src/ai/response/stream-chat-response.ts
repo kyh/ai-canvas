@@ -27,7 +27,7 @@ type ExecuteParams = {
   >[0]["writer"];
 };
 
-const executeGenerateMode = ({
+const executeGenerateMode = async ({
   writer,
   messages,
   model,
@@ -40,7 +40,7 @@ const executeGenerateMode = ({
   const result = streamText({
     model,
     system: generatePrompt,
-    messages: convertToModelMessages(messages),
+    messages: await convertToModelMessages(messages),
     stopWhen: stepCountIs(5),
     toolChoice: "required",
     tools: generateTools({ writer, gatewayApiKey }),
@@ -57,7 +57,7 @@ const executeGenerateMode = ({
   );
 };
 
-const executeBuildMode = ({
+const executeBuildMode = async ({
   writer,
   messages,
   selectionBounds,
@@ -88,7 +88,7 @@ const executeBuildMode = ({
   const result = streamText({
     model,
     system: buildPrompt,
-    messages: convertToModelMessages(messages),
+    messages: await convertToModelMessages(messages),
     onFinish: async ({ text }) => {
       // When HTML generation is complete, update the block
       if (text && text.trim()) {
@@ -144,7 +144,7 @@ export const streamChatResponse = async (
   } = await generateObject({
     system:
       "Determine what the user is asking for based on the messages. The user is either asking for you to generate a design, or to build a website from a design. By default, assume the user is asking for you to generate a design.",
-    messages: convertToModelMessages(messages),
+    messages: await convertToModelMessages(messages),
     model,
     schema: z.object({
       mode: z.enum(["generate", "build"]),
@@ -154,10 +154,10 @@ export const streamChatResponse = async (
   return createUIMessageStreamResponse({
     stream: createUIMessageStream({
       originalMessages: messages,
-      execute: ({ writer }) => {
+      execute: async ({ writer }) => {
         switch (mode) {
           case "build":
-            executeBuildMode({
+            await executeBuildMode({
               writer,
               messages: messages as BuildModeChatUIMessage[],
               selectionBounds,
@@ -167,7 +167,7 @@ export const streamChatResponse = async (
             break;
           case "generate":
           default:
-            executeGenerateMode({
+            await executeGenerateMode({
               writer,
               messages: messages as GenerateModeChatUIMessage[],
               model,
