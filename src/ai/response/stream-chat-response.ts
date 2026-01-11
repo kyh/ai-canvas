@@ -5,7 +5,7 @@ import {
   createUIMessageStreamResponse,
   generateObject,
   stepCountIs,
-  streamText,
+  ToolLoopAgent,
   LanguageModel,
 } from "ai";
 
@@ -21,74 +21,31 @@ import generatePrompt from "./stream-chat-response-prompt";
 import buildPrompt from "./stream-chat-response-build-prompt";
 import { z } from "zod";
 
-type ExecuteParams = {
-  writer: Parameters<
-    Parameters<typeof createUIMessageStream>[0]["execute"]
-  >[0]["writer"];
-};
-
-const executeGenerateMode = async ({
-  writer,
-  messages,
-  model,
-  gatewayApiKey,
-}: ExecuteParams & {
-  messages: GenerateModeChatUIMessage[];
-  model: LanguageModel;
-  gatewayApiKey: string;
-}) => {
-  const result = streamText({
+const createGenerateAgent = (
+  model: LanguageModel,
+  gatewayApiKey: string,
+  writer: any // UIMessageStreamWriter type will be inferred
+) => {
+  return new ToolLoopAgent({
+    id: "generate-agent",
     model,
-    system: generatePrompt,
-    messages: await convertToModelMessages(messages),
-    stopWhen: stepCountIs(5),
-    toolChoice: "required",
+    instructions: generatePrompt,
     tools: generateTools({ writer, gatewayApiKey }),
-    onError: () => {
-      // Error handling is done via toast notifications in the UI
-    },
+    toolChoice: "required",
+    stopWhen: stepCountIs(5),
   });
-
-  void result.consumeStream();
-  writer.merge(
-    result.toUIMessageStream({
-      sendReasoning: true,
-    })
-  );
 };
 
-const executeBuildMode = async ({
-  writer,
-  messages,
-  selectionBounds,
-  model,
-  gatewayApiKey,
-}: ExecuteParams & {
-  messages: BuildModeChatUIMessage[];
-  selectionBounds?: SelectionBounds;
-  model: LanguageModel;
-  gatewayApiKey: string;
-}) => {
-  // Create loading block immediately
-  const loadingBlock = createLoadingBlock(selectionBounds);
-  const blockId = loadingBlock.id;
-
-  // Write loading block
-  writer.write({
-    id: "loading-block",
-    type: "data-build-html-block",
-    data: {
-      "build-html-block": {
-        block: loadingBlock,
-      },
-    } as DataPart,
-  });
-
-  // Generate HTML as text
-  const result = streamText({
+const createBuildAgent = (
+  model: LanguageModel,
+  selectionBounds: SelectionBounds | undefined,
+  writer: any, // UIMessageStreamWriter type will be inferred
+  blockId: string
+) => {
+  return new ToolLoopAgent({
+    id: "build-agent",
     model,
-    system: buildPrompt,
-    messages: await convertToModelMessages(messages),
+    instructions: buildPrompt,
     onFinish: async ({ text }) => {
       // When HTML generation is complete, update the block
       if (text && text.trim()) {
@@ -109,22 +66,11 @@ const executeBuildMode = async ({
               updateBlockId: blockId,
               html,
             },
-          } as DataPart,
+          },
         });
       }
     },
-    onError: () => {
-      // Error handling is done via toast notifications in the UI
-    },
   });
-
-  // Stream the text to the UI (this must happen after onFinish is set up)
-  void result.consumeStream();
-  writer.merge(
-    result.toUIMessageStream({
-      sendReasoning: true,
-    })
-  );
 };
 
 export const streamChatResponse = async (
@@ -156,24 +102,56 @@ export const streamChatResponse = async (
       originalMessages: messages,
       execute: async ({ writer }) => {
         switch (mode) {
-          case "build":
-            await executeBuildMode({
-              writer,
-              messages: messages as BuildModeChatUIMessage[],
-              selectionBounds,
-              model,
-              gatewayApiKey,
+          case "build": {
+            // Create loading block immediately for build mode
+            const loadingBlock = createLoadingBlock(selectionBounds);
+            const blockId = loadingBlock.id;
+
+            writer.write({
+              id: "loading-block",
+              type: "data-build-html-block",
+              data: {
+                // @ts-expect-error - This is a valid data part
+                "build-html-block": {
+                  block: loadingBlock,
+                },
+              },
             });
+
+            // Create and stream the build agent
+            const agent = createBuildAgent(model, selectionBounds, writer, blockId);
+            const result = await agent.stream({
+              prompt: await convertToModelMessages(
+                messages as BuildModeChatUIMessage[]
+              ),
+            });
+
+            void result.consumeStream();
+            writer.merge(
+              result.toUIMessageStream({
+                sendReasoning: true,
+              })
+            );
             break;
+          }
           case "generate":
-          default:
-            await executeGenerateMode({
-              writer,
-              messages: messages as GenerateModeChatUIMessage[],
-              model,
-              gatewayApiKey,
+          default: {
+            // Create and stream the generate agent
+            const agent = createGenerateAgent(model, gatewayApiKey, writer);
+            const result = await agent.stream({
+              prompt: await convertToModelMessages(
+                messages as GenerateModeChatUIMessage[]
+              ),
             });
+
+            void result.consumeStream();
+            writer.merge(
+              result.toUIMessageStream({
+                sendReasoning: true,
+              })
+            );
             break;
+          }
         }
       },
     }),
