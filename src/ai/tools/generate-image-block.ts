@@ -139,12 +139,11 @@ export const generateImageBlock = ({ writer, gatewayApiKey }: Params) =>
         id: toolCallId,
         type: "data-generate-image-block",
         data: {
-          // @ts-expect-error - This is a valid data part
           "generate-image-block": {
             block: blockWithId,
             status: "done",
           },
-        },
+        } satisfies import("../messages/data-parts").DataPart,
       });
 
       return `Successfully generated image block "${block.label}" with ID ${blockWithId.id} using AI image generation.`;

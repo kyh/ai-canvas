@@ -88,12 +88,11 @@ export const generateTextBlock = ({ writer }: Params) =>
         id: toolCallId,
         type: "data-generate-text-block",
         data: {
-          // @ts-expect-error - This is a valid data part
           "generate-text-block": {
             block: blockWithId,
             status: "done",
           },
-        },
+        } satisfies import("../messages/data-parts").DataPart,
       });
 
       return `Successfully generated text block "${block.label}" with ID ${blockWithId.id}.`;
