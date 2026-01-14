@@ -47,9 +47,6 @@ export const createBuildAgent = (
         });
       }
     },
-    onError: () => {
-      // Error handling is done via toast notifications in the UI
-    },
   });
 };
 

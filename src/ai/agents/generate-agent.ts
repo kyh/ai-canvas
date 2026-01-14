@@ -26,9 +26,6 @@ export const createGenerateAgent = (
     tools: generateTools({ writer, gatewayApiKey }),
     toolChoice: "required",
     stopWhen: stepCountIs(5),
-    onError: () => {
-      // Error handling is done via toast notifications in the UI
-    },
   });
 };
 
