@@ -108,12 +108,11 @@ export const generateFrameBlock = ({ writer }: Params) =>
         id: toolCallId,
         type: "data-generate-frame-block",
         data: {
-          // @ts-expect-error - This is a valid data part
           "generate-frame-block": {
             block: blockWithId,
             status: "done",
           },
-        },
+        } satisfies import("../messages/data-parts").DataPart,
       });
 
       return `Successfully generated frame block "${block.label}" with ID ${blockWithId.id}.`;

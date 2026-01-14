@@ -57,7 +57,7 @@ export const streamChatResponse = async (
                 "build-html-block": {
                   block: loadingBlock,
                 },
-              },
+              } satisfies DataPart,
             });
 
             // Create and stream the build agent

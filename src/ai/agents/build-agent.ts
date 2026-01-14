@@ -43,7 +43,7 @@ export const createBuildAgent = (
               updateBlockId: blockId,
               html,
             },
-          },
+          } satisfies import("../messages/data-parts").DataPart,
         });
       }
     },
