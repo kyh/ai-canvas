@@ -1,6 +1,6 @@
 # AI Canvas Template
 
-<img width="2400" height="1260" alt="CleanShot 2025-11-14 at 09 12 17@2x" src="https://github.com/user-attachments/assets/17abde19-05d3-45b9-8758-d2727b840548" />
+<img width="2400" height="1260" alt="AI Canvas" src="https://github.com/user-attachments/assets/17abde19-05d3-45b9-8758-d2727b840548" />
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkyh%2Fai-canvas)
 
