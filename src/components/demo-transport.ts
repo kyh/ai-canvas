@@ -53,7 +53,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_95017036",
       data: {
-        "generate-frame-block": {
           block: {
             id: "97a14f2f-52c4-4085-a111-d61712ebcfda",
             type: "frame",
@@ -69,9 +68,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#87CEEB",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -124,7 +121,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_25310002",
       data: {
-        "generate-frame-block": {
           block: {
             id: "e6008550-a709-486e-a691-9d2f3c39b730",
             type: "frame",
@@ -140,9 +136,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -284,7 +278,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_92343095",
       data: {
-        "generate-frame-block": {
           block: {
             id: "1630b292-8fc1-4067-9c78-09589ed01a3d",
             type: "frame",
@@ -300,9 +293,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -444,7 +435,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_96486827",
       data: {
-        "generate-frame-block": {
           block: {
             id: "2443c4b5-a22d-476e-8da6-1f3143170b84",
             type: "frame",
@@ -460,9 +450,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -702,7 +690,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_35743726",
       data: {
-        "generate-frame-block": {
           block: {
             id: "78d07737-78f3-4b2a-976c-4531c40dad0e",
             type: "frame",
@@ -718,9 +705,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -862,7 +847,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_82885072",
       data: {
-        "generate-frame-block": {
           block: {
             id: "01b0fc5f-0204-44d5-9fc9-89c47c4d5a6d",
             type: "frame",
@@ -878,9 +862,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -1022,7 +1004,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_67677292",
       data: {
-        "generate-frame-block": {
           block: {
             id: "521ce3cb-d8db-4098-99c2-1a79cb053808",
             type: "frame",
@@ -1038,9 +1019,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#90EE90",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -1093,7 +1072,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_18067922",
       data: {
-        "generate-frame-block": {
           block: {
             id: "f76280b1-1058-4e49-8e5f-4914f9a3f390",
             type: "frame",
@@ -1109,9 +1087,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -1253,7 +1229,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_38968303",
       data: {
-        "generate-frame-block": {
           block: {
             id: "3e165fce-d0bf-4f6c-903d-594e5a038978",
             type: "frame",
@@ -1269,9 +1244,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {
@@ -1413,7 +1386,6 @@ export const transport = new StaticChatTransport({
       type: "data-generate-frame-block",
       id: "call_69577797",
       data: {
-        "generate-frame-block": {
           block: {
             id: "432e74c5-f900-44ec-a473-effda7fd3297",
             type: "frame",
@@ -1429,9 +1401,7 @@ export const transport = new StaticChatTransport({
             opacity: 100,
             background: "#8B4513",
           },
-          status: "done",
-        },
-      },
+          status: "done", },
     };
 
     yield {

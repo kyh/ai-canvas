@@ -1,9 +1,7 @@
-import type { UIMessage, UIMessageStreamWriter } from "ai";
 import { tool } from "ai";
 import { textBlockSchemaWithoutId } from "@/lib/schema";
 import { createBlockWithId } from "./utils";
-
-import type { DataPart } from "../messages/data-parts";
+import type { CanvasStreamWriter } from "../messages/types";
 
 const description = `Use this tool to generate a text block on the canvas. Text blocks are versatile elements that can be used for headings, paragraphs, labels, captions, body text, and even decorative text elements.
 
@@ -73,9 +71,7 @@ Assistant: I'll create a text label positioned next to the button.
 
 Use Generate Text Block to add any text content to the canvas. It's essential for creating typography, labels, headings, and text-based design elements.`;
 
-type Params = {
-  writer: UIMessageStreamWriter<UIMessage<never, DataPart>>;
-};
+type Params = { writer: CanvasStreamWriter };
 
 export const generateTextBlock = ({ writer }: Params) =>
   tool({
@@ -88,11 +84,8 @@ export const generateTextBlock = ({ writer }: Params) =>
         id: toolCallId,
         type: "data-generate-text-block",
         data: {
-          // @ts-expect-error - This is a valid data part
-          "generate-text-block": {
-            block: blockWithId,
-            status: "done",
-          },
+          block: blockWithId,
+          status: "done",
         },
       });
 

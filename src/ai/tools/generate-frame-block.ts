@@ -1,9 +1,7 @@
-import type { UIMessage, UIMessageStreamWriter } from "ai";
 import { tool } from "ai";
 import { frameBlockSchemaWithoutId } from "@/lib/schema";
 import { createBlockWithId } from "./utils";
-
-import type { DataPart } from "../messages/data-parts";
+import type { CanvasStreamWriter } from "../messages/types";
 
 const description = `Use this tool to generate a frame block on the canvas. Frame blocks are your primary drawing tool! They can be used creatively to draw shapes, objects, and decorative elements by leveraging their styling properties.
 
@@ -93,9 +91,7 @@ Assistant: I'll create a house by combining multiple frame blocks - a rectangle 
 
 Generate Frame Block is your primary drawing tool. Use it creatively to draw any shape, object, or decorative element on the canvas by combining multiple frames with different properties.`;
 
-type Params = {
-  writer: UIMessageStreamWriter<UIMessage<never, DataPart>>;
-};
+type Params = { writer: CanvasStreamWriter };
 
 export const generateFrameBlock = ({ writer }: Params) =>
   tool({
@@ -108,11 +104,8 @@ export const generateFrameBlock = ({ writer }: Params) =>
         id: toolCallId,
         type: "data-generate-frame-block",
         data: {
-          // @ts-expect-error - This is a valid data part
-          "generate-frame-block": {
-            block: blockWithId,
-            status: "done",
-          },
+          block: blockWithId,
+          status: "done",
         },
       });
 
