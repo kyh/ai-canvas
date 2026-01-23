@@ -1,150 +1,100 @@
-# AI Canvas Template
+# AI Canvas
 
 <img width="2400" height="1260" alt="AI Canvas" src="https://github.com/user-attachments/assets/17abde19-05d3-45b9-8758-d2727b840548" />
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkyh%2Fai-canvas)
 
-This Next.js-based template provides the foundation for creating an interactive canvas application with AI-powered design generation and prototype generation. Build your own Canva, Figma, or tldraw alternative.
+A forkable Next.js template featuring a design canvas UI with AI integration. Build your own Canva, Figma, or tldraw alternative.
 
-## 🎨 Features
+## Features
 
-### Core Canvas Functionality
-- **Interactive Canvas Editor** - Full-featured canvas with zoom, pan, and multi-select
-- **Block System** - Support for text, frame, and image blocks
-- **Layer Management** - Organize and manipulate design elements
-- **Transform Controls** - Resize, rotate, and position elements with precision
-- **Hotkey Support** - Keyboard shortcuts for efficient editing
+**Canvas**
+- Interactive editor with zoom, pan, multi-select
+- Text, frame, and image blocks
+- Layer management, transform controls, hotkeys
 
-### Design Controls
-- **Text Styling** - Font selection, size, color, alignment, spacing, and decoration
-- **Frame Styling** - Colors, borders, shadows, opacity, border radius, and rotation
-- **Color Picker** - Advanced color selection with opacity support
-- **Layout Controls** - Positioning, sizing, and alignment tools
+**Styling**
+- Text: font, size, color, alignment, spacing, decoration
+- Frames: colors, borders, shadows, opacity, radius, rotation
+- Advanced color picker with opacity
 
-### AI Integration
-- **AI-Powered Design Generation** - Generate text, frames, and images using AI
-- **Visual Context Awareness** - AI understands current canvas state
-- **Build Mode** - Convert canvas designs into interactive HTML/CSS/JS code
+**AI**
+- Generate text, frames, and images
+- Visual context awareness
+- Build mode: convert designs to HTML/CSS/JS
 
-### Developer Experience
-- **TypeScript** - Fully typed for better development experience
-- **Modern Stack** - Next.js 16, React 19, Konva for canvas rendering
-- **State Management** - Zustand for efficient state handling
-- **UI Components** - Radix UI primitives with custom styling (shadcn/ui)
-- **Theme Support** - Dark/light mode with theme provider
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- pnpm (recommended) or npm/yarn/bun
-
-### Installation
-
-1. **Fork or clone this repository**
+## Quick Start
 
 ```bash
+# Clone
 git clone https://github.com/kyh/ai-canvas.git
 cd ai-canvas
-```
 
-2. **Install dependencies**
-
-```bash
+# Install
 pnpm install
-```
 
-3. **Run the development server**
-
-```bash
+# Run
 pnpm dev
 ```
 
-4. **Open your browser**
+Open [http://localhost:3000](http://localhost:3000)
 
-Navigate to [http://localhost:3000](http://localhost:3000) to see the canvas editor.
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
-├── ai/                    # AI integration and prompts
-│   ├── messages/          # Message types and metadata
-│   ├── response/          # AI response handling
-│   └── tools/             # AI tools for generating blocks
-├── app/                   # Next.js app directory
-│   ├── api/               # API routes
-│   └── page.tsx           # Main page
+├── ai/              # AI integration, prompts, tools
+├── app/             # Next.js app dir, API routes
 ├── components/
-│   ├── canvas/            # Canvas editor components
-│   │   ├── controls/      # Property controls
-│   │   ├── hooks/         # Canvas-specific hooks
-│   │   ├── services/      # Export, fonts, templates
-│   │   ├── utils/         # Canvas utilities
-│   │   └── views/         # Main editor views
-│   └── ui/                # Reusable UI components (shadcn/ui)
-├── data/                  # Template data
-├── hooks/                 # Shared React hooks
-└── lib/                   # Utilities and types
+│   ├── canvas/      # Editor: controls/, hooks/, services/, utils/, views/
+│   └── ui/          # shadcn/ui components
+├── data/            # Templates
+├── hooks/           # Shared hooks
+└── lib/             # Utils, types
 ```
 
-## 🛠️ Customization
+## Customization
 
-### Adding New Block Types
-
-1. Define the block type in `src/lib/types.ts`
-2. Create a generator tool in `src/ai/tools/`
-3. Add rendering logic in the canvas component
+**Add block types**
+1. Define type in `src/lib/types.ts`
+2. Create generator in `src/ai/tools/`
+3. Add rendering logic in canvas
 4. Create controls in `src/components/canvas/controls/`
 
-### Customizing AI Behavior
+**Customize AI**
+- Prompts: `src/ai/response/`
+- Tools: `src/ai/tools/`
 
-- Modify prompts in `src/ai/response/`
-- Adjust tool definitions in `src/ai/tools/`
-- Update message handling in `src/ai/messages/`
+**Theming**
+- Colors: `src/app/globals.css`
+- Components follow shadcn/ui patterns
 
-### Styling and Theming
+## Tech Stack
 
-- Customize colors in `src/app/globals.css`
-- Modify component styles in respective component files (components follow shadcn/ui patterns)
-- Adjust theme settings in `src/components/theme-provider.tsx`
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Konva (canvas)
+- Zustand (state)
+- Radix UI + shadcn/ui
+- Tailwind CSS 4
+- Vercel AI SDK
 
-## 🎯 Use Cases
+## Use Cases
 
-This template is perfect for building:
+- Design tools (Canva/Figma alternative)
+- Prototyping apps
+- Diagram editors
+- Presentation builders
+- Whiteboard apps
 
-- **Design Tools** - Create your own Canva or Figma alternative
-- **Prototyping Tools** - Build interactive prototyping applications
-- **Diagram Editors** - Create flowcharts, mind maps, or diagrams
-- **Presentation Builders** - Design slide or presentation creators
-- **Whiteboard Apps** - Collaborative drawing and brainstorming tools
-- **Custom Editors** - Any application requiring a canvas-based interface
+## Resources
 
-## 🧩 Key Technologies
-
-- **Next.js 16** - React framework with App Router
-- **React 19** - UI library
-- **Konva** - 2D canvas library for rendering
-- **Zustand** - Lightweight state management
-- **shadcn/ui** - Beautiful component library built on Radix UI
-- **Radix UI** - Accessible component primitives
-- **Tailwind CSS** - Utility-first styling
-- **TypeScript** - Type safety
-- **Vercel AI SDK** - AI integration
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
-## 🔗 Resources
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Konva Documentation](https://konvajs.org/docs/)
-- [shadcn/ui Documentation](https://ui.shadcn.com/)
-- [Radix UI Documentation](https://www.radix-ui.com/docs)
+- [Next.js](https://nextjs.org/docs)
+- [Konva](https://konvajs.org/docs/)
+- [shadcn/ui](https://ui.shadcn.com/)
 - [Vercel AI SDK](https://sdk.vercel.ai/docs)
 
----
+## License
 
-**Happy building!** 🎨 Fork this template and create your own canvas-based design tool.
+MIT

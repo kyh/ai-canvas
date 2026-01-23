@@ -1,6 +1,22 @@
 {
   "name": "ai-canvas",
   "version": "0.1.0",
+  "description": "Forkable Next.js template featuring a design canvas UI with AI integration",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kyh/ai-canvas"
+  },
+  "keywords": [
+    "nextjs",
+    "react",
+    "canvas",
+    "ai",
+    "design",
+    "konva",
+    "template"
+  ],
+  "author": "kyh",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",
