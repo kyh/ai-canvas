@@ -1,4 +1,4 @@
-import type { ImageModel, UIMessage, UIMessageStreamWriter } from "ai";
+import type { ImageModel } from "ai";
 import {
   createGateway,
   experimental_generateImage as generateImage,
@@ -6,8 +6,7 @@ import {
 } from "ai";
 import { imageBlockSchemaWithoutId } from "@/lib/schema";
 import { createBlockWithId } from "./utils";
-
-import type { DataPart } from "../messages/data-parts";
+import type { CanvasStreamWriter } from "../messages/types";
 
 const description = `Use this tool to generate an image block on the canvas. Image blocks always use AI-generated images via DALL-E 3 and can be styled with various properties for positioning and sizing.
 
@@ -84,10 +83,7 @@ Assistant: I'll generate a product photo image for you.
 
 Use Generate Image Block to add AI-generated images to the canvas. This tool ALWAYS generates images using DALL-E 3 based on the provided prompt (or label if no prompt is given). Never use placeholder images - all images are generated using AI.`;
 
-type Params = {
-  writer: UIMessageStreamWriter<UIMessage<never, DataPart>>;
-  gatewayApiKey?: string;
-};
+type Params = { writer: CanvasStreamWriter; gatewayApiKey?: string };
 
 export const generateImageBlock = ({ writer, gatewayApiKey }: Params) =>
   tool({
@@ -139,11 +135,9 @@ export const generateImageBlock = ({ writer, gatewayApiKey }: Params) =>
         id: toolCallId,
         type: "data-generate-image-block",
         data: {
-          "generate-image-block": {
-            block: blockWithId,
-            status: "done",
-          },
-        } satisfies import("../messages/data-parts").DataPart,
+          block: blockWithId,
+          status: "done",
+        },
       });
 
       return `Successfully generated image block "${block.label}" with ID ${blockWithId.id} using AI image generation.`;

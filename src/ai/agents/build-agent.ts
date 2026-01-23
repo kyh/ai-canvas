@@ -1,9 +1,6 @@
-import {
-  ToolLoopAgent,
-  type LanguageModel,
-} from "ai";
+import { ToolLoopAgent, type LanguageModel } from "ai";
 
-import type { BuildModeChatUIMessage } from "../messages/types";
+import type { CanvasStreamWriter } from "../messages/types";
 import type { SelectionBounds } from "@/lib/types";
 import buildPrompt from "../response/stream-chat-response-build-prompt";
 
@@ -11,14 +8,19 @@ import buildPrompt from "../response/stream-chat-response-build-prompt";
  * Creates an agent for building HTML from design blocks.
  * This agent converts visual designs into HTML code.
  */
-export const createBuildAgent = (
-  model: LanguageModel,
-  selectionBounds: SelectionBounds | undefined,
-  writer: Parameters<
-    Parameters<typeof import("ai").createUIMessageStream>[0]["execute"]
-  >[0]["writer"],
-  blockId: string
-) => {
+type Params = {
+  model: LanguageModel;
+  selectionBounds?: SelectionBounds;
+  writer: CanvasStreamWriter;
+  blockId: string;
+};
+
+export const createBuildAgent = ({
+  model,
+  selectionBounds,
+  writer,
+  blockId,
+}: Params) => {
   return new ToolLoopAgent({
     id: "build-agent",
     model,
@@ -39,11 +41,9 @@ export const createBuildAgent = (
           id: "update-block",
           type: "data-update-html-block",
           data: {
-            "update-html-block": {
-              updateBlockId: blockId,
-              html,
-            },
-          } satisfies import("../messages/data-parts").DataPart,
+            updateBlockId: blockId,
+            html,
+          },
         });
       }
     },

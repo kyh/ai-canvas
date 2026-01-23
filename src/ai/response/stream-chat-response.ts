@@ -41,7 +41,7 @@ export const streamChatResponse = async (
   });
 
   return createUIMessageStreamResponse({
-    stream: createUIMessageStream({
+    stream: createUIMessageStream<BuildModeChatUIMessage>({
       originalMessages: messages,
       execute: async ({ writer }) => {
         switch (mode) {
@@ -53,15 +53,16 @@ export const streamChatResponse = async (
             writer.write({
               id: "loading-block",
               type: "data-build-html-block",
-              data: {
-                "build-html-block": {
-                  block: loadingBlock,
-                },
-              } satisfies DataPart,
+              data: { block: loadingBlock },
             });
 
             // Create and stream the build agent
-            const agent = createBuildAgent(model, selectionBounds, writer, blockId);
+            const agent = createBuildAgent({
+              model,
+              selectionBounds,
+              writer,
+              blockId,
+            });
             const result = await agent.stream({
               prompt: await convertToModelMessages(
                 messages as BuildModeChatUIMessage[]
@@ -79,7 +80,7 @@ export const streamChatResponse = async (
           case "generate":
           default: {
             // Create and stream the generate agent
-            const agent = createGenerateAgent(model, gatewayApiKey, writer);
+            const agent = createGenerateAgent({ model, gatewayApiKey, writer });
             const result = await agent.stream({
               prompt: await convertToModelMessages(
                 messages as GenerateModeChatUIMessage[]

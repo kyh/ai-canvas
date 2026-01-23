@@ -117,27 +117,31 @@ function EditorBottomToolbar() {
     },
     onData: (dataPart) => {
       try {
-        const data = dataPart.data as DataPart;
+        // Extract data part type from dataPart.type (strip "data-" prefix)
+        const dataPartType = dataPart.type.replace(
+          /^data-/,
+          ""
+        ) as keyof DataPart;
+        const data = dataPart.data as DataPart[typeof dataPartType];
 
-        // Find which data part type exists
-        const dataPartType = (Object.keys(data) as Array<keyof DataPart>).find(
-          (key) => data[key] !== undefined
-        );
-
-        if (!dataPartType) return;
+        if (!data) return;
 
         switch (dataPartType) {
           case "generate-text-block":
           case "generate-frame-block":
           case "generate-image-block":
           case "build-html-block": {
-            const block = blockSchema.parse(data[dataPartType]!.block);
+            const typedData = data as NonNullable<
+              DataPart["generate-text-block"]
+            >;
+            const block = blockSchema.parse(typedData.block);
             addBlock(block);
             break;
           }
 
           case "update-html-block": {
-            const { updateBlockId, ...updates } = data[dataPartType]!;
+            const typedData = data as NonNullable<DataPart["update-html-block"]>;
+            const { updateBlockId, ...updates } = typedData;
             updateBlockValues(updateBlockId, updates);
             break;
           }

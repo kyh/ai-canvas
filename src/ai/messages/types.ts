@@ -1,4 +1,4 @@
-import type { UIMessage } from "ai";
+import type { UIMessage, UIMessageStreamWriter } from "ai";
 
 import type { GenerateToolSet } from "../tools";
 import type { DataPart } from "./data-parts";
@@ -10,4 +10,9 @@ export type GenerateModeChatUIMessage = UIMessage<
   Metadata,
   DataPart,
   GenerateToolSet
+>;
+
+/** Typed writer for streaming data parts to the UI */
+export type CanvasStreamWriter = UIMessageStreamWriter<
+  UIMessage<Metadata, DataPart>
 >;
