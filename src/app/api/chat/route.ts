@@ -16,9 +16,12 @@ export async function POST(request: Request) {
   const bodyData = (await request.json()) as BodyData;
   const { messages, gatewayApiKey, selectionBounds } = bodyData;
 
-  if (!gatewayApiKey) {
+  const isLocal = process.env.NODE_ENV === "development";
+  const apiKey = gatewayApiKey ?? (isLocal ? process.env.AI_GATEWAY_API_KEY : undefined);
+
+  if (!apiKey) {
     return new Response("Gateway API key is required", { status: 400 });
   }
 
-  return streamChatResponse(messages, gatewayApiKey, selectionBounds);
+  return streamChatResponse(messages, apiKey, selectionBounds);
 }

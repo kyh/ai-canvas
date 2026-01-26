@@ -91,6 +91,11 @@ function EditorBottomToolbar() {
     ""
   );
 
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
+
   const { sendMessage, status } = useChat<
     BuildModeChatUIMessage | GenerateModeChatUIMessage
   >({
@@ -105,13 +110,13 @@ function EditorBottomToolbar() {
         errorMessage.includes("401") ||
         errorMessage.includes("403");
 
-      if (isAuthError) {
+      if (isAuthError && !isLocalhost) {
         removeApiKey();
         toast.error(
           "Invalid API key. Please enter a valid Vercel Gateway API key."
         );
         setShowApiKeyModal(true);
-      } else {
+      } else if (!isAuthError) {
         toast.error(error.message || "Failed to generate block");
       }
     },
@@ -256,7 +261,7 @@ function EditorBottomToolbar() {
   };
 
   const handleTextareaFocus = () => {
-    if (!apiKey) {
+    if (!apiKey && !isLocalhost) {
       setShowApiKeyModal(true);
     }
   };
