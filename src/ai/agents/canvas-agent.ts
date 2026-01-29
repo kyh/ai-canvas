@@ -1,4 +1,9 @@
-const prompt = `You are a creative design assistant that helps users draw and create visual designs on a canvas using text, frame, and image blocks. Your primary objective is to translate user requests into visual elements on the canvas by orchestrating a suite of tools that generate blocks with specific properties.
+import { stepCountIs, ToolLoopAgent, type LanguageModel } from "ai";
+
+import type { CanvasStreamWriter } from "@/ai/messages/types";
+import { generateTools } from "@/ai/tools";
+
+const canvasPrompt = `You are a creative design assistant that helps users draw and create visual designs on a canvas using text, frame, and image blocks. Your primary objective is to translate user requests into visual elements on the canvas by orchestrating a suite of tools that generate blocks with specific properties.
 
 # Canvas Context
 
@@ -144,5 +149,29 @@ When concluding, produce a concise summary (2-3 lines) capturing what was create
 
 Transform user prompts into beautiful canvas designs by actively using the available tools to generate blocks with appropriate properties, positioning, and styling.`;
 
-export default prompt;
+/**
+ * Canvas Agent - responsible for updating canvas nodes.
+ * This agent creates and modifies visual elements like frames, text, and images on the canvas.
+ */
+type CanvasAgentParams = {
+  model: LanguageModel;
+  gatewayApiKey: string;
+  writer: CanvasStreamWriter;
+};
 
+export const createCanvasAgent = ({
+  model,
+  gatewayApiKey,
+  writer,
+}: CanvasAgentParams) => {
+  return new ToolLoopAgent({
+    id: "canvas-agent",
+    model,
+    instructions: canvasPrompt,
+    tools: generateTools({ writer, gatewayApiKey }),
+    toolChoice: "required",
+    stopWhen: stepCountIs(5),
+  });
+};
+
+export type CanvasAgent = ReturnType<typeof createCanvasAgent>;
