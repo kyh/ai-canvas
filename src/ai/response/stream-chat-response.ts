@@ -11,7 +11,7 @@ import type {
 } from "../messages/types";
 import type { SelectionBounds } from "@/lib/types";
 import { createLoadingBlock } from "../tools/build-html-block";
-import { createCanvasAgent, createBuilderAgent, detectAgent } from "@/agents";
+import { createCanvasAgent, createBuilderAgent, detectAgent } from "../agents";
 
 export const streamChatResponse = async (
   messages: BuildModeChatUIMessage[] | GenerateModeChatUIMessage[],
