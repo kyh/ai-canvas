@@ -1,30 +1,30 @@
 import { ToolLoopAgent, type LanguageModel } from "ai";
 
-import type { CanvasStreamWriter } from "../messages/types";
+import type { CanvasStreamWriter } from "@/ai/messages/types";
 import type { SelectionBounds } from "@/lib/types";
-import buildPrompt from "../response/stream-chat-response-build-prompt";
+import builderPrompt from "./prompts/builder-prompt";
 
 /**
- * Creates an agent for building HTML from design blocks.
- * This agent converts visual designs into HTML code.
+ * Builder Agent - responsible for converting selected nodes to HTML.
+ * This agent analyzes canvas designs and generates interactive HTML/CSS/JS code.
  */
-type Params = {
+type BuilderAgentParams = {
   model: LanguageModel;
   selectionBounds?: SelectionBounds;
   writer: CanvasStreamWriter;
   blockId: string;
 };
 
-export const createBuildAgent = ({
+export const createBuilderAgent = ({
   model,
   selectionBounds,
   writer,
   blockId,
-}: Params) => {
+}: BuilderAgentParams) => {
   return new ToolLoopAgent({
-    id: "build-agent",
+    id: "builder-agent",
     model,
-    instructions: buildPrompt,
+    instructions: builderPrompt,
     onFinish: async ({ text }) => {
       // When HTML generation is complete, update the block
       if (text && text.trim()) {
@@ -50,4 +50,4 @@ export const createBuildAgent = ({
   });
 };
 
-export type BuildAgent = ReturnType<typeof createBuildAgent>;
+export type BuilderAgent = ReturnType<typeof createBuilderAgent>;

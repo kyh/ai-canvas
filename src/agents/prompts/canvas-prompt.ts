@@ -145,4 +145,3 @@ When concluding, produce a concise summary (2-3 lines) capturing what was create
 Transform user prompts into beautiful canvas designs by actively using the available tools to generate blocks with appropriate properties, positioning, and styling.`;
 
 export default prompt;
-
