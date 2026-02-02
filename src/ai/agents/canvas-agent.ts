@@ -1,177 +1,289 @@
-import { stepCountIs, ToolLoopAgent, type LanguageModel } from "ai";
+import type { ImageModel } from "ai";
+import {
+  createGateway,
+  experimental_generateImage as generateImage,
+  stepCountIs,
+  tool,
+  ToolLoopAgent,
+} from "ai";
 
 import type { CanvasStreamWriter } from "@/ai/messages/types";
-import { generateTools } from "@/ai/tools";
+import { generateId } from "@/lib/id-generator";
+import {
+  frameBlockSchemaWithoutId,
+  imageBlockSchemaWithoutId,
+  templateSchema,
+  textBlockSchemaWithoutId,
+} from "@/lib/schema";
+import type { z } from "zod";
+import canvasPrompt from "./canvas-agent-prompt";
 
-const canvasPrompt = `You are a creative design assistant that helps users draw and create visual designs on a canvas using text, frame, and image blocks. Your primary objective is to translate user requests into visual elements on the canvas by orchestrating a suite of tools that generate blocks with specific properties.
+type WriterParams = { writer: CanvasStreamWriter };
 
-# Canvas Context
+function createBlockWithId<T extends z.ZodTypeAny>(
+  block: unknown,
+  schema: T
+): z.infer<typeof templateSchema.shape.blocks.element> {
+  const validatedBlock = schema.parse(block) as Record<string, unknown>;
+  const blockWithId = {
+    ...validatedBlock,
+    id: generateId(),
+  };
+  return templateSchema.shape.blocks.element.parse(blockWithId);
+}
 
-**IMPORTANT**: With each user message, you will receive an image attachment showing the current state of the canvas. This image shows exactly what is currently on the canvas, including:
-- All existing blocks (text, frame, and image blocks)
-- Their positions, sizes, colors, and styling
-- The canvas background and overall layout
-- The current visual state of the design
+const generateTextBlockDescription = `Use this tool to generate a text block on the canvas. Text blocks are versatile elements that can be used for headings, paragraphs, labels, captions, body text, and even decorative text elements.
 
-**Always analyze this canvas image first** to understand:
-1. What blocks already exist on the canvas
-2. The current layout and positioning
-3. The color scheme and design style
-4. Available space for new elements
-5. How new blocks should relate to existing ones
+## When to Use This Tool
 
-Use this visual context to make informed decisions about:
-- Avoiding duplicate blocks unless explicitly requested
-- Positioning new blocks relative to existing elements
-- Matching the existing design style and color palette
-- Understanding spatial relationships between elements
-- Making modifications that align with the current design
+Use Generate Text Block when:
 
-If you can confidently infer the user's intent from prior context and the canvas image, take proactive steps to create the design elements instead of waiting for confirmation.
+1. The user requests text content on the canvas (headings, paragraphs, labels, etc.)
+2. You need to add typography or text-based design elements
+3. You want to create decorative text elements or text-based graphics
+4. The user asks for labels, captions, or annotations to accompany other elements
 
-CRITICAL RULES TO PREVENT LOOPS:
+## Text Block Properties
 
-1. NEVER regenerate blocks that already exist unless the user explicitly asks for an update or modification.
-2. When creating multiple blocks, think about their relationships and positioning before generating them.
-3. Track every operation you've performed to avoid repeating work or oscillating between the same states.
-4. If a design doesn't look right, understand what needs to be adjusted and modify only the specific blocks that need changes.
-5. When resolving problems, adjust only the blocks or properties that are actually incorrect.
+- **label**: Descriptive name for the block (e.g., "Heading", "Body Text", "Label")
+- **text**: The actual text content to display
+- **x, y**: Position on the canvas (default canvas is 1280x720, center is ~640, 360)
+- **width, height**: Dimensions of the text block
+- **color**: Text color as hex (e.g., "#000000" for black, "#FFFFFF" for white)
+- **fontSize**: Font size in pixels
+- **lineHeight**: Line height multiplier or pixels
+- **letterSpacing**: Letter spacing in pixels
+- **textAlign**: Alignment ("center", "left", "right", "justify")
+- **font**: Font family and weight
+- **textTransform**: Optional text transformation ("inherit", "capitalize", "uppercase", "lowercase")
+- **textDecoration**: Optional decoration ("inherit", "overline", "line-through", "underline")
+- **opacity**: 0-100 (100 = fully opaque)
+- **visible**: true (default)
+- **rotation**: Optional rotation in degrees
+- **background**: Optional background color for the text block
+- **shadow**: Optional shadow for depth
+- **border**: Optional border around the text block
 
-When creating designs, deliver work that is visually polished and well-composed. Favor thoughtful positioning, appropriate sizing, good color choices, and harmonious layouts. Strive for professional presentation alongside creative expression.
+## Best Practices
 
-# Tools Overview
+- Use appropriate font sizes for readability (typically 12-72px for most use cases)
+- Set appropriate line height for readability (1.2-1.6x font size is common)
+- Choose high contrast colors for text readability
+- Position text blocks thoughtfully relative to other canvas elements
+- Use textAlign to control text positioning within the block
+- Consider using background colors or borders to make text stand out`;
 
-You have access to the following tools:
+function createGenerateTextBlockTool({ writer }: WriterParams) {
+  return tool({
+    description: generateTextBlockDescription,
+    inputSchema: textBlockSchemaWithoutId,
+    execute: async (block, { toolCallId }) => {
+      const blockWithId = createBlockWithId(block, textBlockSchemaWithoutId);
 
-1. **Generate Text Block**
+      writer.write({
+        id: toolCallId,
+        type: "data-generate-text-block",
+        data: {
+          block: blockWithId,
+          status: "done",
+        },
+      });
 
-   - Creates text content on the canvas (headings, paragraphs, labels, captions, decorative text)
-   - Use for typography, labels, annotations, and text-based design elements
-   - Supports extensive styling options (font, size, color, alignment, decoration, etc.)
+      return `Successfully generated text block "${block.label}" with ID ${blockWithId.id}.`;
+    },
+  });
+}
 
-2. **Generate Frame Block**
+const generateFrameBlockDescription = `Use this tool to generate a frame block on the canvas. Frame blocks are your primary drawing tool! They can be used creatively to draw shapes, objects, and decorative elements by leveraging their styling properties.
 
-   - Your primary drawing tool! Use this creatively to draw shapes and objects
-   - Can create geometric shapes (circles, squares, rectangles) through clever use of dimensions and radius
-   - Perfect for decorative elements (rounded cards, badges, buttons, backgrounds)
-   - Can combine multiple frames to create complex objects (e.g., faces, animals, objects)
-   - Supports styling with colors, borders, shadows, rotation, and opacity
+## When to Use This Tool
 
-3. **Generate Image Block**
+Use Generate Frame Block when:
 
-   - Adds images to the canvas from URLs
-   - Supports various fit modes and positioning options
+1. You need to draw geometric shapes (circles, squares, rectangles)
+2. You want to create decorative elements (rounded cards, badges, buttons)
+3. You need background elements (colored areas, patterns)
+4. You want to create complex objects by combining multiple frames (e.g., faces, animals, objects)
 
-# Creative Drawing Techniques
+## Creative Drawing Techniques
 
-## Using Frame Blocks
+### Circles
+- Set width and height equal
+- Use radius of 50% (set all corners to width/2 or height/2)
+- Example: width: 100, height: 100, radius: { tl: 50, tr: 50, br: 50, bl: 50 }
 
-- **Circles**: Set width equal to height, use radius of 50% (set all corners to width/2 or height/2)
-- **Squares/Rectangles**: Use width and height as needed for the desired shape
-- **Rounded shapes**: Use the radius property to round corners (0-50% of the smallest dimension)
-- **Organic shapes**: Combine multiple frame blocks with different sizes and positions
-- **Complex objects**: Break them down into simple shapes
-  - Sun = circle with yellow background
-  - Moon = circle with light gray background
-  - House = rectangle for body + rotated frame for roof (triangle effect)
-  - Tree = vertical rectangle for trunk + multiple frames for leaves (circles or rounded rectangles)
-  - Button = rounded rectangle with colored background + text block inside
+### Squares/Rectangles
+- Use width and height as needed for the desired shape
+- Use radius property for rounded corners (0-50% of the smallest dimension)
 
-## Block Properties
+### Rounded Shapes
+- Use the radius property to round corners
+- Set individual corner values (tl, tr, br, bl) for asymmetric rounding
 
-- **label**: Descriptive name (e.g., "Sun", "Title Text", "Background Card", "Button")
+### Complex Objects
+- Break complex objects into simple shapes
+- Combine multiple frame blocks with different sizes, positions, and colors
+- Use rotation for angled elements
+- Use opacity for layering effects
+
+## Frame Block Properties
+
+- **label**: Descriptive name (e.g., "Sun", "Background Card", "Button")
 - **x, y**: Position on 1280x720 canvas (center is ~640, 360)
 - **width, height**: Dimensions (use equal width/height for circles)
 - **visible**: true (default)
 - **opacity**: 0-100 (100 = fully opaque, lower for transparency effects)
-- **background**: Hex color (e.g., "#FFD700" for yellow, "#FF0000" for red, "#FFFFFF" for white)
-- **radius**: Object with tl/tr/br/bl values in pixels. For circles, set all corners (tl, tr, br, bl) to width/2 (or height/2, they should be equal)
+- **background**: Hex color (e.g., "#FFD700" for yellow, "#FF0000" for red)
+- **radius**: Object with tl/tr/br/bl values in pixels. For circles, set all corners to width/2
 - **border**: Optional border with width, color, and dash array
 - **shadow**: Optional shadow for depth (color, offsetX, offsetY, blur, enabled)
 - **rotation**: Optional rotation in degrees
 - **scaleX, scaleY**: Optional scaling factors (default 1)
 
-## Text Block Properties
-
-- **text**: The actual text content to display
-- **color**: Text color as hex (e.g., "#000000" for black, "#FFFFFF" for white)
-- **fontSize**: Font size in pixels (typically 12-72px for most use cases)
-- **lineHeight**: Line height multiplier or pixels (1.2-1.6x font size is common)
-- **letterSpacing**: Letter spacing in pixels
-- **textAlign**: Alignment ("center", "left", "right", "justify")
-- **font**: Font family and weight object { family: string, weight: string }
-- **textTransform**: Optional ("inherit", "capitalize", "uppercase", "lowercase")
-- **textDecoration**: Optional ("inherit", "overline", "line-through", "underline")
-
-## Image Block Properties
-
-- **url**: Image URL (can use placeholder URLs like 'https://via.placeholder.com/400' for now)
-
-# Key Behavior Principles
-
-- 🎨 **Creative Problem Solving**: Break complex requests into simple shapes and elements
-- 🎯 **Thoughtful Positioning**: Position blocks relative to each other and the canvas thoughtfully
-- 🎨 **Color Harmony**: Use appropriate, vibrant colors that work well together
-- 📐 **Proper Sizing**: Size elements appropriately for readability and visual balance
-- 🧠 **Context Awareness**: Maintain awareness of what blocks have been created and their properties
-
-# Important Notes
+## Important Notes
 
 - For circles: width === height, and radius should be 50% (set all corners to width/2)
 - Position blocks thoughtfully, leaving space for other elements
 - Use vibrant, appropriate colors for the objects you're drawing
 - Do not include "id" field - it's auto-generated
-- Think about the user's request creatively - break complex objects into simple shapes
-- Consider using shadows, borders, and opacity for depth and visual interest
-- Use text blocks in combination with frame blocks for complete designs (e.g., buttons with labels)
+- Think creatively - break complex objects into simple shapes`;
 
-# Examples
+function createGenerateFrameBlockTool({ writer }: WriterParams) {
+  return tool({
+    description: generateFrameBlockDescription,
+    inputSchema: frameBlockSchemaWithoutId,
+    execute: async (block, { toolCallId }) => {
+      const blockWithId = createBlockWithId(block, frameBlockSchemaWithoutId);
 
-<example>
-User: Draw a sun and moon in the sky
-Assistant: I'll create a sun and moon using circular frame blocks with appropriate colors.
-*Uses Generate Frame Block twice:*
-1. Sun: width=100, height=100, background="#FFD700", radius: all corners 50, x=400, y=200
-2. Moon: width=80, height=80, background="#E0E0E0", radius: all corners 40, x=800, y=200
-</example>
+      writer.write({
+        id: toolCallId,
+        type: "data-generate-frame-block",
+        data: {
+          block: blockWithId,
+          status: "done",
+        },
+      });
 
-<example>
-User: Create a button with text "Click Me"
-Assistant: I'll create a rounded frame block for the button and a text block for the label.
-*Uses Generate Frame Block and Generate Text Block:*
-1. Button: width=200, height=50, background="#007AFF", radius: all corners 25, x=540, y=335
-2. Text: "Click Me", x=640, y=360, fontSize=16, textAlign="center", color="#FFFFFF"
-</example>
+      return `Successfully generated frame block "${block.label}" with ID ${blockWithId.id}.`;
+    },
+  });
+}
 
-MINIMIZE REASONING: Keep reasoning terse. Before generating blocks, provide at most one short sentence describing the intent. After each tool call, proceed directly without verbose commentary.
+const generateImageBlockDescription = `Use this tool to generate an image block on the canvas. Image blocks always use AI-generated images via DALL-E 3 and can be styled with various properties for positioning and sizing.
 
-When concluding, produce a concise summary (2-3 lines) capturing what was created on the canvas.
+## When to Use This Tool
 
-Transform user prompts into beautiful canvas designs by actively using the available tools to generate blocks with appropriate properties, positioning, and styling.`;
+Use Generate Image Block when:
 
-/**
- * Canvas Agent - responsible for updating canvas nodes.
- * This agent creates and modifies visual elements like frames, text, and images on the canvas.
- */
-type CanvasAgentParams = {
-  model: LanguageModel;
-  gatewayApiKey: string;
+1. The user requests an image to be displayed on the canvas
+2. The user asks for images, illustrations, or graphics
+3. You need to add visual elements like photos, illustrations, or graphics
+4. The user provides a description of an image they want generated
+
+## Image Block Properties
+
+- **label**: Descriptive name for the block (e.g., "Logo", "Photo", "Illustration")
+- **prompt**: Text description for AI image generation (e.g., "a modern logo with blue gradient", "a sunset over mountains"). If not provided, the **label** will be used as the prompt. Always provide detailed, descriptive prompts for best results.
+- **url**: This field is automatically generated from the AI image and should not be set manually
+- **x, y**: Position on the canvas
+- **width, height**: Dimensions of the image block
+- **fit**: How the image fits within the block ("contain", "cover", "fill", "fitWidth", "fitHeight")
+- **position**: Image position within the block ("center", "top", "bottom", "left", "right")
+- **opacity**: 0-100 (100 = fully opaque)
+- **visible**: true (default)
+- **rotation**: Optional rotation in degrees
+- **shadow**: Optional shadow for depth
+- **border**: Optional border around the image
+- **radius**: Optional rounded corners
+
+## Best Practices
+
+- **AI Image Generation**: This tool ALWAYS generates images using DALL-E 3. Provide detailed, descriptive prompts for best results.
+- **Prompt Quality**: The more descriptive and specific your prompt, the better the generated image will match the intended design.
+- **Image Dimensions**: Use appropriate image dimensions for the canvas size (1280x720 default). AI-generated images are 1024x1024.
+- **Fit Mode**: Choose appropriate fit mode based on desired effect:
+  - "contain": Image fits within block, maintains aspect ratio
+  - "cover": Image fills block, may be cropped, maintains aspect ratio
+  - "fill": Image stretches to fill block, may distort`;
+
+function createGenerateImageBlockTool({
+  writer,
+  apiKey,
+}: WriterParams & { apiKey: string }) {
+  return tool({
+    description: generateImageBlockDescription,
+    inputSchema: imageBlockSchemaWithoutId,
+    execute: async (block, { toolCallId }) => {
+      const imagePrompt = block.prompt || block.label;
+
+      let imageUrl: string;
+
+      try {
+        const model = createGateway({ apiKey })(
+          "openai/dall-e-3"
+        ) as unknown as ImageModel;
+
+        const { images } = await generateImage({
+          model,
+          prompt: imagePrompt,
+          n: 1,
+          size: "1024x1024",
+        });
+
+        if (!images || images.length === 0) {
+          throw new Error("No images were generated");
+        }
+
+        const generatedImage = images[0];
+        imageUrl = `data:${generatedImage.mediaType};base64,${generatedImage.base64}`;
+      } catch (error) {
+        console.error(
+          `[CanvasAgent] Failed to generate image for "${block.label}":`,
+          error
+        );
+        throw new Error(
+          `Failed to generate image: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      }
+
+      const blockWithId = createBlockWithId(
+        { ...block, url: imageUrl, prompt: imagePrompt },
+        imageBlockSchemaWithoutId
+      );
+
+      writer.write({
+        id: toolCallId,
+        type: "data-generate-image-block",
+        data: {
+          block: blockWithId,
+          status: "done",
+        },
+      });
+
+      return `Successfully generated image block "${block.label}" with ID ${blockWithId.id} using AI image generation.`;
+    },
+  });
+}
+
+type CreateCanvasAgentParams = {
+  apiKey: string;
   writer: CanvasStreamWriter;
 };
 
-export const createCanvasAgent = ({
-  model,
-  gatewayApiKey,
-  writer,
-}: CanvasAgentParams) => {
+export function createCanvasAgent({ apiKey, writer }: CreateCanvasAgentParams) {
+  const model = createGateway({ apiKey })("openai/gpt-5.1-instant");
+
   return new ToolLoopAgent({
-    id: "canvas-agent",
     model,
     instructions: canvasPrompt,
-    tools: generateTools({ writer, gatewayApiKey }),
+    tools: {
+      generateTextBlock: createGenerateTextBlockTool({ writer }),
+      generateFrameBlock: createGenerateFrameBlockTool({ writer }),
+      generateImageBlock: createGenerateImageBlockTool({ writer, apiKey }),
+    },
     toolChoice: "required",
     stopWhen: stepCountIs(5),
   });
-};
+}
 
 export type CanvasAgent = ReturnType<typeof createCanvasAgent>;

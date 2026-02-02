@@ -1,4 +1,4 @@
-import { convertToModelMessages, generateObject, type LanguageModel } from "ai";
+import { convertToModelMessages, createGateway, generateObject } from "ai";
 import { z } from "zod";
 
 import type {
@@ -46,10 +46,12 @@ Default to "canvas" if the intent is unclear or if the user is asking for genera
  * Routes to either the canvas-agent (for updating canvas nodes) or
  * builder-agent (for converting nodes to HTML).
  */
-export const detectAgent = async (
+export async function detectAgent(
   messages: BuildModeChatUIMessage[] | GenerateModeChatUIMessage[],
-  model: LanguageModel
-): Promise<AgentType> => {
+  apiKey: string
+): Promise<AgentType> {
+  const model = createGateway({ apiKey })("openai/gpt-5.1-instant");
+
   const {
     object: { agent },
   } = await generateObject({
@@ -60,7 +62,7 @@ export const detectAgent = async (
   });
 
   return agent;
-};
+}
 
 /**
  * Route information returned by the router

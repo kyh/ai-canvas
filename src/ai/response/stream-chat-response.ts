@@ -1,6 +1,5 @@
 import {
   convertToModelMessages,
-  createGateway,
   createUIMessageStream,
   createUIMessageStreamResponse,
 } from "ai";
@@ -10,25 +9,16 @@ import type {
   GenerateModeChatUIMessage,
 } from "../messages/types";
 import type { SelectionBounds } from "@/lib/types";
-import { createLoadingBlock } from "../tools/build-html-block";
+import { createBuilderAgent, createLoadingBlock } from "../agents/builder-agent";
 import { createCanvasAgent } from "../agents/canvas-agent";
-import { createBuilderAgent } from "../agents/builder-agent";
 import { detectAgent } from "../agents/router";
 
-export const streamChatResponse = async (
+export async function streamChatResponse(
   messages: BuildModeChatUIMessage[] | GenerateModeChatUIMessage[],
-  gatewayApiKey: string,
+  apiKey: string,
   selectionBounds?: SelectionBounds
-) => {
-  const model = createGateway({
-    apiKey:
-      gatewayApiKey === process.env.SECRET_KEY
-        ? process.env.AI_GATEWAY_API_KEY
-        : gatewayApiKey,
-  })("openai/gpt-5.1-instant");
-
-  // Detect which agent should handle this request
-  const agentType = await detectAgent(messages, model);
+) {
+  const agentType = await detectAgent(messages, apiKey);
 
   return createUIMessageStreamResponse({
     stream: createUIMessageStream<BuildModeChatUIMessage>({
@@ -36,7 +26,6 @@ export const streamChatResponse = async (
       execute: async ({ writer }) => {
         switch (agentType) {
           case "builder": {
-            // Create loading block immediately for builder agent
             const loadingBlock = createLoadingBlock(selectionBounds);
             const blockId = loadingBlock.id;
 
@@ -46,9 +35,8 @@ export const streamChatResponse = async (
               data: { block: loadingBlock },
             });
 
-            // Create and stream the builder agent
             const agent = createBuilderAgent({
-              model,
+              apiKey,
               selectionBounds,
               writer,
               blockId,
@@ -69,8 +57,7 @@ export const streamChatResponse = async (
           }
           case "canvas":
           default: {
-            // Create and stream the canvas agent
-            const agent = createCanvasAgent({ model, gatewayApiKey, writer });
+            const agent = createCanvasAgent({ apiKey, writer });
             const result = await agent.stream({
               prompt: await convertToModelMessages(
                 messages as GenerateModeChatUIMessage[]
@@ -89,4 +76,4 @@ export const streamChatResponse = async (
       },
     }),
   });
-};
+}
