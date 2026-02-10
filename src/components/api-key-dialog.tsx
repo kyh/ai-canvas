@@ -51,8 +51,17 @@ export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
         <DialogHeader>
           <DialogTitle>Enter Vercel Gateway API Key</DialogTitle>
           <DialogDescription>
-            Please enter your Vercel Gateway API key to use AI features. Your
-            key will be stored locally in your browser.
+            Enter your{" "}
+            <a
+              href="https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys%3Futm_source%3Dcanvaskyh.io&title=Get+an+API+Key"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Vercel Gateway API key
+            </a>{" "}
+            to use AI features. Your key will be stored locally in your
+            browser.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 flex flex-col gap-2">
