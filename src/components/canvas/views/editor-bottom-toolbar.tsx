@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { CursorArrowIcon, HandIcon } from "@radix-ui/react-icons";
 import {
   ClipboardCopy,
   Download,
+  Hand as HandIcon,
   ImageDown,
   Loader2,
+  MousePointer2 as CursorArrowIcon,
   Pencil,
   PenTool,
   Redo,
@@ -412,11 +413,13 @@ function EditorBottomToolbar() {
                   <Separator orientation="vertical" className="h-7! my-auto" />
                   <DropdownMenu>
                     <CustomTooltip content="Export">
-                      <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="ghost">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button size="icon" variant="ghost">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
                     </CustomTooltip>
                     <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem

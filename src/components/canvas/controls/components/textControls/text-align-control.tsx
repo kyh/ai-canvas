@@ -1,10 +1,10 @@
 import type { IEditorBlockText, ITextAlign } from "@/lib/schema";
 import {
-  TextAlignLeftIcon,
-  TextAlignCenterIcon,
-  TextAlignRightIcon,
-  TextAlignJustifyIcon,
-} from "@radix-ui/react-icons";
+  AlignLeft as TextAlignLeftIcon,
+  AlignCenter as TextAlignCenterIcon,
+  AlignRight as TextAlignRightIcon,
+  AlignJustify as TextAlignJustifyIcon,
+} from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ControllerRow from "../controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";

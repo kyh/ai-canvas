@@ -1,10 +1,11 @@
 import {
-  BoxIcon,
-  ImageIcon,
-  TextIcon,
-  ArrowRightIcon,
-} from "@radix-ui/react-icons";
-import { Code as CodeIcon, Pencil } from "lucide-react";
+  Box as BoxIcon,
+  Image as ImageIcon,
+  Type as TextIcon,
+  ArrowRight as ArrowRightIcon,
+  Code as CodeIcon,
+  Pencil,
+} from "lucide-react";
 import type { IEditorBlockType } from "@/lib/schema";
 
 export function BlockIcon(type: IEditorBlockType) {

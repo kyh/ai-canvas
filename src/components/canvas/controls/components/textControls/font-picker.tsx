@@ -5,7 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CaretDownIcon, Cross2Icon } from "@radix-ui/react-icons";
+import { ChevronDown as CaretDownIcon, X as Cross2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ControllerRow from "../controller-row";
 import { fontsList, fontWeights } from "./fonts";
@@ -161,16 +161,18 @@ function FontControl({ blockId, block, className }: FontControlProps) {
         contentClassName="justify-between"
       >
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-2 text-xs transition hover:border-primary"
-            >
-              <span className="max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap">
-                {selectedFont?.family ?? resolvedBlock.font.family ?? "Select"}
-              </span>
-              <CaretDownIcon className="h-3 w-3" />
-            </button>
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-2 text-xs transition hover:border-primary"
+              />
+            }
+          >
+            <span className="max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap">
+              {selectedFont?.family ?? resolvedBlock.font.family ?? "Select"}
+            </span>
+            <CaretDownIcon className="h-3 w-3" />
           </PopoverTrigger>
           <PopoverContent align="center" side="left" className="w-[240px]">
             <div className="mb-3 flex items-center justify-between border-b border-border pb-2">

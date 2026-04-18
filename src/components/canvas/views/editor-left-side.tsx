@@ -31,7 +31,19 @@ import { useShallow } from "zustand/react/shallow";
 import { useOrderedBlocks } from "../hooks/use-ordered-blocks";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
+
+function GitHubLogoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.69-3.88-1.54-3.88-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 2.9-.39c.98 0 1.97.13 2.9.39 2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.4-5.26 5.69.41.35.78 1.05.78 2.12v3.14c0 .31.21.67.8.56 4.56-1.52 7.85-5.83 7.85-10.91C23.5 5.73 18.27.5 12 .5z" />
+    </svg>
+  );
+}
 
 interface BlockItemProps extends React.HTMLAttributes<HTMLDivElement> {
   block: IEditorBlocks;
@@ -168,20 +180,19 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="sidebar-item-actions absolute top-1/2 right-3 -translate-y-1/2 z-3 invisible"
-            asChild
-          >
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-foreground/50 transition-all hover:bg-muted hover:text-foreground"
-              onClick={(event) => {
-                event.stopPropagation();
-                handleSelect();
-              }}
-            >
-              <MoreHorizontal className="size-4" />
-            </button>
-          </DropdownMenuTrigger>
+            render={
+              <button
+                type="button"
+                className="sidebar-item-actions absolute top-1/2 right-3 -translate-y-1/2 z-3 invisible rounded-lg p-1.5 text-foreground/50 transition-all hover:bg-muted hover:text-foreground"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleSelect();
+                }}
+              >
+                <MoreHorizontal className="size-4" />
+              </button>
+            }
+          />
           <DropdownMenuContent className="w-52">
             <DropdownMenuItem onClick={() => setEditable(true)}>
               <Pencil className="mr-1 size-4" />
@@ -294,12 +305,17 @@ function EditorLeftSide() {
       </ScrollArea>
       <div className="border-t border-border p-2 flex items-center justify-between gap-2">
         <div>
-          <Button variant="outline" size="icon" asChild>
-            <Link href="https://github.com/kyh/ai-canvas">
-              <span className="sr-only">GitHub</span>
-              <GitHubLogoIcon className="size-5" />
-            </Link>
-          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            nativeButton={false}
+            render={
+              <Link href="https://github.com/kyh/ai-canvas">
+                <span className="sr-only">GitHub</span>
+                <GitHubLogoIcon className="size-5" />
+              </Link>
+            }
+          />
         </div>
         <div className="flex items-center gap-2">
           <ModeToggle />

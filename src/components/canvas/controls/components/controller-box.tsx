@@ -34,10 +34,9 @@ const ControllerBox = React.forwardRef<HTMLDivElement, ControllerBoxProps>(
 
     return (
       <Accordion
-        type="single"
-        collapsible
+        multiple={false}
         className={cn("px-4", className)}
-        defaultValue={defaultOpen ? generatedId : undefined}
+        defaultValue={defaultOpen ? [generatedId] : []}
       >
         <AccordionItem
           ref={ref}

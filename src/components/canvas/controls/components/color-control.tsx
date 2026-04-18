@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Cross2Icon } from "@radix-ui/react-icons";
+import { X as Cross2Icon } from "lucide-react";
 
 import {
   Popover,
@@ -41,11 +41,15 @@ function ColorControl({
     <ControllerRow label={name} className={className}
       contentClassName="justify-between">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            onClick={onClick}
-            className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-1 text-xs transition hover:border-primary"
+        <div className="relative w-full">
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                onClick={onClick}
+                className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-1 pr-7 text-xs transition hover:border-primary"
+              />
+            }
           >
             <div className="flex items-center gap-2">
               <div
@@ -62,17 +66,17 @@ function ColorControl({
                 <p className="opacity-50">Add...</p>
               )}
             </div>
-            {value && (
-              <button
-                type="button"
-                className="-mr-1 rounded p-1 text-foreground/60 transition hover:bg-accent"
-                onClick={handleClear}
-              >
-                <Cross2Icon className="h-3 w-3 opacity-50" />
-              </button>
-            )}
-          </button>
-        </PopoverTrigger>
+          </PopoverTrigger>
+          {value && (
+            <button
+              type="button"
+              className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-foreground/60 transition hover:bg-accent"
+              onClick={handleClear}
+            >
+              <Cross2Icon className="h-3 w-3 opacity-50" />
+            </button>
+          )}
+        </div>
         <PopoverContent
           align="center"
           className="w-[293px]"

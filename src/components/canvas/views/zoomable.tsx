@@ -1,4 +1,4 @@
-import { PlusIcon, MinusIcon } from "@radix-ui/react-icons";
+import { Plus as PlusIcon, Minus as MinusIcon } from "lucide-react";
 import { ButtonGroup } from "@/components/ui/buttons-group";
 import { Button } from "@/components/ui/button";
 import CustomTooltip from "@/components/ui/tooltip";

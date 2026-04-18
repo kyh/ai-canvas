@@ -1,36 +1,35 @@
-import * as React from "react";
+import * as React from "react"
+import { Input as InputPrimitive } from "@base-ui/react/input"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/components/ui/input-group";
+} from "@/components/ui/input-group"
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
-    <input
+    <InputPrimitive
       type={type}
       data-slot="input"
       className={cn(
-        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-7 w-full min-w-0 rounded-md border border-border bg-muted px-1 text-xs transition hover:border-primary outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
         className
       )}
       {...props}
     />
-  );
+  )
 }
 
 interface NumberInputProps {
-  value?: number;
-  onChange?: (value: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  leftChild?: React.ReactNode;
-  className?: string;
+  value?: number
+  onChange?: (value: number) => void
+  min?: number
+  max?: number
+  step?: number
+  leftChild?: React.ReactNode
+  className?: string
 }
 
 function NumberInput({
@@ -43,11 +42,11 @@ function NumberInput({
   className,
 }: NumberInputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const numValue = Number.parseFloat(e.target.value);
+    const numValue = Number.parseFloat(e.target.value)
     if (!Number.isNaN(numValue)) {
-      onChange?.(numValue);
+      onChange?.(numValue)
     }
-  };
+  }
 
   return (
     <InputGroup className={className}>
@@ -61,7 +60,7 @@ function NumberInput({
         step={step}
       />
     </InputGroup>
-  );
+  )
 }
 
-export { Input, NumberInput };
+export { Input, NumberInput }

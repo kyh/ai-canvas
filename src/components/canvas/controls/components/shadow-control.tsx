@@ -5,7 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Cross2Icon } from "@radix-ui/react-icons";
+import { X as Cross2Icon } from "lucide-react";
 import ControllerRow from "./controller-row";
 import ColorControl from "./color-control";
 import { useEditorStore } from "@/components/canvas/use-editor";
@@ -54,11 +54,15 @@ function ShadowControl({ blockId, className }: ShadowControlProps) {
       contentClassName="justify-between"
     >
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            onClick={ensureShadow}
-            className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-1 text-xs transition hover:border-primary"
+        <div className="relative w-full">
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                onClick={ensureShadow}
+                className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-1 pr-7 text-xs transition hover:border-primary"
+              />
+            }
           >
             <span className="flex items-center gap-2">
               <span
@@ -73,17 +77,17 @@ function ShadowControl({ blockId, className }: ShadowControlProps) {
                 <span className="opacity-50">Add…</span>
               )}
             </span>
-            {shadow ? (
-              <button
-                type="button"
-                className="-mr-1 rounded p-1 text-foreground/60 transition hover:bg-accent"
-                onClick={handleClear}
-              >
-                <Cross2Icon className="h-3 w-3" />
-              </button>
-            ) : null}
-          </button>
-        </PopoverTrigger>
+          </PopoverTrigger>
+          {shadow ? (
+            <button
+              type="button"
+              className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-foreground/60 transition hover:bg-accent"
+              onClick={handleClear}
+            >
+              <Cross2Icon className="h-3 w-3" />
+            </button>
+          ) : null}
+        </div>
         <PopoverContent align="center" side="left" className="w-[280px]">
           <div className="mb-4 flex items-center justify-between border-b border-border pb-2">
             <p className="text-xs font-semibold">Shadow</p>
