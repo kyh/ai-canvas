@@ -55,3 +55,5 @@ yarn-error.log*
 
 # claude
 .claude/scheduled_tasks.lock
+.claude/worktrees
+.playwright-mcp
