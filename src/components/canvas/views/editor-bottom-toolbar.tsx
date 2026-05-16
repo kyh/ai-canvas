@@ -16,7 +16,7 @@ import {
   Undo,
 } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { blockSchema } from "@/lib/schema";
 import type {
