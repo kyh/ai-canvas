@@ -28,11 +28,11 @@
     "format:fix": "oxfmt --write"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.185",
-    "@base-ui/react": "^1.4.1",
+    "@ai-sdk/react": "^3.0.193",
+    "@base-ui/react": "^1.5.0",
     "@loremllm/transport": "^0.6.1",
-    "@remotion/google-fonts": "^4.0.462",
-    "ai": "^6.0.183",
+    "@remotion/google-fonts": "^4.0.465",
+    "ai": "^6.0.191",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -53,8 +53,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "oxfmt": "latest",
     "oxlint": "latest",
