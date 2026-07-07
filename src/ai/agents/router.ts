@@ -1,10 +1,8 @@
-import { convertToModelMessages, createGateway, generateObject } from "ai";
+import { convertToModelMessages, generateObject } from "ai";
 import { z } from "zod";
 
-import type {
-  BuildModeChatUIMessage,
-  GenerateModeChatUIMessage,
-} from "@/ai/messages/types";
+import type { BuildModeChatUIMessage } from "@/ai/messages/types";
+import { createModel } from "@/ai/gateway";
 
 /**
  * Agent types that can be routed to
@@ -47,10 +45,10 @@ Default to "canvas" if the intent is unclear or if the user is asking for genera
  * builder-agent (for converting nodes to HTML).
  */
 export async function detectAgent(
-  messages: BuildModeChatUIMessage[] | GenerateModeChatUIMessage[],
-  apiKey: string
+  messages: BuildModeChatUIMessage[],
+  apiKey: string,
 ): Promise<AgentType> {
-  const model = createGateway({ apiKey })("openai/gpt-5.1-instant");
+  const model = createModel(apiKey);
 
   const {
     object: { agent },
@@ -63,10 +61,3 @@ export async function detectAgent(
 
   return agent;
 }
-
-/**
- * Route information returned by the router
- */
-export type RouteResult = {
-  agent: AgentType;
-};

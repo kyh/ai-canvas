@@ -1,5 +1,6 @@
-import { createGateway, stepCountIs, ToolLoopAgent } from "ai";
+import { stepCountIs, ToolLoopAgent } from "ai";
 
+import { createModel } from "@/ai/gateway";
 import type { CanvasStreamWriter } from "@/ai/messages/types";
 import {
   LOADING_HTML_BLOCK_HEIGHT,
@@ -17,13 +18,8 @@ import builderPrompt from "./builder-agent-prompt";
  * Used to show a placeholder while HTML is being generated.
  */
 export function createLoadingBlock(selectionBounds?: SelectionBounds) {
-  const centerPos = getCanvasCenterPosition(
-    LOADING_HTML_BLOCK_WIDTH,
-    LOADING_HTML_BLOCK_HEIGHT
-  );
-  const x = selectionBounds
-    ? selectionBounds.x + selectionBounds.width + 30
-    : centerPos.x;
+  const centerPos = getCanvasCenterPosition(LOADING_HTML_BLOCK_WIDTH, LOADING_HTML_BLOCK_HEIGHT);
+  const x = selectionBounds ? selectionBounds.x + selectionBounds.width + 30 : centerPos.x;
   const y = selectionBounds ? selectionBounds.y : centerPos.y;
 
   const block = {
@@ -53,17 +49,12 @@ export function createLoadingBlock(selectionBounds?: SelectionBounds) {
 
 type CreateBuilderAgentParams = {
   apiKey: string;
-  selectionBounds?: SelectionBounds;
   writer: CanvasStreamWriter;
   blockId: string;
 };
 
-export function createBuilderAgent({
-  apiKey,
-  writer,
-  blockId,
-}: CreateBuilderAgentParams) {
-  const model = createGateway({ apiKey })("openai/gpt-5.1-instant");
+export function createBuilderAgent({ apiKey, writer, blockId }: CreateBuilderAgentParams) {
+  const model = createModel(apiKey);
 
   return new ToolLoopAgent({
     model,

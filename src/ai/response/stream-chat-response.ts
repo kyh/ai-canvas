@@ -1,22 +1,15 @@
-import {
-  convertToModelMessages,
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-} from "ai";
+import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
 
-import type {
-  BuildModeChatUIMessage,
-  GenerateModeChatUIMessage,
-} from "../messages/types";
+import type { BuildModeChatUIMessage } from "../messages/types";
 import type { SelectionBounds } from "@/lib/types";
 import { createBuilderAgent, createLoadingBlock } from "../agents/builder-agent";
 import { createCanvasAgent } from "../agents/canvas-agent";
 import { detectAgent } from "../agents/router";
 
 export async function streamChatResponse(
-  messages: BuildModeChatUIMessage[] | GenerateModeChatUIMessage[],
+  messages: BuildModeChatUIMessage[],
   apiKey: string,
-  selectionBounds?: SelectionBounds
+  selectionBounds?: SelectionBounds,
 ) {
   const agentType = await detectAgent(messages, apiKey);
 
@@ -37,21 +30,18 @@ export async function streamChatResponse(
 
             const agent = createBuilderAgent({
               apiKey,
-              selectionBounds,
               writer,
               blockId,
             });
             const result = await agent.stream({
-              prompt: await convertToModelMessages(
-                messages as BuildModeChatUIMessage[]
-              ),
+              prompt: await convertToModelMessages(messages),
             });
 
             void result.consumeStream();
             writer.merge(
               result.toUIMessageStream({
                 sendReasoning: true,
-              })
+              }),
             );
             break;
           }
@@ -59,16 +49,14 @@ export async function streamChatResponse(
           default: {
             const agent = createCanvasAgent({ apiKey, writer });
             const result = await agent.stream({
-              prompt: await convertToModelMessages(
-                messages as GenerateModeChatUIMessage[]
-              ),
+              prompt: await convertToModelMessages(messages),
             });
 
             void result.consumeStream();
             writer.merge(
               result.toUIMessageStream({
                 sendReasoning: true,
-              })
+              }),
             );
             break;
           }

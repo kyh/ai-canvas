@@ -1,12 +1,6 @@
-import type { ImageModel } from "ai";
-import {
-  createGateway,
-  experimental_generateImage as generateImage,
-  stepCountIs,
-  tool,
-  ToolLoopAgent,
-} from "ai";
+import { experimental_generateImage as generateImage, stepCountIs, tool, ToolLoopAgent } from "ai";
 
+import { createImageModel, createModel } from "@/ai/gateway";
 import type { CanvasStreamWriter } from "@/ai/messages/types";
 import { generateId } from "@/lib/id-generator";
 import {
@@ -20,11 +14,11 @@ import canvasPrompt from "./canvas-agent-prompt";
 
 type WriterParams = { writer: CanvasStreamWriter };
 
-function createBlockWithId<T extends z.ZodTypeAny>(
+function createBlockWithId<T extends Record<string, unknown>>(
   block: unknown,
-  schema: T
+  schema: z.ZodType<T>,
 ): z.infer<typeof templateSchema.shape.blocks.element> {
-  const validatedBlock = schema.parse(block) as Record<string, unknown>;
+  const validatedBlock = schema.parse(block);
   const blockWithId = {
     ...validatedBlock,
     id: generateId(),
@@ -206,10 +200,7 @@ Use Generate Image Block when:
   - "cover": Image fills block, may be cropped, maintains aspect ratio
   - "fill": Image stretches to fill block, may distort`;
 
-function createGenerateImageBlockTool({
-  writer,
-  apiKey,
-}: WriterParams & { apiKey: string }) {
+function createGenerateImageBlockTool({ writer, apiKey }: WriterParams & { apiKey: string }) {
   return tool({
     description: generateImageBlockDescription,
     inputSchema: imageBlockSchemaWithoutId,
@@ -219,9 +210,7 @@ function createGenerateImageBlockTool({
       let imageUrl: string;
 
       try {
-        const model = createGateway({ apiKey })(
-          "openai/dall-e-3"
-        ) as unknown as ImageModel;
+        const model = createImageModel(apiKey);
 
         const { images } = await generateImage({
           model,
@@ -237,18 +226,15 @@ function createGenerateImageBlockTool({
         const generatedImage = images[0];
         imageUrl = `data:${generatedImage.mediaType};base64,${generatedImage.base64}`;
       } catch (error) {
-        console.error(
-          `[CanvasAgent] Failed to generate image for "${block.label}":`,
-          error
-        );
+        console.error(`[CanvasAgent] Failed to generate image for "${block.label}":`, error);
         throw new Error(
-          `Failed to generate image: ${error instanceof Error ? error.message : "Unknown error"}`
+          `Failed to generate image: ${error instanceof Error ? error.message : "Unknown error"}`,
         );
       }
 
       const blockWithId = createBlockWithId(
         { ...block, url: imageUrl, prompt: imagePrompt },
-        imageBlockSchemaWithoutId
+        imageBlockSchemaWithoutId,
       );
 
       writer.write({
@@ -271,7 +257,7 @@ type CreateCanvasAgentParams = {
 };
 
 export function createCanvasAgent({ apiKey, writer }: CreateCanvasAgentParams) {
-  const model = createGateway({ apiKey })("openai/gpt-5.1-instant");
+  const model = createModel(apiKey);
 
   return new ToolLoopAgent({
     model,

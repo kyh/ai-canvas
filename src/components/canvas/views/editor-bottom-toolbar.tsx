@@ -18,12 +18,8 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { blockSchema } from "@/lib/schema";
-import type {
-  BuildModeChatUIMessage,
-  GenerateModeChatUIMessage,
-} from "@/ai/messages/types";
-import type { DataPart } from "@/ai/messages/data-parts";
+import type { BuildModeChatUIMessage, GenerateModeChatUIMessage } from "@/ai/messages/types";
+import { dataPartSchemas } from "@/ai/messages/data-parts";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import CustomTooltip from "@/components/ui/tooltip";
@@ -31,16 +27,10 @@ import { useEditorStore } from "../use-editor";
 import { BlockIcon } from "../utils";
 import { useShallow } from "zustand/react/shallow";
 import { useOrderedBlocks } from "../hooks/use-ordered-blocks";
-import {
-  captureSelectedBlocksAsImage,
-  calculateSelectedBlocksBounds,
-} from "../services/export";
+import { captureSelectedBlocksAsImage, calculateSelectedBlocksBounds } from "../services/export";
 import { EXPORT_PADDING } from "../utils/constants";
 import type { SelectionBounds } from "@/lib/types";
-import {
-  ApiKeyDialog,
-  GATEWAY_API_KEY_STORAGE_KEY,
-} from "../../api-key-dialog";
+import { ApiKeyDialog, GATEWAY_API_KEY_STORAGE_KEY } from "../../api-key-dialog";
 import { transport } from "../../demo-transport";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Separator } from "@/components/ui/separator";
@@ -60,19 +50,15 @@ import {
 function EditorBottomToolbar() {
   const [toolbarMode, setToolbarMode] = React.useState<"design" | "ai">("ai");
   const imageInputRef = React.useRef<HTMLInputElement>(null);
-  const [mode, setMode] = useEditorStore(
-    useShallow((state) => [state.canvas.mode, state.setMode])
-  );
-  const setPendingImageData = useEditorStore(
-    (state) => state.setPendingImageData
-  );
+  const [mode, setMode] = useEditorStore(useShallow((state) => [state.canvas.mode, state.setMode]));
+  const setPendingImageData = useEditorStore((state) => state.setPendingImageData);
   const [handleUndo, handleRedo, undoCount, redoCount] = useEditorStore(
     useShallow((state) => [
       state.handleUndo,
       state.handleRedo,
       state.history.undo.length,
       state.history.redo.length,
-    ])
+    ]),
   );
   const downloadImage = useEditorStore((state) => state.downloadImage);
   const addBlock = useEditorStore((state) => state.addBlock);
@@ -81,25 +67,19 @@ function EditorBottomToolbar() {
   const blocks = useOrderedBlocks();
   const selectedIds = useEditorStore((state) => state.selectedIds);
   const [canvasSize, canvasBackground] = useEditorStore(
-    useShallow((state) => [state.canvas.size, state.canvas.background])
+    useShallow((state) => [state.canvas.size, state.canvas.background]),
   );
 
   // AI Prompt state
   const [input, setInput] = React.useState("");
   const [showApiKeyModal, setShowApiKeyModal] = React.useState(false);
-  const [apiKey, , removeApiKey] = useLocalStorage<string>(
-    GATEWAY_API_KEY_STORAGE_KEY,
-    ""
-  );
+  const [apiKey, , removeApiKey] = useLocalStorage<string>(GATEWAY_API_KEY_STORAGE_KEY, "");
 
   const isLocalhost =
     typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1");
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
-  const { sendMessage, status } = useChat<
-    BuildModeChatUIMessage | GenerateModeChatUIMessage
-  >({
+  const { sendMessage, status } = useChat<BuildModeChatUIMessage | GenerateModeChatUIMessage>({
     id: apiKey,
     transport: apiKey === "demo" ? transport : undefined,
     onError: (error) => {
@@ -113,9 +93,7 @@ function EditorBottomToolbar() {
 
       if (isAuthError && !isLocalhost) {
         removeApiKey();
-        toast.error(
-          "Invalid API key. Please enter a valid Vercel Gateway API key."
-        );
+        toast.error("Invalid API key. Please enter a valid Vercel Gateway API key.");
         setShowApiKeyModal(true);
       } else if (!isAuthError) {
         toast.error(error.message || "Failed to generate block");
@@ -123,39 +101,33 @@ function EditorBottomToolbar() {
     },
     onData: (dataPart) => {
       try {
-        // Extract data part type from dataPart.type (strip "data-" prefix)
-        const dataPartType = dataPart.type.replace(
-          /^data-/,
-          ""
-        ) as keyof DataPart;
-        const data = dataPart.data as DataPart[typeof dataPartType];
-
-        if (!data) return;
-
-        switch (dataPartType) {
-          case "generate-text-block":
-          case "generate-frame-block":
-          case "generate-image-block":
-          case "build-html-block": {
-            const typedData = data as NonNullable<
-              DataPart["generate-text-block"]
-            >;
-            const block = blockSchema.parse(typedData.block);
+        // Each payload is zod-parsed against the schema for its wire type
+        // ("data-" prefix stripped) before any store mutation.
+        switch (dataPart.type) {
+          case "data-generate-text-block":
+          case "data-generate-frame-block":
+          case "data-generate-image-block": {
+            const { block } = dataPartSchemas["generate-text-block"].parse(dataPart.data);
             addBlock(block);
             break;
           }
 
-          case "update-html-block": {
-            const typedData = data as NonNullable<DataPart["update-html-block"]>;
-            const { updateBlockId, ...updates } = typedData;
+          case "data-build-html-block": {
+            const { block } = dataPartSchemas["build-html-block"].parse(dataPart.data);
+            addBlock(block);
+            break;
+          }
+
+          case "data-update-html-block": {
+            const { updateBlockId, ...updates } = dataPartSchemas["update-html-block"].parse(
+              dataPart.data,
+            );
             updateBlockValues(updateBlockId, updates);
             break;
           }
         }
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to process data part"
-        );
+        toast.error(err instanceof Error ? err.message : "Failed to process data part");
       }
     },
   });
@@ -169,7 +141,7 @@ function EditorBottomToolbar() {
         background: canvasBackground,
       },
       null,
-      2
+      2,
     );
 
     if (
@@ -202,18 +174,11 @@ function EditorBottomToolbar() {
 
       try {
         // Always capture canvas image for backend to determine mode
-        const canvasImage = await captureSelectedBlocksAsImage(
-          stage,
-          blocks,
-          selectedIds
-        );
+        const canvasImage = await captureSelectedBlocksAsImage(stage, blocks, selectedIds);
 
         let selectionBounds: SelectionBounds | null = null;
         if (selectedIds.length > 0) {
-          const boundsWithPadding = calculateSelectedBlocksBounds(
-            blocks,
-            selectedIds
-          );
+          const boundsWithPadding = calculateSelectedBlocksBounds(blocks, selectedIds);
           if (boundsWithPadding) {
             selectionBounds = {
               x: boundsWithPadding.x + EXPORT_PADDING,
@@ -232,26 +197,16 @@ function EditorBottomToolbar() {
             }
           : undefined;
 
-        sendMessage(
-          filePart ? { text: input, files: [filePart] } : { text: input },
-          { body: buildRequestBody(selectionBounds) }
-        );
+        sendMessage(filePart ? { text: input, files: [filePart] } : { text: input }, {
+          body: buildRequestBody(selectionBounds),
+        });
         setInput("");
       } catch {
         sendMessage({ text: input }, { body: buildRequestBody() });
         setInput("");
       }
     },
-    [
-      input,
-      isLoading,
-      apiKey,
-      sendMessage,
-      stage,
-      blocks,
-      selectedIds,
-      setInput,
-    ]
+    [input, isLoading, apiKey, sendMessage, stage, blocks, selectedIds, setInput],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -283,9 +238,7 @@ function EditorBottomToolbar() {
       const target = event.target;
       const isInInput =
         target instanceof HTMLElement &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable);
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
 
       // Handle Shift+Tab to toggle between design and AI mode
       if (event.key === "Tab" && event.shiftKey) {
@@ -310,7 +263,7 @@ function EditorBottomToolbar() {
         <div className="border border-border/50 supports-backdrop-filter:bg-background/80 bg-background/95 backdrop-blur shadow-xl rounded-[1.25rem]">
           <Tabs
             value={toolbarMode}
-            onValueChange={(value) => setToolbarMode(value as "design" | "ai")}
+            onValueChange={(value) => setToolbarMode(value === "design" ? "design" : "ai")}
           >
             <div className="flex gap-2 p-2 items-center">
               <TabsContent value="design" className="mt-0">
@@ -456,7 +409,7 @@ function EditorBottomToolbar() {
                     rows={1}
                     className={cn(
                       "min-h-[24px] max-h-[120px] text-foreground overflow-y-auto p-2",
-                      "placeholder:text-muted-foreground/50"
+                      "placeholder:text-muted-foreground/50",
                     )}
                   />
                   <InputGroupAddon align="inline-end">
@@ -466,11 +419,7 @@ function EditorBottomToolbar() {
                       onClick={handleSubmit}
                       disabled={isLoading}
                     >
-                      {isLoading ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        <Send />
-                      )}
+                      {isLoading ? <Loader2 className="animate-spin" /> : <Send />}
                     </InputGroupButton>
                   </InputGroupAddon>
                 </InputGroup>
@@ -481,7 +430,7 @@ function EditorBottomToolbar() {
                     value="ai"
                     className={cn(
                       toolbarMode === "ai" &&
-                        "bg-background shadow-sm dark:text-foreground dark:border-input dark:bg-input/30"
+                        "bg-background shadow-sm dark:text-foreground dark:border-input dark:bg-input/30",
                     )}
                   >
                     <Sparkles className="h-3 w-3" />
@@ -492,7 +441,7 @@ function EditorBottomToolbar() {
                     value="design"
                     className={cn(
                       toolbarMode === "design" &&
-                        "bg-background shadow-sm dark:text-foreground dark:border-input dark:bg-input/30"
+                        "bg-background shadow-sm dark:text-foreground dark:border-input dark:bg-input/30",
                     )}
                   >
                     <PenTool className="h-3 w-3" />
@@ -513,8 +462,10 @@ function EditorBottomToolbar() {
           if (file) {
             const reader = new FileReader();
             reader.onload = () => {
+              // readAsDataURL always yields a string result
+              if (typeof reader.result !== "string") return;
               const img = new Image();
-              img.src = reader.result as string;
+              img.src = reader.result;
               img.onload = () => {
                 setPendingImageData({
                   url: img.src,

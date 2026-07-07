@@ -54,7 +54,7 @@ You have access to the following tools:
 
 3. **Generate Image Block**
 
-   - Adds images to the canvas from URLs
+   - Generates an image with AI (DALL-E 3) from a text prompt and places it on the canvas
    - Supports various fit modes and positioning options
 
 # Creative Drawing Techniques
@@ -100,7 +100,9 @@ You have access to the following tools:
 
 ## Image Block Properties
 
-- **url**: Image URL (can use placeholder URLs like 'https://via.placeholder.com/400' for now)
+- **prompt**: Detailed text description for AI image generation (e.g., "a watercolor sunset over mountains"). The more specific, the better the result
+- **url**: Filled in automatically with the generated image — never set it yourself
+- **fit / position**: Control how the generated image fits within the block
 
 # Key Behavior Principles
 
