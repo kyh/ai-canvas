@@ -73,17 +73,6 @@ export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
             }}
             autoFocus
           />
-          <div className="text-sm text-muted-foreground">
-            <button
-              className="underline"
-              onClick={() => {
-                setApiKeyInput("demo");
-              }}
-            >
-              Use a demo key
-            </button>
-            &nbsp;(generations will always be the same)
-          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

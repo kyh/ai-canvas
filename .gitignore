@@ -57,3 +57,7 @@ yarn-error.log*
 .claude/scheduled_tasks.lock
 .claude/worktrees
 .playwright-mcp
+
+# eve
+.eve/
+.workflow-data/

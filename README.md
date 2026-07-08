@@ -4,7 +4,7 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkyh%2Fai-canvas)
 
-Forkable Next.js template featuring an AI design canvas — generate, edit, and compose on an infinite canvas in natural language. Build your own Canva, Figma, or tldraw alternative.
+Forkable Next.js template featuring an AI design canvas — generate, edit, and compose on an infinite canvas in natural language. Build your own Canva, Figma, or tldraw alternative. Built on [eve](https://eve.dev), Vercel's agent framework.
 
 ## Features
 
@@ -22,10 +22,10 @@ Forkable Next.js template featuring an AI design canvas — generate, edit, and 
 
 **AI**
 
-- Generate text, frames, and AI images (DALL-E 3) from natural language
-- Visual context awareness — each request ships a PNG of the current canvas
-- Build mode: convert designs to interactive HTML/CSS/JS
-- Demo mode: try the AI flow keyless with a scripted transport
+- One agent, five tools: generate text, frames, and AI images (gpt-image-1), or build/update live interactive HTML blocks — no router hop
+- Visual context awareness — each request ships a PNG snapshot of the canvas (or the selection) plus a structured JSON context (canvas size, selection bounds, selected blocks)
+- Loading placeholder for HTML builds — a spinner block appears the moment the agent starts writing markup and is swapped for the finished block
+- Bring your own key — visitors add their own [Vercel AI Gateway key](https://vercel.com/docs/ai-gateway) (stored in the browser) and the agent runs on it per session
 
 ## Quick Start
 
@@ -37,7 +37,7 @@ cd ai-canvas
 # Install
 pnpm install
 
-# Configure (optional in dev — see API keys below)
+# Configure (dev)
 echo "AI_GATEWAY_API_KEY=vck_..." > .env.local
 
 # Run
@@ -46,48 +46,43 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-### API keys
-
-The chat route resolves a [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) key in three ways:
-
-1. **Dev**: `NODE_ENV=development` uses `AI_GATEWAY_API_KEY` from `.env.local` automatically.
-2. **Bring your own key**: in production, users paste their own `vck_...` key into the in-app dialog (stored in localStorage).
-3. **Shared secret**: set `SECRET_KEY` on the server; a user who enters that value as their key is swapped to the server's `AI_GATEWAY_API_KEY` (lets you hand out one sentinel without exposing the real key).
-
-Or enter `demo` as the key to run the scripted demo transport — no network, no key.
+`pnpm dev` boots both runtimes: the Next.js dev server and eve's agent dev server (proxied same-origin by `withEve`). In development the agent uses `AI_GATEWAY_API_KEY`; in production, keyless visitors are prompted for their own gateway key, which rides each request as a bearer token and backs a per-session model.
 
 ## AI Architecture
 
-Vercel AI SDK `ai@6` + `@ai-sdk/react`, model `openai/gpt-5.1-instant` via the AI Gateway.
+eve agent runtime + `ai@7`, model `openai/gpt-5.1-instant` (images: `openai/gpt-image-1`) via the Vercel AI Gateway.
 
 ```
-src/ai/gateway.ts                        # MODEL_ID + createModel/createImageModel — single gateway entrypoint
-src/ai/agents/router.ts                  # generateObject classifier → "canvas" | "builder"
-src/ai/agents/canvas-agent.ts            # ToolLoopAgent: text/frame/image block tools
-src/ai/agents/builder-agent.ts           # ToolLoopAgent: design → HTML document
-src/ai/messages/data-parts.ts            # zod schemas + DataPart map — the client<->server contract
-src/ai/response/stream-chat-response.ts  # route → agent.stream → writer.merge
-src/app/api/chat/route.ts                # POST: zod-parse body, validateUIMessages, resolve key
+agent/
+├── agent.ts                    # defineAgent: gateway model + BYO-key dynamic model resolver
+├── instructions.md             # system prompt: per-turn context contract, primitives-vs-HTML guidance
+├── channels/eve.ts             # HTTP auth: user bearer key → Vercel OIDC → localhost dev
+└── tools/
+    ├── generate_text_block.ts  # defineTool — filename = tool name the model sees
+    ├── generate_frame_block.ts
+    ├── generate_image_block.ts # gpt-image-1 via the gateway's typed imageModel entrypoint
+    ├── build_html_block.ts     # model writes a full HTML document as tool INPUT
+    ├── update_html_block.ts
+    └── *.ts                    # disableTool() sentinels for the built-in harness tools
+next.config.ts                  # withEve(nextConfig) — mounts eve behind the Next.js origin
+src/lib/assistant-schemas.ts    # zod contract shared by agent tools + toolbar bridge
+src/lib/canvas-context.ts       # per-turn client context (canvas size, selection, block summaries)
+src/components/canvas/views/editor-bottom-toolbar.tsx  # useEveAgent bridge
 ```
 
-**Data-parts contract**: tools stream `writer.write({ type: "data-<key>", data })`; the client's `useChat.onData` zod-parses each payload against `dataPartSchemas` before mutating the zustand store. The wire type has a `data-` prefix; the `DataPart` map keys don't.
-
-**Router hop**: every request first runs a blocking `generateObject` classification (canvas vs builder) — one extra model round-trip of latency before tokens stream.
-
-**Demo mode**: `src/components/demo-transport.ts` replays a scripted `StaticChatTransport` flow client-side. Known limitation: it only scripts the canvas (frame/text) path — build mode and image generation aren't mocked.
+The streaming contract: the toolbar sends each prompt with a PNG snapshot (AI SDK `UserContent` file part) and a JSON `clientContext`; every tool returns the fully-formed block, which the toolbar receives as an `action.result` stream event, zod-parses against `assistant-schemas.ts`, and applies to the zustand store. HTML builds additionally hook `actions.requested` to drop a spinner placeholder before the tool result lands.
 
 ## Project Structure
 
 ```
 src/
-├── ai/              # Agents, prompts, gateway, message contracts
-├── app/             # Next.js app dir, API routes, sitemap/robots
+├── app/             # Next.js app dir, sitemap/robots
 ├── components/
 │   ├── canvas/      # Editor: controls/, hooks/, services/, utils/, views/
 │   └── ui/          # shadcn base-vega components (Base UI)
 ├── data/            # Templates
 ├── hooks/           # Shared hooks
-└── lib/             # Utils, schema, types, siteConfig
+└── lib/             # Utils, schema, assistant contract, siteConfig
 ```
 
 ## Customization
@@ -95,15 +90,14 @@ src/
 **Add block types**
 
 1. Define the schema in `src/lib/schema.ts` (types derive from it)
-2. Add a generator tool in `src/ai/agents/canvas-agent.ts` + a data part in `src/ai/messages/data-parts.ts`
-3. Add rendering logic in canvas
-4. Create controls in `src/components/canvas/controls/`
+2. Add a tool in `agent/tools/` + its input/payload schemas in `src/lib/assistant-schemas.ts`
+3. Handle its `action.result` in the toolbar bridge
+4. Add rendering logic in canvas + controls in `src/components/canvas/controls/`
 
 **Customize AI**
 
-- Prompts: `src/ai/agents/*-agent-prompt.ts`
-- Tools: `src/ai/agents/canvas-agent.ts`
-- Model: `src/ai/gateway.ts`
+- Prompt: `agent/instructions.md` (+ per-tool descriptions in `agent/tools/`)
+- Model: `agent/agent.ts` (image model: `agent/tools/generate_image_block.ts`)
 
 **Theming / branding**
 
@@ -121,7 +115,11 @@ src/
 - Zustand (state)
 - shadcn base-vega on Base UI
 - Tailwind CSS 4
-- Vercel AI SDK (ai@6)
+- eve + Vercel AI SDK (ai@7)
+
+## Notes
+
+- Never run `eve build` while `pnpm dev` is running — it corrupts eve's dev cache (fix: delete `.eve/` + `.workflow-data/` and restart).
 
 ## Use Cases
 
@@ -136,8 +134,4 @@ src/
 - [Next.js](https://nextjs.org/docs)
 - [Konva](https://konvajs.org/docs/)
 - [shadcn/ui](https://ui.shadcn.com/)
-- [Vercel AI SDK](https://sdk.vercel.ai/docs)
-
-## License
-
-MIT
+- [eve](https://eve.dev)

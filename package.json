@@ -28,15 +28,14 @@
     "format:fix": "oxfmt --write"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.193",
     "@base-ui/react": "^1.5.0",
-    "@loremllm/transport": "^0.6.1",
     "@remotion/google-fonts": "^4.0.465",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "ai": "^6.0.191",
+    "ai": "^7.0.17",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "eve": "^0.22.0",
     "konva": "^10.3.0",
     "lucide-react": "^1.16.0",
     "next": "^16.2.6",

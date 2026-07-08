@@ -15,11 +15,13 @@ import {
   Sparkles,
   Undo,
 } from "lucide-react";
-import { useChat } from "@ai-sdk/react";
+import type { UserContent } from "ai";
+import { useEveAgent } from "eve/react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { cn } from "@/lib/utils";
-import type { ChatUIMessage } from "@/ai/messages/types";
-import { dataPartSchemas } from "@/ai/messages/data-parts";
+import { generatedBlockPayloadSchema, updateHtmlBlockPayloadSchema } from "@/lib/assistant-schemas";
+import { buildCanvasContext } from "@/lib/canvas-context";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import CustomTooltip from "@/components/ui/tooltip";
@@ -30,8 +32,9 @@ import { useOrderedBlocks } from "../hooks/use-ordered-blocks";
 import { captureSelectedBlocksAsImage, calculateSelectedBlocksBounds } from "../services/export";
 import { EXPORT_PADDING } from "../utils/constants";
 import type { SelectionBounds } from "@/lib/types";
+import type { IEditorBlocks } from "@/lib/schema";
 import { ApiKeyDialog, GATEWAY_API_KEY_STORAGE_KEY } from "../../api-key-dialog";
-import { demoTransport } from "@/components/chat/demo-transport";
+import { createLoadingBlock } from "../utils/loading-block";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -47,6 +50,163 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+/**
+ * BYO-key transport: the stored gateway key rides as a bearer header on
+ * every eve request (the channel verifier hands it to the dynamic model
+ * resolver). Read from localStorage on every request — eve captures this
+ * resolver once at store creation, so React state would go stale.
+ */
+const resolveAuthHeaders = (): Readonly<Record<string, string>> => {
+  if (typeof window === "undefined") return {};
+  const key = window.localStorage.getItem(GATEWAY_API_KEY_STORAGE_KEY);
+  return key !== null && key.length > 0 ? { authorization: `Bearer ${key}` } : {};
+};
+
+/**
+ * Auth-shaped failures: a 401 from the channel (keyless in prod), a
+ * rejected gateway key at the model call, or a missing server key in dev.
+ * All of them route back to the key dialog.
+ */
+const isAuthError = (error: Error): boolean =>
+  /unauthorized|forbidden|authentication|api.?key|credential|401|403/i.test(error.message);
+
+// -----------------------------------------------------------------------------
+// Stream events -> store mutations
+//
+// eve streams tool calls as `actions.requested` (input available before the
+// tool runs — used to drop a loading placeholder for HTML builds) and tool
+// results as `action.result` events whose `data.result.output` is the tool's
+// full `execute` return. Every payload is zod-parsed against the shared
+// assistant schemas before touching the zustand store.
+// -----------------------------------------------------------------------------
+
+const toolCallActionSchema = z.object({
+  kind: z.literal("tool-call"),
+  callId: z.string(),
+  toolName: z.string(),
+});
+
+const actionsRequestedEventSchema = z.object({
+  type: z.literal("actions.requested"),
+  data: z.object({ actions: z.array(z.unknown()) }),
+});
+
+const toolResultEventSchema = z.object({
+  type: z.literal("action.result"),
+  data: z.object({
+    status: z.enum(["completed", "failed", "rejected"]),
+    result: z.object({
+      kind: z.literal("tool-result"),
+      callId: z.string(),
+      toolName: z.string(),
+      output: z.unknown(),
+      isError: z.boolean().optional(),
+    }),
+  }),
+});
+
+/** `subagent.event` wraps a child session's stream event under `data.event`. */
+const subagentEventSchema = z.object({
+  type: z.literal("subagent.event"),
+  data: z.object({ event: z.unknown() }),
+});
+
+/** callId -> placeholder block id for in-flight build_html_block calls. */
+const pendingHtmlBuilds = new Map<string, string>();
+
+/** Selection bounds captured at send time; places the loading placeholder. */
+let lastSelectionBounds: SelectionBounds | null = null;
+
+/** Removes every outstanding loading placeholder (turn failed or errored). */
+const dropPendingLoadingBlocks = (): void => {
+  const store = useEditorStore.getState();
+  for (const blockId of pendingHtmlBuilds.values()) {
+    store.deleteBlock(blockId);
+  }
+  pendingHtmlBuilds.clear();
+};
+
+const applyAgentEvent = (event: unknown): void => {
+  // Delegation is forbidden by the instructions, but if the model strays,
+  // unwrap the child's events so its tool results still reach the canvas.
+  const wrapped = subagentEventSchema.safeParse(event);
+  if (wrapped.success) {
+    applyAgentEvent(wrapped.data.data.event);
+    return;
+  }
+
+  const store = useEditorStore.getState();
+
+  // Tool call requested: drop a spinner placeholder for HTML builds so the
+  // user sees where the block will land while the model writes the markup.
+  const requested = actionsRequestedEventSchema.safeParse(event);
+  if (requested.success) {
+    for (const rawAction of requested.data.data.actions) {
+      const action = toolCallActionSchema.safeParse(rawAction);
+      if (!action.success) continue;
+      const { callId, toolName } = action.data;
+      if (toolName !== "build_html_block" || pendingHtmlBuilds.has(callId)) continue;
+      const loadingBlock = createLoadingBlock(lastSelectionBounds);
+      pendingHtmlBuilds.set(callId, loadingBlock.id);
+      store.addBlock(loadingBlock);
+    }
+    return;
+  }
+
+  const parsed = toolResultEventSchema.safeParse(event);
+  if (!parsed.success) return;
+  const { status, result } = parsed.data.data;
+
+  const loadingBlockId = pendingHtmlBuilds.get(result.callId);
+  if (status !== "completed" || result.isError === true) {
+    // Failed/rejected build: remove its placeholder and let the turn-level
+    // error surface through onError.
+    if (loadingBlockId !== undefined) {
+      pendingHtmlBuilds.delete(result.callId);
+      store.deleteBlock(loadingBlockId);
+    }
+    return;
+  }
+
+  switch (result.toolName) {
+    case "generate_text_block":
+    case "generate_frame_block":
+    case "generate_image_block": {
+      const payload = generatedBlockPayloadSchema.safeParse(result.output);
+      if (!payload.success) return;
+      store.addBlock(payload.data.block);
+      break;
+    }
+    case "build_html_block": {
+      const payload = generatedBlockPayloadSchema.safeParse(result.output);
+      if (!payload.success) return;
+      let block = payload.data.block;
+      if (loadingBlockId !== undefined) {
+        pendingHtmlBuilds.delete(result.callId);
+        const placeholder: IEditorBlocks | undefined = store.blocksById[loadingBlockId];
+        if (placeholder) {
+          // Land exactly where the placeholder sat, then swap it out.
+          block = { ...block, x: placeholder.x, y: placeholder.y };
+          store.deleteBlock(loadingBlockId);
+        }
+      }
+      store.addBlock(block);
+      break;
+    }
+    case "update_html_block": {
+      const payload = updateHtmlBlockPayloadSchema.safeParse(result.output);
+      if (!payload.success) return;
+      const { updateBlockId, ...updates } = payload.data;
+      if (!store.blocksById[updateBlockId]) {
+        toast.error("The assistant tried to update a block that no longer exists");
+        return;
+      }
+      store.updateBlockValues(updateBlockId, updates);
+      break;
+    }
+  }
+};
+
 function EditorBottomToolbar() {
   const [toolbarMode, setToolbarMode] = React.useState<"design" | "ai">("ai");
   const imageInputRef = React.useRef<HTMLInputElement>(null);
@@ -61,8 +221,6 @@ function EditorBottomToolbar() {
     ]),
   );
   const downloadImage = useEditorStore((state) => state.downloadImage);
-  const addBlock = useEditorStore((state) => state.addBlock);
-  const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   const stage = useEditorStore((state) => state.stage);
   const blocks = useOrderedBlocks();
   const selectedIds = useEditorStore((state) => state.selectedIds);
@@ -75,64 +233,25 @@ function EditorBottomToolbar() {
   const [showApiKeyModal, setShowApiKeyModal] = React.useState(false);
   const [apiKey, , removeApiKey] = useLocalStorage(GATEWAY_API_KEY_STORAGE_KEY, "");
 
-  const isLocalhost =
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-
-  const { sendMessage, status } = useChat<ChatUIMessage>({
-    id: apiKey,
-    transport: apiKey === "demo" ? demoTransport : undefined,
+  const agent = useEveAgent({
+    headers: resolveAuthHeaders,
+    onEvent: applyAgentEvent,
     onError: (error) => {
-      const errorMessage = error.message?.toLowerCase() || "";
-      const isAuthError =
-        errorMessage.includes("unauthorized") ||
-        errorMessage.includes("authentication") ||
-        errorMessage.includes("invalid api key") ||
-        errorMessage.includes("401") ||
-        errorMessage.includes("403");
-
-      if (isAuthError && !isLocalhost) {
+      dropPendingLoadingBlocks();
+      if (isAuthError(error)) {
         removeApiKey();
-        toast.error("Invalid API key. Please enter a valid Vercel Gateway API key.");
+        toast.error("Invalid API key. Please enter a valid Vercel AI Gateway API key.");
         setShowApiKeyModal(true);
-      } else if (!isAuthError) {
+      } else {
         toast.error(error.message || "Failed to generate block");
       }
     },
-    onData: (dataPart) => {
-      try {
-        // Each payload is zod-parsed against the schema for its wire type
-        // ("data-" prefix stripped) before any store mutation.
-        switch (dataPart.type) {
-          case "data-generate-text-block":
-          case "data-generate-frame-block":
-          case "data-generate-image-block": {
-            const { block } = dataPartSchemas["generate-text-block"].parse(dataPart.data);
-            addBlock(block);
-            break;
-          }
-
-          case "data-build-html-block": {
-            const { block } = dataPartSchemas["build-html-block"].parse(dataPart.data);
-            addBlock(block);
-            break;
-          }
-
-          case "data-update-html-block": {
-            const { updateBlockId, ...updates } = dataPartSchemas["update-html-block"].parse(
-              dataPart.data,
-            );
-            updateBlockValues(updateBlockId, updates);
-            break;
-          }
-        }
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Failed to process data part");
-      }
-    },
   });
+  const { status, error } = agent;
 
   const isLoading = status === "submitted" || status === "streaming";
+  const showKeyNotice = status === "error" && error !== undefined && isAuthError(error);
+  const needsKey = !apiKey && process.env.NODE_ENV !== "development";
   const handleCopyJson = React.useCallback(async () => {
     const serialized = JSON.stringify(
       {
@@ -165,48 +284,60 @@ function EditorBottomToolbar() {
   const handleSubmit = React.useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!input.trim() || isLoading) return;
-
-      const buildRequestBody = (selectionBounds?: SelectionBounds | null) => ({
-        ...(apiKey ? { gatewayApiKey: apiKey } : {}),
-        ...(selectionBounds ? { selectionBounds } : {}),
-      });
-
-      try {
-        // Always capture canvas image for backend to determine mode
-        const canvasImage = await captureSelectedBlocksAsImage(stage, blocks, selectedIds);
-
-        let selectionBounds: SelectionBounds | null = null;
-        if (selectedIds.length > 0) {
-          const boundsWithPadding = calculateSelectedBlocksBounds(blocks, selectedIds);
-          if (boundsWithPadding) {
-            selectionBounds = {
-              x: boundsWithPadding.x + EXPORT_PADDING,
-              y: boundsWithPadding.y + EXPORT_PADDING,
-              width: boundsWithPadding.width - EXPORT_PADDING * 2,
-              height: boundsWithPadding.height - EXPORT_PADDING * 2,
-            };
-          }
-        }
-
-        const filePart = canvasImage
-          ? {
-              type: "file" as const,
-              mediaType: "image/png" as const,
-              url: canvasImage,
-            }
-          : undefined;
-
-        sendMessage(filePart ? { text: input, files: [filePart] } : { text: input }, {
-          body: buildRequestBody(selectionBounds),
-        });
-        setInput("");
-      } catch {
-        sendMessage({ text: input }, { body: buildRequestBody() });
-        setInput("");
+      const trimmed = input.trim();
+      if (!trimmed || isLoading) return;
+      if (needsKey) {
+        setShowApiKeyModal(true);
+        return;
       }
+
+      let selectionBounds: SelectionBounds | null = null;
+      if (selectedIds.length > 0) {
+        const boundsWithPadding = calculateSelectedBlocksBounds(blocks, selectedIds);
+        if (boundsWithPadding) {
+          selectionBounds = {
+            x: boundsWithPadding.x + EXPORT_PADDING,
+            y: boundsWithPadding.y + EXPORT_PADDING,
+            width: boundsWithPadding.width - EXPORT_PADDING * 2,
+            height: boundsWithPadding.height - EXPORT_PADDING * 2,
+          };
+        }
+      }
+      // Stash for the actions.requested handler, which places the HTML-build
+      // loading placeholder relative to the selection this turn was sent with.
+      lastSelectionBounds = selectionBounds;
+
+      // PNG snapshot of the canvas (or just the selection) — the model's
+      // visual context. Capture failures degrade to a text-only turn.
+      let canvasImage: string | null = null;
+      try {
+        canvasImage = await captureSelectedBlocksAsImage(stage, blocks, selectedIds);
+      } catch {
+        canvasImage = null;
+      }
+
+      const message: string | UserContent = canvasImage
+        ? [
+            { type: "text", text: trimmed },
+            { type: "file", data: canvasImage, mediaType: "image/png", filename: "canvas.png" },
+          ]
+        : trimmed;
+
+      agent
+        .send({
+          message,
+          clientContext: buildCanvasContext({
+            canvasSize,
+            background: canvasBackground,
+            selectionBounds,
+            blocks,
+            selectedIds,
+          }),
+        })
+        .catch(() => undefined); // failures surface via status/error/onError
+      setInput("");
     },
-    [input, isLoading, apiKey, sendMessage, stage, blocks, selectedIds, setInput],
+    [input, isLoading, needsKey, agent, stage, blocks, selectedIds, canvasSize, canvasBackground],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -217,9 +348,7 @@ function EditorBottomToolbar() {
   };
 
   const handleTextareaFocus = () => {
-    if (!apiKey && !isLocalhost) {
-      setShowApiKeyModal(true);
-    }
+    if (needsKey) setShowApiKeyModal(true);
   };
 
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -397,6 +526,19 @@ function EditorBottomToolbar() {
               </TabsContent>
 
               <TabsContent value="ai" className="mt-0">
+                {showKeyNotice && (
+                  <div className="mb-2 max-w-[360px] rounded-md border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                    The assistant needs a Vercel AI Gateway key —{" "}
+                    <button
+                      type="button"
+                      className="underline"
+                      onClick={() => setShowApiKeyModal(true)}
+                    >
+                      add yours
+                    </button>{" "}
+                    or set <code className="font-mono">AI_GATEWAY_API_KEY</code> on the server.
+                  </div>
+                )}
                 <InputGroup className="min-w-[300px] pr-1">
                   <InputGroupTextarea
                     ref={textareaRef}
