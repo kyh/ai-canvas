@@ -2,7 +2,7 @@ import { validateUIMessages } from "ai";
 import { z } from "zod";
 
 import { dataPartSchemas } from "@/ai/messages/data-parts";
-import type { BuildModeChatUIMessage } from "@/ai/messages/types";
+import type { ChatUIMessage } from "@/ai/messages/types";
 import { streamChatResponse } from "@/ai/response/stream-chat-response";
 
 const bodySchema = z.object({
@@ -27,9 +27,9 @@ export async function POST(request: Request) {
 
   const { messages: rawMessages, gatewayApiKey, selectionBounds } = parsedBody.data;
 
-  let messages: BuildModeChatUIMessage[];
+  let messages: ChatUIMessage[];
   try {
-    messages = await validateUIMessages<BuildModeChatUIMessage>({
+    messages = await validateUIMessages<ChatUIMessage>({
       messages: rawMessages,
       dataSchemas: dataPartSchemas,
     });

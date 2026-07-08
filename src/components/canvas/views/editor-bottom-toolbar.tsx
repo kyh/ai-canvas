@@ -18,7 +18,7 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { BuildModeChatUIMessage, GenerateModeChatUIMessage } from "@/ai/messages/types";
+import type { ChatUIMessage } from "@/ai/messages/types";
 import { dataPartSchemas } from "@/ai/messages/data-parts";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -31,7 +31,7 @@ import { captureSelectedBlocksAsImage, calculateSelectedBlocksBounds } from "../
 import { EXPORT_PADDING } from "../utils/constants";
 import type { SelectionBounds } from "@/lib/types";
 import { ApiKeyDialog, GATEWAY_API_KEY_STORAGE_KEY } from "../../api-key-dialog";
-import { transport } from "../../demo-transport";
+import { demoTransport } from "@/components/chat/demo-transport";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -73,15 +73,15 @@ function EditorBottomToolbar() {
   // AI Prompt state
   const [input, setInput] = React.useState("");
   const [showApiKeyModal, setShowApiKeyModal] = React.useState(false);
-  const [apiKey, , removeApiKey] = useLocalStorage<string>(GATEWAY_API_KEY_STORAGE_KEY, "");
+  const [apiKey, , removeApiKey] = useLocalStorage(GATEWAY_API_KEY_STORAGE_KEY, "");
 
   const isLocalhost =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
-  const { sendMessage, status } = useChat<BuildModeChatUIMessage | GenerateModeChatUIMessage>({
+  const { sendMessage, status } = useChat<ChatUIMessage>({
     id: apiKey,
-    transport: apiKey === "demo" ? transport : undefined,
+    transport: apiKey === "demo" ? demoTransport : undefined,
     onError: (error) => {
       const errorMessage = error.message?.toLowerCase() || "";
       const isAuthError =

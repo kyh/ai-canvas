@@ -37,7 +37,6 @@
     "ai": "^6.0.191",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
     "konva": "^10.3.0",
     "lucide-react": "^1.16.0",
     "next": "^16.2.6",

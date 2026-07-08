@@ -1,10 +1,10 @@
 import { createGateway } from "ai";
 
 /** Single model id used by every agent (router, canvas, builder). */
-export const MODEL_ID = "openai/gpt-5.1-instant";
+const MODEL_ID = "openai/gpt-5.1-instant";
 
 /** Image model id used by the canvas agent's image tool. */
-export const IMAGE_MODEL_ID = "openai/dall-e-3";
+const IMAGE_MODEL_ID = "openai/dall-e-3";
 
 /**
  * Creates the language model for the given Vercel AI Gateway key.

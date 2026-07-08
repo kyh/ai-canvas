@@ -1,20 +1,20 @@
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
 
-import type { BuildModeChatUIMessage } from "../messages/types";
+import type { ChatUIMessage } from "../messages/types";
 import type { SelectionBounds } from "@/lib/types";
 import { createBuilderAgent, createLoadingBlock } from "../agents/builder-agent";
 import { createCanvasAgent } from "../agents/canvas-agent";
 import { detectAgent } from "../agents/router";
 
 export async function streamChatResponse(
-  messages: BuildModeChatUIMessage[],
+  messages: ChatUIMessage[],
   apiKey: string,
   selectionBounds?: SelectionBounds,
 ) {
   const agentType = await detectAgent(messages, apiKey);
 
   return createUIMessageStreamResponse({
-    stream: createUIMessageStream<BuildModeChatUIMessage>({
+    stream: createUIMessageStream<ChatUIMessage>({
       originalMessages: messages,
       execute: async ({ writer }) => {
         switch (agentType) {

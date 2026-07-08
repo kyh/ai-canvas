@@ -22,10 +22,7 @@ interface ApiKeyDialogProps {
 }
 
 export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
-  const [apiKey, setApiKey, removeApiKey] = useLocalStorage<string>(
-    GATEWAY_API_KEY_STORAGE_KEY,
-    ""
-  );
+  const [apiKey, setApiKey, removeApiKey] = useLocalStorage(GATEWAY_API_KEY_STORAGE_KEY, "");
   const [apiKeyInput, setApiKeyInput] = React.useState("");
 
   // Sync input with stored value when dialog opens
@@ -60,8 +57,7 @@ export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
             >
               Vercel Gateway API key
             </a>{" "}
-            to use AI features. Your key will be stored locally in your
-            browser.
+            to use AI features. Your key will be stored locally in your browser.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 flex flex-col gap-2">

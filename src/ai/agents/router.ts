@@ -1,7 +1,7 @@
 import { convertToModelMessages, generateObject } from "ai";
 import { z } from "zod";
 
-import type { BuildModeChatUIMessage } from "@/ai/messages/types";
+import type { ChatUIMessage } from "@/ai/messages/types";
 import { createModel } from "@/ai/gateway";
 
 /**
@@ -44,10 +44,7 @@ Default to "canvas" if the intent is unclear or if the user is asking for genera
  * Routes to either the canvas-agent (for updating canvas nodes) or
  * builder-agent (for converting nodes to HTML).
  */
-export async function detectAgent(
-  messages: BuildModeChatUIMessage[],
-  apiKey: string,
-): Promise<AgentType> {
+export async function detectAgent(messages: ChatUIMessage[], apiKey: string): Promise<AgentType> {
   const model = createModel(apiKey);
 
   const {

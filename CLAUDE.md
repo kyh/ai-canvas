@@ -29,7 +29,7 @@ src/ai/response/stream-chat-response.ts  # route → agent.stream → writer.mer
 src/app/api/chat/route.ts                # POST: zod-parse body, validateUIMessages, resolve key
 ```
 
-Tools emit `writer.write({ type: "data-<key>", … })`; client `useChat.onData` zod-parses each payload (dataPartSchemas) before mutating the zustand store. Demo mode: `StaticChatTransport` (`src/components/demo-transport.ts`) when key === "demo".
+Tools emit `writer.write({ type: "data-<key>", … })`; client `useChat.onData` zod-parses each payload (dataPartSchemas) before mutating the zustand store. Demo mode: `StaticChatTransport` (`src/components/chat/demo-transport.ts`) when key === "demo".
 
 ## Project Structure
 
