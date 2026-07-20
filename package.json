@@ -22,10 +22,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "oxlint --report-unused-disable-directives",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --report-unused-disable-directives --deny-warnings",
     "lint:fix": "oxlint --fix",
-    "format": "oxfmt",
-    "format:fix": "oxfmt --write"
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt --write",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
