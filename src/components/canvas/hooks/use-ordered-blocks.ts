@@ -13,7 +13,6 @@ export const useOrderedBlocks = () => {
 
   return useMemo(
     () => blockOrder.map((id) => blocksById[id]).filter(Boolean),
-    [blockOrder, blocksById]
+    [blockOrder, blocksById],
   );
 };
-

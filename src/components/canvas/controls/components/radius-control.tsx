@@ -21,10 +21,7 @@ const getRadius = (block?: IEditorBlocks) => {
   } as const;
 };
 
-function RadiusControl({
-  blockId,
-  className = "flex flex-col gap-2",
-}: RadiusControlProps) {
+function RadiusControl({ blockId, className = "flex flex-col gap-2" }: RadiusControlProps) {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!block) {

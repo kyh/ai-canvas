@@ -1,14 +1,7 @@
 import type Konva from "konva";
-import type {
-  IEditorBlocks,
-  IEditorSize,
-  IEditorBlockArrow,
-} from "@/lib/schema";
+import type { IEditorBlocks, IEditorSize, IEditorBlockArrow } from "@/lib/schema";
 import { loadFontsForBlocks } from "./fonts";
-import {
-  calculateArrowBounds,
-  blockPositionToGroupPosition,
-} from "../utils/arrow-bounds";
+import { calculateArrowBounds, blockPositionToGroupPosition } from "../utils/arrow-bounds";
 import { blockNodeId } from "../utils";
 
 /**
@@ -49,7 +42,7 @@ type Bounds = {
  */
 export function calculateSelectedBlocksBounds(
   blocks: IEditorBlocks[],
-  selectedIds: string[]
+  selectedIds: string[],
 ): Bounds | null {
   if (selectedIds.length === 0) {
     return null;
@@ -73,11 +66,7 @@ export function calculateSelectedBlocksBounds(
     if (block.type === "arrow") {
       const arrowBlock = block as IEditorBlockArrow;
       const arrowBounds = calculateArrowBounds(arrowBlock);
-      const groupPos = blockPositionToGroupPosition(
-        arrowBlock.x,
-        arrowBlock.y,
-        arrowBlock
-      );
+      const groupPos = blockPositionToGroupPosition(arrowBlock.x, arrowBlock.y, arrowBlock);
       // For arrows, use the group position and arrow bounds
       // We'll apply rotation/scale transforms below
       bounds = {
@@ -169,7 +158,7 @@ async function waitForRedraw(): Promise<void> {
 function calculateVisibleNodesBounds(
   stage: Konva.Stage,
   selectedIds: string[],
-  padding: number = EXPORT_PADDING
+  padding: number = EXPORT_PADDING,
 ): Bounds | null {
   const selectedNodes = selectedIds
     .map((id) => stage.findOne(`#${blockNodeId(id)}`))
@@ -208,7 +197,7 @@ function calculateVisibleNodesBounds(
 function hideNonSelectedElements(
   stage: Konva.Stage,
   selectedIds: string[],
-  blocks: IEditorBlocks[]
+  blocks: IEditorBlocks[],
 ): () => void {
   const visibilityStates = new Map<Konva.Node, boolean>();
   const layerVisibilityStates = new Map<Konva.Layer, boolean>();
@@ -332,7 +321,7 @@ function hideNonSelectedElements(
 export const captureSelectedBlocksAsImage = async (
   stage: Konva.Stage | null,
   blocks: IEditorBlocks[],
-  selectedIds: string[] = []
+  selectedIds: string[] = [],
 ): Promise<string | null> => {
   if (!stage) {
     return null;
@@ -341,9 +330,7 @@ export const captureSelectedBlocksAsImage = async (
   await loadFontsForBlocks(blocks);
 
   const hasSelection = selectedIds.length > 0;
-  let bounds = hasSelection
-    ? calculateSelectedBlocksBounds(blocks, selectedIds)
-    : null;
+  let bounds = hasSelection ? calculateSelectedBlocksBounds(blocks, selectedIds) : null;
   let restoreVisibility: (() => void) | null = null;
 
   try {
@@ -393,13 +380,9 @@ export const captureStageAsImage = captureSelectedBlocksAsImage;
 export const downloadStageAsImage = async (
   stage: Konva.Stage,
   blocks: IEditorBlocks[],
-  selectedIds: string[] = []
+  selectedIds: string[] = [],
 ) => {
-  const dataUrl = await captureSelectedBlocksAsImage(
-    stage,
-    blocks,
-    selectedIds
-  );
+  const dataUrl = await captureSelectedBlocksAsImage(stage, blocks, selectedIds);
 
   if (!dataUrl) {
     return;
@@ -429,7 +412,7 @@ export const exportCanvasAsJson = ({
       background,
     },
     null,
-    2
+    2,
   );
   const blob = new Blob([data], { type: "application/json" });
   const url = URL.createObjectURL(blob);

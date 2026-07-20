@@ -1,11 +1,7 @@
 import * as React from "react";
 import { X as Cross2Icon } from "lucide-react";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import ControllerRow from "./controller-row";
 import CustomColorPicker from "./color-picker";
 
@@ -17,13 +13,7 @@ interface ColorControlProps {
   className?: string;
 }
 
-function ColorControl({
-  name,
-  onChange,
-  value,
-  disableGradient,
-  className,
-}: ColorControlProps) {
+function ColorControl({ name, onChange, value, disableGradient, className }: ColorControlProps) {
   const [open, setOpen] = React.useState(false);
   const onClick = () => {
     if (!value) {
@@ -38,8 +28,7 @@ function ColorControl({
   };
 
   return (
-    <ControllerRow label={name} className={className}
-      contentClassName="justify-between">
+    <ControllerRow label={name} className={className} contentClassName="justify-between">
       <Popover open={open} onOpenChange={setOpen}>
         <div className="relative w-full">
           <PopoverTrigger
@@ -54,9 +43,7 @@ function ColorControl({
             <div className="flex items-center gap-2">
               <div
                 className="h-5 w-5 rounded-sm border border-border bg-foreground/20"
-                style={{
-                  ...(value ? { background: value } : {}),
-                }}
+                style={value ? { background: value } : {}}
               />
               {value ? (
                 <p className="max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
@@ -77,11 +64,7 @@ function ColorControl({
             </button>
           )}
         </div>
-        <PopoverContent
-          align="center"
-          className="w-[293px]"
-          side="left"
-        >
+        <PopoverContent align="center" className="w-[293px]" side="left">
           <div className="mb-4 flex items-center justify-between border-b border-border pb-2">
             <p className="text-xs font-semibold capitalize">{name}</p>
             <button
@@ -92,11 +75,7 @@ function ColorControl({
               <Cross2Icon className="h-3.5 w-3.5" />
             </button>
           </div>
-          <CustomColorPicker
-            value={value}
-            onChange={onChange}
-            disableGradient={disableGradient}
-          />
+          <CustomColorPicker value={value} onChange={onChange} disableGradient={disableGradient} />
         </PopoverContent>
       </Popover>
     </ControllerRow>

@@ -3,16 +3,7 @@ import { editorStoreApi } from "../use-editor";
 import type Konva from "konva";
 
 interface UseCanvasHotkeysOptions {
-  setMode: (
-    mode:
-      | "move"
-      | "select"
-      | "text"
-      | "frame"
-      | "arrow"
-      | "image"
-      | "draw"
-  ) => void;
+  setMode: (mode: "move" | "select" | "text" | "frame" | "arrow" | "image" | "draw") => void;
   deleteSelectedBlocks: () => void;
   copySelectedBlocks: () => void;
   pasteBlocks: (position?: { x: number; y: number }) => void;
@@ -31,9 +22,7 @@ const isEditableTarget = (target: EventTarget | null) => {
   if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") {
     return true;
   }
-  return Boolean(
-    target.closest('input, textarea, select, [contenteditable="true"]')
-  );
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
 };
 
 const getPointerPosition = (stage: Konva.Stage | null) => {
@@ -50,7 +39,7 @@ const getPointerPosition = (stage: Konva.Stage | null) => {
 const toCanvasCoordinates = (
   stage: Konva.Stage,
   position: { x: number; y: number },
-  zoom: number
+  zoom: number,
 ) => {
   const stagePos = stage.position();
   return {
@@ -69,14 +58,7 @@ export const useCanvasHotkeys = ({
 }: UseCanvasHotkeysOptions) => {
   const spacePressedRef = React.useRef(false);
   const spacePrevModeRef = React.useRef<
-    | "move"
-    | "select"
-    | "text"
-    | "frame"
-    | "arrow"
-    | "image"
-    | "draw"
-    | null
+    "move" | "select" | "text" | "frame" | "arrow" | "image" | "draw" | null
   >(null);
 
   React.useEffect(() => {
@@ -128,9 +110,7 @@ export const useCanvasHotkeys = ({
           // Get pointer position on canvas for paste location
           const pointer = getPointerPosition(stage);
           const pastePosition =
-            pointer && stage
-              ? toCanvasCoordinates(stage, pointer, zoom)
-              : undefined;
+            pointer && stage ? toCanvasCoordinates(stage, pointer, zoom) : undefined;
           pasteBlocks(pastePosition);
         }
         return;
@@ -235,12 +215,5 @@ export const useCanvasHotkeys = ({
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", resetSpaceMode);
     };
-  }, [
-    deleteSelectedBlocks,
-    setMode,
-    copySelectedBlocks,
-    pasteBlocks,
-    stage,
-    zoom,
-  ]);
+  }, [deleteSelectedBlocks, setMode, copySelectedBlocks, pasteBlocks, stage, zoom]);
 };

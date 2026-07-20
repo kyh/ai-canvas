@@ -33,8 +33,7 @@ export const fontsList = [
   },
   {
     family: "Assistant",
-    load: () =>
-      import("@remotion/google-fonts/Assistant") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Assistant") as Promise<GoogleFont>,
     fontKey: "Assistant",
   },
   {
@@ -44,22 +43,17 @@ export const fontsList = [
   },
   {
     family: "Barlow Condensed",
-    load: () =>
-      import("@remotion/google-fonts/BarlowCondensed") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/BarlowCondensed") as Promise<GoogleFont>,
     fontKey: "BarlowCondensed",
   },
   {
     family: "Barlow Semi Condensed",
-    load: () =>
-      import(
-        "@remotion/google-fonts/BarlowSemiCondensed"
-      ) as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/BarlowSemiCondensed") as Promise<GoogleFont>,
     fontKey: "BarlowSemiCondensed",
   },
   {
     family: "Bebas Neue",
-    load: () =>
-      import("@remotion/google-fonts/BebasNeue") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/BebasNeue") as Promise<GoogleFont>,
     fontKey: "BebasNeue",
   },
   {
@@ -84,26 +78,22 @@ export const fontsList = [
   },
   {
     family: "Chakra Petch",
-    load: () =>
-      import("@remotion/google-fonts/ChakraPetch") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/ChakraPetch") as Promise<GoogleFont>,
     fontKey: "ChakraPetch",
   },
   {
     family: "Comfortaa",
-    load: () =>
-      import("@remotion/google-fonts/Comfortaa") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Comfortaa") as Promise<GoogleFont>,
     fontKey: "Comfortaa",
   },
   {
     family: "Cormorant Garamond",
-    load: () =>
-      import("@remotion/google-fonts/CormorantGaramond") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/CormorantGaramond") as Promise<GoogleFont>,
     fontKey: "CormorantGaramond",
   },
   {
     family: "Crimson Text",
-    load: () =>
-      import("@remotion/google-fonts/CrimsonText") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/CrimsonText") as Promise<GoogleFont>,
     fontKey: "CrimsonText",
   },
   {
@@ -113,8 +103,7 @@ export const fontsList = [
   },
   {
     family: "Dancing Script",
-    load: () =>
-      import("@remotion/google-fonts/DancingScript") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/DancingScript") as Promise<GoogleFont>,
     fontKey: "DancingScript",
   },
   {
@@ -124,8 +113,7 @@ export const fontsList = [
   },
   {
     family: "EB Garamond",
-    load: () =>
-      import("@remotion/google-fonts/EBGaramond") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/EBGaramond") as Promise<GoogleFont>,
     fontKey: "EBGaramond",
   },
   {
@@ -140,20 +128,17 @@ export const fontsList = [
   },
   {
     family: "Fira Sans",
-    load: () =>
-      import("@remotion/google-fonts/FiraSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/FiraSans") as Promise<GoogleFont>,
     fontKey: "FiraSans",
   },
   {
     family: "Fira Sans Condensed",
-    load: () =>
-      import("@remotion/google-fonts/FiraSansCondensed") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/FiraSansCondensed") as Promise<GoogleFont>,
     fontKey: "FiraSansCondensed",
   },
   {
     family: "Fjalla One",
-    load: () =>
-      import("@remotion/google-fonts/FjallaOne") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/FjallaOne") as Promise<GoogleFont>,
     fontKey: "FjallaOne",
   },
   {
@@ -168,26 +153,22 @@ export const fontsList = [
   },
   {
     family: "Hind Siliguri",
-    load: () =>
-      import("@remotion/google-fonts/HindSiliguri") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/HindSiliguri") as Promise<GoogleFont>,
     fontKey: "HindSiliguri",
   },
   {
     family: "IBM Plex Mono",
-    load: () =>
-      import("@remotion/google-fonts/IBMPlexMono") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/IBMPlexMono") as Promise<GoogleFont>,
     fontKey: "IBMPlexMono",
   },
   {
     family: "IBM Plex Sans",
-    load: () =>
-      import("@remotion/google-fonts/IBMPlexSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/IBMPlexSans") as Promise<GoogleFont>,
     fontKey: "IBMPlexSans",
   },
   {
     family: "Inconsolata",
-    load: () =>
-      import("@remotion/google-fonts/Inconsolata") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Inconsolata") as Promise<GoogleFont>,
     fontKey: "Inconsolata",
   },
   {
@@ -197,8 +178,7 @@ export const fontsList = [
   },
   {
     family: "Josefin Sans",
-    load: () =>
-      import("@remotion/google-fonts/JosefinSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/JosefinSans") as Promise<GoogleFont>,
     fontKey: "JosefinSans",
   },
   {
@@ -228,14 +208,12 @@ export const fontsList = [
   },
   {
     family: "Libre Baskerville",
-    load: () =>
-      import("@remotion/google-fonts/LibreBaskerville") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/LibreBaskerville") as Promise<GoogleFont>,
     fontKey: "LibreBaskerville",
   },
   {
     family: "Libre Franklin",
-    load: () =>
-      import("@remotion/google-fonts/LibreFranklin") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/LibreFranklin") as Promise<GoogleFont>,
     fontKey: "LibreFranklin",
   },
   {
@@ -250,8 +228,7 @@ export const fontsList = [
   },
   {
     family: "M PLUS Rounded 1c",
-    load: () =>
-      import("@remotion/google-fonts/MPLUSRounded1c") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/MPLUSRounded1c") as Promise<GoogleFont>,
     fontKey: "MPLUSRounded1c",
   },
   {
@@ -261,20 +238,17 @@ export const fontsList = [
   },
   {
     family: "Maven Pro",
-    load: () =>
-      import("@remotion/google-fonts/MavenPro") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/MavenPro") as Promise<GoogleFont>,
     fontKey: "MavenPro",
   },
   {
     family: "Merriweather",
-    load: () =>
-      import("@remotion/google-fonts/Merriweather") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Merriweather") as Promise<GoogleFont>,
     fontKey: "Merriweather",
   },
   {
     family: "Montserrat",
-    load: () =>
-      import("@remotion/google-fonts/Montserrat") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Montserrat") as Promise<GoogleFont>,
     fontKey: "Montserrat",
   },
   {
@@ -289,68 +263,57 @@ export const fontsList = [
   },
   {
     family: "Nanum Gothic",
-    load: () =>
-      import("@remotion/google-fonts/NanumGothic") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NanumGothic") as Promise<GoogleFont>,
     fontKey: "NanumGothic",
   },
   {
     family: "Noto Color Emoji",
-    load: () =>
-      import("@remotion/google-fonts/NotoColorEmoji") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoColorEmoji") as Promise<GoogleFont>,
     fontKey: "NotoColorEmoji",
   },
   {
     family: "Noto Sans",
-    load: () =>
-      import("@remotion/google-fonts/NotoSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSans") as Promise<GoogleFont>,
     fontKey: "NotoSans",
   },
   {
     family: "Noto Sans Arabic",
-    load: () =>
-      import("@remotion/google-fonts/NotoSansArabic") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSansArabic") as Promise<GoogleFont>,
     fontKey: "NotoSansArabic",
   },
   {
     family: "Noto Sans HK",
-    load: () =>
-      import("@remotion/google-fonts/NotoSansHK") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSansHK") as Promise<GoogleFont>,
     fontKey: "NotoSansHK",
   },
   {
     family: "Noto Sans JP",
-    load: () =>
-      import("@remotion/google-fonts/NotoSansJP") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSansJP") as Promise<GoogleFont>,
     fontKey: "NotoSansJP",
   },
   {
     family: "Noto Sans KR",
-    load: () =>
-      import("@remotion/google-fonts/NotoSansKR") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSansKR") as Promise<GoogleFont>,
     fontKey: "NotoSansKR",
   },
   {
     family: "Noto Sans SC",
-    load: () =>
-      import("@remotion/google-fonts/NotoSansSC") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSansSC") as Promise<GoogleFont>,
     fontKey: "NotoSansSC",
   },
   {
     family: "Noto Sans TC",
-    load: () =>
-      import("@remotion/google-fonts/NotoSansTC") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSansTC") as Promise<GoogleFont>,
     fontKey: "NotoSansTC",
   },
   {
     family: "Noto Serif",
-    load: () =>
-      import("@remotion/google-fonts/NotoSerif") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSerif") as Promise<GoogleFont>,
     fontKey: "NotoSerif",
   },
   {
     family: "Noto Serif JP",
-    load: () =>
-      import("@remotion/google-fonts/NotoSerifJP") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NotoSerifJP") as Promise<GoogleFont>,
     fontKey: "NotoSerifJP",
   },
   {
@@ -360,14 +323,12 @@ export const fontsList = [
   },
   {
     family: "Nunito Sans",
-    load: () =>
-      import("@remotion/google-fonts/NunitoSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/NunitoSans") as Promise<GoogleFont>,
     fontKey: "NunitoSans",
   },
   {
     family: "Open Sans",
-    load: () =>
-      import("@remotion/google-fonts/OpenSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/OpenSans") as Promise<GoogleFont>,
     fontKey: "OpenSans",
   },
   {
@@ -382,8 +343,7 @@ export const fontsList = [
   },
   {
     family: "Overpass",
-    load: () =>
-      import("@remotion/google-fonts/Overpass") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Overpass") as Promise<GoogleFont>,
     fontKey: "Overpass",
   },
   {
@@ -398,8 +358,7 @@ export const fontsList = [
   },
   {
     family: "PT Sans Narrow",
-    load: () =>
-      import("@remotion/google-fonts/PTSansNarrow") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/PTSansNarrow") as Promise<GoogleFont>,
     fontKey: "PTSansNarrow",
   },
   {
@@ -409,8 +368,7 @@ export const fontsList = [
   },
   {
     family: "Pacifico",
-    load: () =>
-      import("@remotion/google-fonts/Pacifico") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Pacifico") as Promise<GoogleFont>,
     fontKey: "Pacifico",
   },
   {
@@ -420,8 +378,7 @@ export const fontsList = [
   },
   {
     family: "Playfair Display",
-    load: () =>
-      import("@remotion/google-fonts/PlayfairDisplay") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/PlayfairDisplay") as Promise<GoogleFont>,
     fontKey: "PlayfairDisplay",
   },
   {
@@ -436,20 +393,17 @@ export const fontsList = [
   },
   {
     family: "Public Sans",
-    load: () =>
-      import("@remotion/google-fonts/PublicSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/PublicSans") as Promise<GoogleFont>,
     fontKey: "PublicSans",
   },
   {
     family: "Quicksand",
-    load: () =>
-      import("@remotion/google-fonts/Quicksand") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Quicksand") as Promise<GoogleFont>,
     fontKey: "Quicksand",
   },
   {
     family: "Rajdhani",
-    load: () =>
-      import("@remotion/google-fonts/Rajdhani") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Rajdhani") as Promise<GoogleFont>,
     fontKey: "Rajdhani",
   },
   {
@@ -459,8 +413,7 @@ export const fontsList = [
   },
   {
     family: "Red Hat Display",
-    load: () =>
-      import("@remotion/google-fonts/RedHatDisplay") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/RedHatDisplay") as Promise<GoogleFont>,
     fontKey: "RedHatDisplay",
   },
   {
@@ -470,20 +423,17 @@ export const fontsList = [
   },
   {
     family: "Roboto Condensed",
-    load: () =>
-      import("@remotion/google-fonts/RobotoCondensed") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/RobotoCondensed") as Promise<GoogleFont>,
     fontKey: "RobotoCondensed",
   },
   {
     family: "Roboto Mono",
-    load: () =>
-      import("@remotion/google-fonts/RobotoMono") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/RobotoMono") as Promise<GoogleFont>,
     fontKey: "RobotoMono",
   },
   {
     family: "Roboto Slab",
-    load: () =>
-      import("@remotion/google-fonts/RobotoSlab") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/RobotoSlab") as Promise<GoogleFont>,
     fontKey: "RobotoSlab",
   },
   {
@@ -493,38 +443,32 @@ export const fontsList = [
   },
   {
     family: "Shadows Into Light",
-    load: () =>
-      import("@remotion/google-fonts/ShadowsIntoLight") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/ShadowsIntoLight") as Promise<GoogleFont>,
     fontKey: "ShadowsIntoLight",
   },
   {
     family: "Signika Negative",
-    load: () =>
-      import("@remotion/google-fonts/SignikaNegative") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/SignikaNegative") as Promise<GoogleFont>,
     fontKey: "SignikaNegative",
   },
   {
     family: "Slabo 27px",
-    load: () =>
-      import("@remotion/google-fonts/Slabo27px") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/Slabo27px") as Promise<GoogleFont>,
     fontKey: "Slabo27px",
   },
   {
     family: "Source Code Pro",
-    load: () =>
-      import("@remotion/google-fonts/SourceCodePro") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/SourceCodePro") as Promise<GoogleFont>,
     fontKey: "SourceCodePro",
   },
   {
     family: "Source Sans 3",
-    load: () =>
-      import("@remotion/google-fonts/SourceSans3") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/SourceSans3") as Promise<GoogleFont>,
     fontKey: "SourceSans3",
   },
   {
     family: "Space Grotesk",
-    load: () =>
-      import("@remotion/google-fonts/SpaceGrotesk") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/SpaceGrotesk") as Promise<GoogleFont>,
     fontKey: "SpaceGrotesk",
   },
   {
@@ -534,8 +478,7 @@ export const fontsList = [
   },
   {
     family: "Titillium Web",
-    load: () =>
-      import("@remotion/google-fonts/TitilliumWeb") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/TitilliumWeb") as Promise<GoogleFont>,
     fontKey: "TitilliumWeb",
   },
   {
@@ -545,20 +488,17 @@ export const fontsList = [
   },
   {
     family: "Varela Round",
-    load: () =>
-      import("@remotion/google-fonts/VarelaRound") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/VarelaRound") as Promise<GoogleFont>,
     fontKey: "VarelaRound",
   },
   {
     family: "Work Sans",
-    load: () =>
-      import("@remotion/google-fonts/WorkSans") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/WorkSans") as Promise<GoogleFont>,
     fontKey: "WorkSans",
   },
   {
     family: "Zilla Slab",
-    load: () =>
-      import("@remotion/google-fonts/ZillaSlab") as Promise<GoogleFont>,
+    load: () => import("@remotion/google-fonts/ZillaSlab") as Promise<GoogleFont>,
     fontKey: "ZillaSlab",
   },
 ];

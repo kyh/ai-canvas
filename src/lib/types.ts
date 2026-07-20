@@ -7,4 +7,3 @@ export type SelectionBounds = {
   width: number;
   height: number;
 };
-

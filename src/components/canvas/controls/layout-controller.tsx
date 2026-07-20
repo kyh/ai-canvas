@@ -3,13 +3,7 @@ import { cn } from "@/lib/utils";
 import ControllerRow from "./components/controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";
 
-function LayoutController({
-  blockId,
-  className,
-}: {
-  blockId: string;
-  className?: string;
-}) {
+function LayoutController({ blockId, className }: { blockId: string; className?: string }) {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!block) {

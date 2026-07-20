@@ -37,15 +37,8 @@ import {
   groupPositionToBlockPosition,
   scaleArrowPoints,
 } from "../utils/arrow-bounds";
-import {
-  editorStoreApi,
-  selectOrderedBlocks,
-  useEditorStore,
-} from "../use-editor";
-import {
-  ensureBlockDefaults,
-  MAX_IMAGE_DIMENSION,
-} from "../services/templates";
+import { editorStoreApi, selectOrderedBlocks, useEditorStore } from "../use-editor";
+import { ensureBlockDefaults, MAX_IMAGE_DIMENSION } from "../services/templates";
 import { useCanvasStore } from "../hooks/use-canvas-store";
 import { useTransformerSync } from "../hooks/use-transformer-sync";
 import { useCanvasZoomPan } from "../hooks/use-canvas-zoom-pan";
@@ -63,10 +56,7 @@ interface SelectionRect {
 
 const ZOOM_STEP = 1.1;
 
-const isTransformerNode = (
-  node: Konva.Node | null,
-  transformer: Konva.Transformer | null
-) => {
+const isTransformerNode = (node: Konva.Node | null, transformer: Konva.Transformer | null) => {
   if (!node || !transformer) {
     return false;
   }
@@ -158,11 +148,7 @@ const mapFillProps = (block: IEditorBlocks) => {
 
 const isBlockVisible = (block: IEditorBlocks) => block.visible !== false;
 
-const toCanvasCoordinates = (
-  stage: Konva.Stage,
-  position: PointerPosition,
-  zoom: number
-) => {
+const toCanvasCoordinates = (stage: Konva.Stage, position: PointerPosition, zoom: number) => {
   const stagePos = stage.position();
   return {
     x: (position.x - stagePos.x) / zoom,
@@ -181,10 +167,7 @@ const getPointerPosition = (stage: Konva.Stage | null) => {
   return pointer;
 };
 
-const rectFromPoints = (
-  start: PointerPosition,
-  end: PointerPosition
-): SelectionRect => ({
+const rectFromPoints = (start: PointerPosition, end: PointerPosition): SelectionRect => ({
   x: Math.min(start.x, end.x),
   y: Math.min(start.y, end.y),
   width: Math.abs(end.x - start.x),
@@ -517,9 +500,7 @@ const HtmlContent = React.memo(
     // Use a hash of the HTML as key to force iframe re-render when content changes
     const htmlKey = React.useMemo(() => {
       // Simple hash for key - forces re-render when HTML changes
-      return (
-        html.length + (html.substring(0, 100).replace(/\s/g, "").length % 1000)
-      );
+      return html.length + (html.substring(0, 100).replace(/\s/g, "").length % 1000);
     }, [html]);
 
     return (
@@ -535,7 +516,7 @@ const HtmlContent = React.memo(
       />
     );
   },
-  (prev, next) => prev.html === next.html
+  (prev, next) => prev.html === next.html,
 );
 
 HtmlContent.displayName = "HtmlContent";
@@ -572,7 +553,7 @@ function HtmlNode({
         pointerEvents: isSelecting ? ("none" as const) : ("auto" as const),
       },
     }),
-    [block.width, block.height, isSelecting]
+    [block.width, block.height, isSelecting],
   );
 
   const htmlGroupProps = React.useMemo(() => ({ x: 0, y: 0 }), []);
@@ -627,11 +608,7 @@ const getBlockOutlineBounds = (block: IEditorBlocks) => {
   if (block.type === "arrow") {
     const arrowBlock = block as IEditorBlockArrow;
     const bounds = calculateArrowBounds(arrowBlock);
-    const groupPos = blockPositionToGroupPosition(
-      arrowBlock.x,
-      arrowBlock.y,
-      arrowBlock
-    );
+    const groupPos = blockPositionToGroupPosition(arrowBlock.x, arrowBlock.y, arrowBlock);
     return {
       x: groupPos.x,
       y: groupPos.y,
@@ -670,13 +647,7 @@ function HoverOutline({ block, zoom }: { block: IEditorBlocks; zoom: number }) {
   );
 }
 
-function SelectionOutline({
-  rect,
-  zoom,
-}: {
-  rect: SelectionRect | null;
-  zoom: number;
-}) {
+function SelectionOutline({ rect, zoom }: { rect: SelectionRect | null; zoom: number }) {
   if (!rect) {
     return null;
   }
@@ -709,7 +680,7 @@ const calculateBlockPlacement = (
   current: PointerPosition | null,
   blockType: "text" | "frame" | "image",
   isDrag: boolean,
-  pendingImageData?: { url: string; width: number; height: number } | null
+  pendingImageData?: { url: string; width: number; height: number } | null,
 ) => {
   if (!current) {
     return null;
@@ -749,8 +720,7 @@ const calculateBlockPlacement = (
     } else if (blockType === "image" && pendingImageData) {
       const scale = Math.min(
         1,
-        MAX_IMAGE_DIMENSION /
-          Math.max(pendingImageData.width, pendingImageData.height)
+        MAX_IMAGE_DIMENSION / Math.max(pendingImageData.width, pendingImageData.height),
       );
       width = Math.max(1, Math.round(pendingImageData.width * scale));
       height = Math.max(1, Math.round(pendingImageData.height * scale));
@@ -767,7 +737,7 @@ const calculateBlockPlacement = (
 
 const calculateArrowPlacement = (
   clickPosition: PointerPosition,
-  points: [number, number, number, number]
+  points: [number, number, number, number],
 ) => {
   // Arrow points [0, 0, dx, dy] mean the arrow goes from (block.x, block.y) to (block.x + dx, block.y + dy)
   // We want the arrow start point to always be at clickPosition
@@ -844,9 +814,7 @@ function PlacementPreview({
   const isDrag = distance > 5;
 
   if (mode === "arrow") {
-    const points: [number, number, number, number] = isDrag
-      ? [0, 0, dx, dy]
-      : [0, 0, 200, 0];
+    const points: [number, number, number, number] = isDrag ? [0, 0, dx, dy] : [0, 0, 200, 0];
     const placement = calculateArrowPlacement(start, points);
     return (
       <Group
@@ -873,7 +841,7 @@ function PlacementPreview({
     current,
     mode as "text" | "frame" | "image",
     isDrag,
-    pendingImageData
+    pendingImageData,
   );
 
   if (!placement) {
@@ -909,16 +877,11 @@ function EditorCanvas() {
   const selectionStartRef = React.useRef<PointerPosition | null>(null);
   const selectionChangedRef = React.useRef(false);
   const isAltDragRef = React.useRef(false);
-  const originalPositionsRef = React.useRef<
-    Map<string, { x: number; y: number }>
-  >(new Map());
+  const originalPositionsRef = React.useRef<Map<string, { x: number; y: number }>>(new Map());
   const storeApi = editorStoreApi;
 
-  const [selectionRect, setSelectionRect] =
-    React.useState<SelectionRect | null>(null);
-  const [previewSelectionIds, setPreviewSelectionIds] = React.useState<
-    string[]
-  >([]);
+  const [selectionRect, setSelectionRect] = React.useState<SelectionRect | null>(null);
+  const [previewSelectionIds, setPreviewSelectionIds] = React.useState<string[]>([]);
   const [isDrawing, setIsDrawing] = React.useState(false);
   const [drawingPoints, setDrawingPoints] = React.useState<number[]>([]);
   const drawingPointsRef = React.useRef<number[]>([]);
@@ -934,10 +897,8 @@ function EditorCanvas() {
   } | null>(null);
   const [isStageDragging, setIsStageDragging] = React.useState(false);
   const [isPlacingBlock, setIsPlacingBlock] = React.useState(false);
-  const [placementStart, setPlacementStart] =
-    React.useState<PointerPosition | null>(null);
-  const [placementCurrent, setPlacementCurrent] =
-    React.useState<PointerPosition | null>(null);
+  const [placementStart, setPlacementStart] = React.useState<PointerPosition | null>(null);
+  const [placementCurrent, setPlacementCurrent] = React.useState<PointerPosition | null>(null);
   const [placementHasMoved, setPlacementHasMoved] = React.useState(false);
   const [pendingImageData, setPendingImageData] = React.useState<{
     url: string;
@@ -994,12 +955,10 @@ function EditorCanvas() {
       stageRef.current = node;
       setStage(node);
     },
-    [setStage]
+    [setStage],
   );
 
-  const copySelectedBlocks = useEditorStore(
-    (state) => state.copySelectedBlocks
-  );
+  const copySelectedBlocks = useEditorStore((state) => state.copySelectedBlocks);
   const pasteBlocks = useEditorStore((state) => state.pasteBlocks);
   const stage = useEditorStore((state) => state.stage);
 
@@ -1014,12 +973,7 @@ function EditorCanvas() {
 
   // Mode helpers
   const isPlacementMode = React.useCallback(() => {
-    return (
-      mode === "text" ||
-      mode === "frame" ||
-      mode === "arrow" ||
-      mode === "image"
-    );
+    return mode === "text" || mode === "frame" || mode === "arrow" || mode === "image";
   }, [mode]);
 
   const isSelectMode = mode === "select";
@@ -1032,7 +986,7 @@ function EditorCanvas() {
 
     const bounds = calculateDrawBounds(drawingPoints);
     const points = drawingPoints.map((value, index) =>
-      index % 2 === 0 ? value - bounds.minX : value - bounds.minY
+      index % 2 === 0 ? value - bounds.minX : value - bounds.minY,
     );
 
     return { bounds, points } as const;
@@ -1042,7 +996,7 @@ function EditorCanvas() {
     (
       position: PointerPosition,
       endPosition?: PointerPosition,
-      size?: { width: number; height: number }
+      size?: { width: number; height: number },
     ) => {
       const blockType = mode;
       const blocks = selectOrderedBlocks(storeApi.getState());
@@ -1054,7 +1008,7 @@ function EditorCanvas() {
           position,
           endPosition || position,
           "text",
-          isDrag
+          isDrag,
         );
         if (!placement) return;
 
@@ -1079,7 +1033,7 @@ function EditorCanvas() {
             font: { family: "Poppins", weight: "500" },
             visible: true,
             opacity: 100,
-          } satisfies IEditorBlockText)
+          } satisfies IEditorBlockText),
         );
         storeApi.getState().addBlock(defaultBlock);
         setMode("select");
@@ -1090,7 +1044,7 @@ function EditorCanvas() {
           position,
           endPosition || position,
           "frame",
-          isDrag
+          isDrag,
         );
         if (!placement) return;
 
@@ -1114,7 +1068,7 @@ function EditorCanvas() {
             radius: { tl: 16, tr: 16, br: 16, bl: 16 },
             visible: true,
             opacity: 100,
-          } satisfies IEditorBlockFrame)
+          } satisfies IEditorBlockFrame),
         );
         storeApi.getState().addBlock(defaultBlock);
         setMode("select");
@@ -1145,7 +1099,7 @@ function EditorCanvas() {
             strokeWidth: 4,
             visible: true,
             opacity: 100,
-          } satisfies IEditorBlockArrow)
+          } satisfies IEditorBlockArrow),
         );
         storeApi.getState().addBlock(defaultBlock);
         setMode("select");
@@ -1157,7 +1111,7 @@ function EditorCanvas() {
           endPosition || position,
           "image",
           isDrag,
-          pendingImageData
+          pendingImageData,
         );
         if (!placement) return;
 
@@ -1178,7 +1132,7 @@ function EditorCanvas() {
             position: "center",
             visible: true,
             opacity: 100,
-          } satisfies IEditorBlockImage)
+          } satisfies IEditorBlockImage),
         );
         storeApi.getState().addBlock(defaultBlock);
         setPendingImageData(null);
@@ -1186,7 +1140,7 @@ function EditorCanvas() {
         setMode("select");
       }
     },
-    [mode, pendingImageData, setMode, storeApi]
+    [mode, pendingImageData, setMode, storeApi],
   );
 
   const finishDrawing = React.useCallback(() => {
@@ -1205,7 +1159,7 @@ function EditorCanvas() {
 
     const bounds = calculateDrawBounds(points);
     const relativePoints = points.map((value, index) =>
-      index % 2 === 0 ? value - bounds.minX : value - bounds.minY
+      index % 2 === 0 ? value - bounds.minX : value - bounds.minY,
     );
 
     const blocks = selectOrderedBlocks(storeApi.getState());
@@ -1227,7 +1181,7 @@ function EditorCanvas() {
         tension: 0,
         visible: true,
         opacity: 100,
-      } satisfies IEditorBlockDraw)
+      } satisfies IEditorBlockDraw),
     );
 
     storeApi.getState().addBlock(drawBlock);
@@ -1263,7 +1217,7 @@ function EditorCanvas() {
       const next = updater(current);
       setSelectedIds(next);
     },
-    [setSelectedIds, storeApi]
+    [setSelectedIds, storeApi],
   );
 
   const handleNodeSelection = React.useCallback(
@@ -1285,7 +1239,7 @@ function EditorCanvas() {
         setSelectedIds([block.id]);
       }
     },
-    [setHoveredId, setSelectedIds, updateSelection, isSelectMode]
+    [setHoveredId, setSelectedIds, updateSelection, isSelectMode],
   );
 
   const commitSelectionRect = React.useCallback(() => {
@@ -1304,7 +1258,7 @@ function EditorCanvas() {
       setPlacementHasMoved(false);
       setIsPlacingBlock(true);
     },
-    [zoom]
+    [zoom],
   );
 
   const handleSelectionMouseDown = React.useCallback(
@@ -1324,7 +1278,7 @@ function EditorCanvas() {
       });
       setIsSelecting(true);
     },
-    [setSelectedIds, zoom]
+    [setSelectedIds, zoom],
   );
 
   const handleStageMouseDown = React.useCallback(
@@ -1387,7 +1341,7 @@ function EditorCanvas() {
       setDrawingPoints,
       handlePlacementMouseDown,
       handleSelectionMouseDown,
-    ]
+    ],
   );
 
   const handleStageMouseMove = React.useCallback(() => {
@@ -1400,10 +1354,7 @@ function EditorCanvas() {
       const pointer = getPointerPosition(stage);
       if (pointer) {
         const canvasPoint = toCanvasCoordinates(stage, pointer, zoom);
-        const nextPoints = drawingPointsRef.current.concat([
-          canvasPoint.x,
-          canvasPoint.y,
-        ]);
+        const nextPoints = drawingPointsRef.current.concat([canvasPoint.x, canvasPoint.y]);
         drawingPointsRef.current = nextPoints;
         setDrawingPoints(nextPoints);
       }
@@ -1442,19 +1393,10 @@ function EditorCanvas() {
     const rect = rectFromPoints(selectionStartRef.current, canvasPoint);
     setSelectionRect(rect);
     const previewIds = blocks
-      .filter(
-        (block) => isBlockVisible(block) && blockIntersectsRect(block, rect)
-      )
+      .filter((block) => isBlockVisible(block) && blockIntersectsRect(block, rect))
       .map((block) => block.id);
     setPreviewSelectionIds(previewIds);
-  }, [
-    blocks,
-    isDrawing,
-    isSelecting,
-    zoom,
-    isPlacingBlock,
-    placementStart,
-  ]);
+  }, [blocks, isDrawing, isSelecting, zoom, isPlacingBlock, placementStart]);
 
   const handleStageMouseUp = React.useCallback(() => {
     if (isDrawing) {
@@ -1507,10 +1449,7 @@ function EditorCanvas() {
       return;
     }
     const newSelection = blocks
-      .filter(
-        (block) =>
-          isBlockVisible(block) && blockIntersectsRect(block, selectionRect)
-      )
+      .filter((block) => isBlockVisible(block) && blockIntersectsRect(block, selectionRect))
       .map((block) => block.id);
     updateSelection((current) => {
       if (current.length === 0) {
@@ -1558,7 +1497,7 @@ function EditorCanvas() {
         setPreviewSelectionIds([]);
       }
     },
-    [setSelectedIds, isSelectMode]
+    [setSelectedIds, isSelectMode],
   );
 
   const handleStageDragMove = React.useCallback(
@@ -1569,7 +1508,7 @@ function EditorCanvas() {
       }
       setStagePosition({ x: stage.x(), y: stage.y() });
     },
-    [setStagePosition]
+    [setStagePosition],
   );
 
   const handleStageDragEnd = React.useCallback(
@@ -1581,19 +1520,16 @@ function EditorCanvas() {
       setStagePosition({ x: stage.x(), y: stage.y() });
       setIsStageDragging(false);
     },
-    [setStagePosition]
+    [setStagePosition],
   );
 
-  const handleStageDragStart = React.useCallback(
-    (event: KonvaEventObject<DragEvent>) => {
-      const stage = stageRef.current;
-      if (!stage || event.target !== stage) {
-        return;
-      }
-      setIsStageDragging(true);
-    },
-    []
-  );
+  const handleStageDragStart = React.useCallback((event: KonvaEventObject<DragEvent>) => {
+    const stage = stageRef.current;
+    if (!stage || event.target !== stage) {
+      return;
+    }
+    setIsStageDragging(true);
+  }, []);
 
   const handleNodeDragEnd = React.useCallback(
     (id: string, position: { x: number; y: number }) => {
@@ -1608,11 +1544,7 @@ function EditorCanvas() {
           const block = blocks.find((b) => b.id === id);
           if (block?.type === "arrow") {
             const arrowBlock = block as IEditorBlockArrow;
-            const blockPos = groupPositionToBlockPosition(
-              position.x,
-              position.y,
-              arrowBlock
-            );
+            const blockPos = groupPositionToBlockPosition(position.x, position.y, arrowBlock);
             setBlockPosition(id, blockPos);
           } else {
             setBlockPosition(id, position);
@@ -1631,13 +1563,9 @@ function EditorCanvas() {
           const originalBlockPos = groupPositionToBlockPosition(
             originalPos.x,
             originalPos.y,
-            arrowBlock
+            arrowBlock,
           );
-          const newBlockPos = groupPositionToBlockPosition(
-            position.x,
-            position.y,
-            arrowBlock
-          );
+          const newBlockPos = groupPositionToBlockPosition(position.x, position.y, arrowBlock);
           offsetX = newBlockPos.x - originalBlockPos.x;
           offsetY = newBlockPos.y - originalBlockPos.y;
         } else {
@@ -1664,11 +1592,7 @@ function EditorCanvas() {
           const block = blocks.find((b) => b.id === blockId);
           if (block?.type === "arrow") {
             const arrowBlock = block as IEditorBlockArrow;
-            const blockPos = groupPositionToBlockPosition(
-              originalPos.x,
-              originalPos.y,
-              arrowBlock
-            );
+            const blockPos = groupPositionToBlockPosition(originalPos.x, originalPos.y, arrowBlock);
             setBlockPosition(blockId, blockPos);
           } else {
             setBlockPosition(blockId, originalPos);
@@ -1684,18 +1608,14 @@ function EditorCanvas() {
         if (block?.type === "arrow") {
           const arrowBlock = block as IEditorBlockArrow;
           // Convert Group position back to block position
-          const blockPos = groupPositionToBlockPosition(
-            position.x,
-            position.y,
-            arrowBlock
-          );
+          const blockPos = groupPositionToBlockPosition(position.x, position.y, arrowBlock);
           setBlockPosition(id, blockPos);
         } else {
           setBlockPosition(id, position);
         }
       }
     },
-    [setBlockPosition, blocks, selectedIds, copySelectedBlocks, pasteBlocks]
+    [setBlockPosition, blocks, selectedIds, copySelectedBlocks, pasteBlocks],
   );
 
   const handleTransform = React.useCallback(() => {
@@ -1773,8 +1693,7 @@ function EditorCanvas() {
         // Calculate scale based on the bounding box diagonal change
         // This gives us a more accurate scale for the arrow length
         const originalDiagonal = Math.sqrt(
-          arrowBlock.width * arrowBlock.width +
-            arrowBlock.height * arrowBlock.height
+          arrowBlock.width * arrowBlock.width + arrowBlock.height * arrowBlock.height,
         );
         const newDiagonal = Math.sqrt(width * width + height * height);
         const scale = originalDiagonal > 0 ? newDiagonal / originalDiagonal : 1;
@@ -1790,11 +1709,7 @@ function EditorCanvas() {
         const newBounds = calculateArrowBounds(tempBlock);
 
         // Convert Group position back to block position
-        const blockPos = groupPositionToBlockPosition(
-          node.x(),
-          node.y(),
-          tempBlock
-        );
+        const blockPos = groupPositionToBlockPosition(node.x(), node.y(), tempBlock);
 
         updateBlockValues(id, {
           x: blockPos.x,
@@ -1808,7 +1723,7 @@ function EditorCanvas() {
       } else if (block.type === "draw") {
         const drawBlock = block as IEditorBlockDraw;
         const scaledPoints = drawBlock.points.map((value, index) =>
-          index % 2 === 0 ? value * scaleX : value * scaleY
+          index % 2 === 0 ? value * scaleX : value * scaleY,
         );
 
         updateBlockValues(id, {
@@ -1855,7 +1770,7 @@ function EditorCanvas() {
       setIsTextEditing(true);
       setSelectedIds([block.id]);
     },
-    [setIsTextEditing, setSelectedIds, stagePosition, zoom]
+    [setIsTextEditing, setSelectedIds, stagePosition, zoom],
   );
 
   const commitTextEdit = React.useCallback(() => {
@@ -1895,11 +1810,7 @@ function EditorCanvas() {
     if (!editingText) {
       return null;
     }
-    return (
-      (storeApi.getState().blocksById[editingText.id] as
-        | IEditorBlockText
-        | undefined) ?? null
-    );
+    return (storeApi.getState().blocksById[editingText.id] as IEditorBlockText | undefined) ?? null;
   }, [editingText, storeApi]);
 
   return (
@@ -1927,8 +1838,8 @@ function EditorCanvas() {
             ? isTextEditing
               ? "default"
               : isStageDragging
-              ? "grabbing"
-              : "grab"
+                ? "grabbing"
+                : "grab"
             : "default",
         }}
       >
@@ -1948,11 +1859,7 @@ function EditorCanvas() {
 
         <Layer listening={false}>
           {isDrawing && drawingPreview ? (
-            <Group
-              x={drawingPreview.bounds.minX}
-              y={drawingPreview.bounds.minY}
-              listening={false}
-            >
+            <Group x={drawingPreview.bounds.minX} y={drawingPreview.bounds.minY} listening={false}>
               <KonvaLine
                 points={drawingPreview.points}
                 stroke="#000000"
@@ -1999,16 +1906,12 @@ function EditorCanvas() {
                   isAltDragRef.current = true;
                   // Store original positions of all selected blocks
                   // Get current selected IDs from store to ensure we have the latest state
-                  const currentSelectedIds = storeApi
-                    .getState()
-                    .selectedIds.includes(block.id)
+                  const currentSelectedIds = storeApi.getState().selectedIds.includes(block.id)
                     ? storeApi.getState().selectedIds
                     : [block.id];
                   originalPositionsRef.current.clear();
                   currentSelectedIds.forEach((selectedId) => {
-                    const selectedBlock = blocks.find(
-                      (b) => b.id === selectedId
-                    );
+                    const selectedBlock = blocks.find((b) => b.id === selectedId);
                     if (selectedBlock) {
                       if (selectedBlock.type === "arrow") {
                         const arrowBlock = selectedBlock as IEditorBlockArrow;
@@ -2016,7 +1919,7 @@ function EditorCanvas() {
                         const groupPos = blockPositionToGroupPosition(
                           arrowBlock.x,
                           arrowBlock.y,
-                          arrowBlock
+                          arrowBlock,
                         );
                         originalPositionsRef.current.set(selectedId, {
                           x: groupPos.x,
@@ -2040,13 +1943,11 @@ function EditorCanvas() {
               onHover: handleHover,
               draggable: isSelectMode && !isTextEditing,
             };
-            const handleBlockClick = (
-              evt: KonvaEventObject<MouseEvent | TouchEvent>
-            ) => handleNodeSelection(block, evt);
+            const handleBlockClick = (evt: KonvaEventObject<MouseEvent | TouchEvent>) =>
+              handleNodeSelection(block, evt);
 
             const isPreviewed =
-              !selectedIds.includes(block.id) &&
-              previewSelectionIds.includes(block.id);
+              !selectedIds.includes(block.id) && previewSelectionIds.includes(block.id);
 
             let content: React.ReactNode = null;
             if (block.type === "frame") {
@@ -2120,9 +2021,7 @@ function EditorCanvas() {
             return (
               <React.Fragment key={block.id}>
                 {content}
-                {isPreviewed && isSelectMode ? (
-                  <HoverOutline block={block} zoom={zoom} />
-                ) : null}
+                {isPreviewed && isSelectMode ? <HoverOutline block={block} zoom={zoom} /> : null}
               </React.Fragment>
             );
           })}
@@ -2140,10 +2039,7 @@ function EditorCanvas() {
 
         <Layer listening={false}>
           <SelectionOutline rect={selectionRect} zoom={zoom} />
-          {isPlacingBlock &&
-          placementStart &&
-          placementHasMoved &&
-          isPlacementMode() ? (
+          {isPlacingBlock && placementStart && placementHasMoved && isPlacementMode() ? (
             <PlacementPreview
               mode={mode as "text" | "frame" | "arrow" | "image"}
               start={placementStart}
@@ -2197,9 +2093,7 @@ function EditorCanvas() {
           }}
           value={editingText.value}
           onChange={(event) =>
-            setEditingText((prev) =>
-              prev ? { ...prev, value: event.target.value } : prev
-            )
+            setEditingText((prev) => (prev ? { ...prev, value: event.target.value } : prev))
           }
           onBlur={commitTextEdit}
           onKeyDown={(event) => {

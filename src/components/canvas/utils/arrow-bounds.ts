@@ -25,9 +25,7 @@ export interface ArrowBounds {
   originalPoints: [number, number, number, number];
 }
 
-export function calculateArrowBounds(
-  block: IEditorBlockArrow
-): ArrowBounds {
+export function calculateArrowBounds(block: IEditorBlockArrow): ArrowBounds {
   const pointerLength = block.pointerLength ?? 20;
   const pointerWidth = block.pointerWidth ?? 20;
   const strokeWidth = block.strokeWidth ?? 4;
@@ -75,15 +73,11 @@ export function calculateArrowBounds(
 
   // For horizontal arrows, add arrowhead width to height; for vertical, add to width
   const finalWidth = isHorizontal ? arrowWidth : arrowWidth + pointerWidth;
-  const finalHeight = isHorizontal
-    ? Math.max(arrowHeight, pointerWidth, strokeWidth)
-    : arrowHeight;
+  const finalHeight = isHorizontal ? Math.max(arrowHeight, pointerWidth, strokeWidth) : arrowHeight;
 
   // Calculate padding needed for arrowhead width (centered)
   const widthPadding = isHorizontal ? 0 : pointerWidth / 2;
-  const heightPadding = isHorizontal
-    ? Math.max(pointerWidth, strokeWidth) / 2
-    : 0;
+  const heightPadding = isHorizontal ? Math.max(pointerWidth, strokeWidth) / 2 : 0;
 
   // Adjust bounding box to include padding
   const adjustedMinX = finalMinX - widthPadding;
@@ -114,7 +108,7 @@ export function calculateArrowBounds(
 export function groupPositionToBlockPosition(
   groupX: number,
   groupY: number,
-  block: IEditorBlockArrow
+  block: IEditorBlockArrow,
 ): { x: number; y: number } {
   const bounds = calculateArrowBounds(block);
   return {
@@ -130,7 +124,7 @@ export function groupPositionToBlockPosition(
 export function blockPositionToGroupPosition(
   blockX: number,
   blockY: number,
-  block: IEditorBlockArrow
+  block: IEditorBlockArrow,
 ): { x: number; y: number } {
   const bounds = calculateArrowBounds(block);
   return {
@@ -145,7 +139,7 @@ export function blockPositionToGroupPosition(
  */
 export function scaleArrowPoints(
   block: IEditorBlockArrow,
-  scale: number
+  scale: number,
 ): [number, number, number, number] {
   const originalDx = block.points[2] - block.points[0];
   const originalDy = block.points[3] - block.points[1];
@@ -160,4 +154,3 @@ export function scaleArrowPoints(
     block.points[1] + newDy, // New end point
   ];
 }
-

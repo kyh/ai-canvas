@@ -11,14 +11,13 @@ interface ContentControlProps {
 
 function ContentControl({ blockId, block, className }: ContentControlProps) {
   const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined
+    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
   );
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
 
   return (
-    <ControllerRow label="Content" className={className}
-      contentClassName="gap-3">
+    <ControllerRow label="Content" className={className} contentClassName="gap-3">
       <Input
         value={resolvedBlock?.text ?? ""}
         onChange={(event) => {

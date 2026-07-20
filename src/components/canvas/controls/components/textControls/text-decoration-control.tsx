@@ -11,7 +11,7 @@ interface TextDecorationControlProps {
 
 function TextDecorationControl({ blockId, block, className }: TextDecorationControlProps) {
   const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined
+    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
   );
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -19,11 +19,7 @@ function TextDecorationControl({ blockId, block, className }: TextDecorationCont
     return null;
   }
   return (
-    <ControllerRow
-      label="Decoration"
-      className={className}
-      contentClassName="justify-between"
-    >
+    <ControllerRow label="Decoration" className={className} contentClassName="justify-between">
       <NativeSelect
         name="textDecoration"
         id="textDecoration"

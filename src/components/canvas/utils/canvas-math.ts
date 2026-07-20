@@ -1,5 +1,5 @@
-import type Konva from 'konva';
-import type { IEditorSize } from '@/lib/schema';
+import type Konva from "konva";
+import type { IEditorSize } from "@/lib/schema";
 
 export interface ViewportContext {
   stage: Konva.Stage | null;
@@ -27,11 +27,7 @@ export const centerStageWithinContainer = ({
   y: Math.round((containerSize.height - canvasSize.height * zoom) / 2),
 });
 
-export const centerBlockInViewport = (
-  context: ViewportContext,
-  width: number,
-  height: number
-) => {
+export const centerBlockInViewport = (context: ViewportContext, width: number, height: number) => {
   const { stage, stagePosition, zoom, containerSize, canvasSize } = context;
   if (!stage) {
     return centerBlockInCanvas(canvasSize, width, height);

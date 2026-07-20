@@ -1,6 +1,6 @@
-import * as React from 'react';
-import type Konva from 'konva';
-import type { KonvaEventObject } from 'konva/lib/Node';
+import * as React from "react";
+import type Konva from "konva";
+import type { KonvaEventObject } from "konva/lib/Node";
 type CanvasPointer = { x: number; y: number };
 
 interface UseCanvasZoomPanArgs {
@@ -55,7 +55,16 @@ export const useCanvasZoomPan = ({
       setStageZoom(clamped);
       setStagePosition(newPosition);
     },
-    [containerRef, containerSize.height, containerSize.width, setStagePosition, setStageZoom, stagePosition, stageRef, zoom]
+    [
+      containerRef,
+      containerSize.height,
+      containerSize.width,
+      setStagePosition,
+      setStageZoom,
+      stagePosition,
+      stageRef,
+      zoom,
+    ],
   );
 
   const handleWheel = React.useCallback(
@@ -69,7 +78,8 @@ export const useCanvasZoomPan = ({
       const deltaX = evt.deltaX;
       const deltaY = evt.deltaY;
       const deltaZ = evt.deltaZ ?? 0;
-      const isPinchGesture = evt.ctrlKey || Math.abs(deltaZ) > Math.max(Math.abs(deltaX), Math.abs(deltaY));
+      const isPinchGesture =
+        evt.ctrlKey || Math.abs(deltaZ) > Math.max(Math.abs(deltaX), Math.abs(deltaY));
 
       if (isPinchGesture) {
         evt.preventDefault();
@@ -93,7 +103,7 @@ export const useCanvasZoomPan = ({
       };
       setStagePosition(newPosition);
     },
-    [applyZoom, setStagePosition, stagePosition, stageRef, zoom]
+    [applyZoom, setStagePosition, stagePosition, stageRef, zoom],
   );
 
   return React.useMemo(
@@ -101,6 +111,6 @@ export const useCanvasZoomPan = ({
       applyZoom,
       handleWheel,
     }),
-    [applyZoom, handleWheel]
+    [applyZoom, handleWheel],
   );
 };

@@ -1,13 +1,13 @@
-import * as React from 'react';
-import type Konva from 'konva';
-import type { IEditorBlocks } from '@/lib/schema';
-import { blockNodeId } from '../utils';
+import * as React from "react";
+import type Konva from "konva";
+import type { IEditorBlocks } from "@/lib/schema";
+import { blockNodeId } from "../utils";
 
 export const useTransformerSync = (
   stageRef: React.RefObject<Konva.Stage | null>,
   transformerRef: React.RefObject<Konva.Transformer | null>,
   blocks: IEditorBlocks[],
-  selectedIds: string[]
+  selectedIds: string[],
 ) => {
   React.useEffect(() => {
     const stage = stageRef.current;
