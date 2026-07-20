@@ -59,9 +59,7 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
         style: "normal",
       });
 
-      const loadPromise = font.load().then((loadedFont) => {
-        document.fonts.add(loadedFont);
-      });
+      const loadPromise = font.load().then((loadedFont) => void document.fonts.add(loadedFont));
       loadPromises.push(loadPromise);
 
       cssRules.push(`

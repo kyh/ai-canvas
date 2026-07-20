@@ -603,20 +603,20 @@ function EditorBottomToolbar() {
           const file = e.target.files?.[0];
           if (file) {
             const reader = new FileReader();
-            reader.onload = () => {
+            reader.addEventListener("load", () => {
               // readAsDataURL always yields a string result
               if (typeof reader.result !== "string") return;
               const img = new Image();
-              img.src = reader.result;
-              img.onload = () => {
+              img.addEventListener("load", () => {
                 setPendingImageData({
                   url: img.src,
                   width: img.width,
                   height: img.height,
                 });
                 setMode("image");
-              };
-            };
+              });
+              img.src = reader.result;
+            });
             reader.readAsDataURL(file);
             // reset input value
             e.target.value = "";

@@ -506,6 +506,7 @@ const HtmlContent = React.memo(
     return (
       <iframe
         key={htmlKey}
+        title="Generated HTML block"
         srcDoc={html}
         style={{
           width: "100%",

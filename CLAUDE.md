@@ -8,7 +8,7 @@ AI Canvas - interactive canvas app w/ AI-powered design generation. Build Canva/
 
 - Next.js 16 (App Router)
 - React 19
-- TypeScript (strict; no `any`, no `as`, no `!`)
+- TypeScript (strict; no `any`, no `!` — both `error` in `.oxlintrc.json`; avoid `as` in new code)
 - Konva (canvas rendering)
 - Zustand (state)
 - shadcn base-vega on Base UI (`@base-ui/react`, `render` prop — NOT Radix/asChild)
@@ -74,7 +74,7 @@ pnpm format:fix      # oxfmt --write
 
 - Path alias: `@/*` → `./src/*` — but files imported by `agent/` code MUST use relative imports (eve's compiler doesn't read tsconfig paths)
 - kebab-case filenames for TS/TSX; `agent/tools/*` are snake_case (eve derives tool names from filenames)
-- No `any`, no `!`, no `as` — zod-parse at boundaries (stream events, tool payloads, localStorage)
+- No `any`, no `!` — enforced by `pnpm lint` via `.oxlintrc.json`. Avoid `as` in new code and zod-parse at boundaries (stream events, tool payloads, localStorage); `consistent-type-assertions` stays off until `controls/components/textControls/fonts.ts` is de-cast — see `AGENTS.md`
 
 ## Key Files
 

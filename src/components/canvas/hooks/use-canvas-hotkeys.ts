@@ -78,10 +78,10 @@ export const useCanvasHotkeys = ({
         }
         event.preventDefault();
         // Get all visible blocks
-        const allBlockIds = state.blockOrder
-          .map((id) => state.blocksById[id])
-          .filter((block) => block && block.visible)
-          .map((block) => block!.id);
+        const allBlockIds = state.blockOrder.flatMap((id) => {
+          const block = state.blocksById[id];
+          return block?.visible ? [block.id] : [];
+        });
         if (allBlockIds.length > 0) {
           store.getState().setSelectedIds(allBlockIds);
         }

@@ -58,9 +58,10 @@ pnpm verify     # typecheck · lint · format
 
 There is no test suite and no CI workflow in this repo: `pnpm verify` plus `pnpm build` is the entire static gate, and nothing runs it for you on a PR.
 
-Runtime — the web app is the only driveable surface. With `pnpm dev` running, use [agent-browser](https://github.com/vercel-labs/agent-browser):
+Runtime — the web app is the only driveable surface. With `pnpm dev` running, use [agent-browser](https://github.com/vercel-labs/agent-browser). It is not a dependency of this repo; install it once if missing:
 
 ```sh
+npm i -g agent-browser        # or: pnpm dlx agent-browser <cmd>
 agent-browser open http://localhost:3000
 agent-browser snapshot -i                                  # interactive tree with @eN refs
 agent-browser fill @e17 "Add a text block that says Hello" # the prompt textarea
@@ -86,10 +87,17 @@ Notes that make this actually work:
 
 ## Rules that matter
 
-- **Files imported by `agent/` code MUST use relative imports.** eve's compiler doesn't read tsconfig `paths`, so `@/…` breaks there. `src/lib/assistant-schemas.ts` and `src/lib/schema.ts` are imported from both sides — keep them relative-import clean.
+- **Files imported by `agent/` code MUST use relative imports.** eve's compiler doesn't read tsconfig `paths`, so `@/…` breaks there — and `tsc`, `oxlint` and `next build` all stay green when it does. The dual-imported set today is `src/lib/schema.ts`, `src/lib/assistant-schemas.ts`, `src/lib/id-generator.ts` and `src/components/canvas/utils/constants.ts`; re-derive it rather than trusting that list:
+
+  ```sh
+  grep -rh 'from "\.\./\.\./src' agent/ | sort -u
+  ```
+
+  Everything reachable from those files must stay relative-import clean too.
+
 - **`agent/tools/*` filenames are snake_case** because eve derives the model-visible tool name from the filename. Everything else in the repo is kebab-case.
 - **Never run `eve build` while `pnpm dev` is running** — it corrupts eve's dev workflow cache. Recovery: delete `.eve/` and `.workflow-data/`, restart.
-- **No `any`, no non-null `!`, no `as` casts.** Zod-parse at boundaries: stream events, tool payloads, localStorage.
+- **No `any`, no non-null `!`.** Both are `error` in `.oxlintrc.json`, so `pnpm lint` enforces them. **Avoid `as` casts in new code** too — zod-parse at boundaries (stream events, tool payloads, localStorage). `typescript/consistent-type-assertions` is deliberately _not_ enabled yet: `src/components/canvas/controls/components/textControls/fonts.ts` is a large generated font table with ~100 casts. Turn the rule on once that file is cleaned up; every other fork in this family already runs it.
 - Never commit `.env` / `.env.local`. New env vars go in `.env.example`.
 
 ## Map
