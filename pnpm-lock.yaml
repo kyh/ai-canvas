@@ -88,10 +88,10 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.17)
       oxfmt:
-        specifier: latest
+        specifier: ^0.58.0
         version: 0.58.0
       oxlint:
-        specifier: latest
+        specifier: ^1.73.0
         version: 1.73.0
       tailwindcss:
         specifier: ^4.3.2
