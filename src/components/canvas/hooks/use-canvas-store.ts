@@ -19,7 +19,7 @@ export const useCanvasStore = () => {
       containerSize: s.canvas.containerSize,
       size: s.canvas.size,
       background: s.canvas.background,
-    }))
+    })),
   );
 
   // Select actions - these are stable function references
@@ -40,7 +40,7 @@ export const useCanvasStore = () => {
       deleteSelectedBlocks: s.deleteSelectedBlocks,
       setBlockPosition: s.setBlockPosition,
       updateBlockValues: s.updateBlockValues,
-    }))
+    })),
   );
 
   // Combine with stable blocks reference
@@ -50,6 +50,6 @@ export const useCanvasStore = () => {
       ...state,
       ...actions,
     }),
-    [blocks, state, actions]
+    [blocks, state, actions],
   );
 };

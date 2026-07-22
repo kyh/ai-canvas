@@ -15,7 +15,7 @@ function NativeSelect({ className, ...props }: React.ComponentProps<"select">) {
           "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-7 w-full min-w-0 appearance-none rounded-md border border-border bg-muted px-1 pr-7 text-xs transition hover:border-primary outline-none disabled:pointer-events-none disabled:cursor-not-allowed",
           "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
           "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-          className
+          className,
         )}
         {...props}
       />
@@ -32,17 +32,8 @@ function NativeSelectOption({ ...props }: React.ComponentProps<"option">) {
   return <option data-slot="native-select-option" {...props} />;
 }
 
-function NativeSelectOptGroup({
-  className,
-  ...props
-}: React.ComponentProps<"optgroup">) {
-  return (
-    <optgroup
-      data-slot="native-select-optgroup"
-      className={cn(className)}
-      {...props}
-    />
-  );
+function NativeSelectOptGroup({ className, ...props }: React.ComponentProps<"optgroup">) {
+  return <optgroup data-slot="native-select-optgroup" className={cn(className)} {...props} />;
 }
 
 export { NativeSelect, NativeSelectOptGroup, NativeSelectOption };

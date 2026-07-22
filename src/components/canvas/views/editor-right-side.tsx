@@ -25,7 +25,7 @@ function EditorRightSide({ className }: { className?: string }) {
     <div
       className={cn(
         "fixed right-3 top-3 bottom-3 z-20 hidden md:flex w-64 flex-col border border-border/50 bg-background/95 backdrop-blur shadow-xl rounded-[1.25rem] overflow-hidden",
-        className
+        className,
       )}
     >
       <ScrollArea>
@@ -33,10 +33,7 @@ function EditorRightSide({ className }: { className?: string }) {
           <>
             <LayoutController blockId={activeBlock.id} />
             {blockType === "text" ? (
-              <TextController
-                blockId={activeBlock.id}
-                block={activeBlock as IEditorBlockText}
-              />
+              <TextController blockId={activeBlock.id} block={activeBlock as IEditorBlockText} />
             ) : null}
             {blockType !== "text" && <LayerController blockId={activeBlock.id} />}
           </>

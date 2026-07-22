@@ -32,7 +32,7 @@ export const blockNodeId = (blockId: string) => `block-${blockId}`;
 export const calculateDefaultZoom = (
   canvasWidth: number,
   canvasHeight: number,
-  container: HTMLDivElement
+  container: HTMLDivElement,
 ) => {
   const containerWidth = container.clientWidth - 50;
   const containerHeight = container.clientHeight - 50;
@@ -88,7 +88,7 @@ const splitGradientArgs = (input: string) => {
 
 const parseStop = (value: string, index: number, total: number) => {
   const colorMatch = value.match(
-    /(rgba?\([^\)]+\)|#[0-9a-fA-F]{3,8}|hsl\([^\)]+\)|hsla\([^\)]+\)|[a-zA-Z]+)/
+    /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)/,
   );
   const color = colorMatch ? colorMatch[0].trim() : value.trim();
   const remainder = value.replace(color, "").trim();
@@ -124,11 +124,7 @@ const angleToPoints = (angleDeg: number, width: number, height: number) => {
   };
 };
 
-export const parseLinearGradientFill = (
-  value: string,
-  width: number,
-  height: number
-) => {
+export const parseLinearGradientFill = (value: string, width: number, height: number) => {
   const match = value.match(/linear-gradient\((.*)\)/i);
   if (!match) {
     return { fill: value };
@@ -160,9 +156,7 @@ export const parseLinearGradientFill = (
     }
   }
   const stops = parts.length ? parts : [first];
-  const parsedStops = stops.map((stop, index) =>
-    parseStop(stop, index, stops.length)
-  );
+  const parsedStops = stops.map((stop, index) => parseStop(stop, index, stops.length));
   const colorStops: (number | string)[] = [];
   parsedStops.forEach((stop) => {
     colorStops.push(stop.offset, stop.color);

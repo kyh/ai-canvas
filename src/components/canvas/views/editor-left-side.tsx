@@ -34,12 +34,7 @@ import Link from "next/link";
 
 function GitHubLogoIcon({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.69-3.88-1.54-3.88-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 2.9-.39c.98 0 1.97.13 2.9.39 2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.4-5.26 5.69.41.35.78 1.05.78 2.12v3.14c0 .31.21.67.8.56 4.56-1.52 7.85-5.83 7.85-10.91C23.5 5.73 18.27.5 12 .5z" />
     </svg>
   );
@@ -80,7 +75,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
       onMouseLeave,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [label, setLabel] = React.useState(block.label);
     const [editable, setEditable] = React.useState(false);
@@ -106,7 +101,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
           {
             "opacity-40": !block.visible,
           },
-          className
+          className,
         )}
         data-block-id={block.id}
         onMouseEnter={(event) => {
@@ -128,7 +123,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
             {
               "bg-muted border-border/60": selected,
               "border-transparent": !selected,
-            }
+            },
           )}
           onClick={handleSelect}
           aria-label={`Select ${block.label}`}
@@ -139,7 +134,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               {
                 "bg-background shadow-sm": selected,
                 "bg-muted": !selected,
-              }
+              },
             )}
           >
             <div className="text-base opacity-70">{BlockIcon(block.type)}</div>
@@ -173,9 +168,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               }}
             />
           ) : (
-            <div className="flex-1 h-6 px-1 text-sm truncate flex items-center">
-              {block.label}
-            </div>
+            <div className="flex-1 h-6 px-1 text-sm truncate flex items-center">{block.label}</div>
           )}
         </button>
         <DropdownMenu>
@@ -208,11 +201,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               Delete
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onToggleVisibility?.(block.id)}>
-              {block.visible ? (
-                <EyeOff className="mr-1 size-4" />
-              ) : (
-                <Eye className="mr-1 size-4" />
-              )}
+              {block.visible ? <EyeOff className="mr-1 size-4" /> : <Eye className="mr-1 size-4" />}
               {block.visible ? "Hide" : "Show"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -236,7 +225,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
         </DropdownMenu>
       </div>
     );
-  }
+  },
 );
 
 BlockItem.displayName = "BlockItem";
@@ -245,7 +234,7 @@ function EditorLeftSide() {
   const [showApiKeyDialog, setShowApiKeyDialog] = React.useState(false);
   const blocks = useOrderedBlocks();
   const [selectedIds, setSelectedIds] = useEditorStore(
-    useShallow((state) => [state.selectedIds, state.setSelectedIds])
+    useShallow((state) => [state.selectedIds, state.setSelectedIds]),
   );
   const [
     setHoveredId,
@@ -268,7 +257,7 @@ function EditorLeftSide() {
       state.bringBackwardBlock,
       state.bringToTopBlock,
       state.bringToBackBlock,
-    ])
+    ]),
   );
 
   const handleSelect = React.useCallback(
@@ -278,7 +267,7 @@ function EditorLeftSide() {
       }
       setSelectedIds([block.id]);
     },
-    [setSelectedIds]
+    [setSelectedIds],
   );
 
   return (
@@ -329,10 +318,7 @@ function EditorLeftSide() {
           </Button>
         </div>
       </div>
-      <ApiKeyDialog
-        open={showApiKeyDialog}
-        onOpenChange={setShowApiKeyDialog}
-      />
+      <ApiKeyDialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog} />
     </div>
   );
 }

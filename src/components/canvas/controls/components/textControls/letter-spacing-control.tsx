@@ -11,7 +11,7 @@ interface LetterSpacingControlProps {
 
 function LetterSpacingControl({ blockId, block, className }: LetterSpacingControlProps) {
   const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined
+    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
   );
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);

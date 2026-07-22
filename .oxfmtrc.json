@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "node_modules",
+    "pnpm-lock.yaml",
+    "*.tsbuildinfo",
+    ".next",
+    ".eve",
+    ".workflow-data",
+    ".output",
+    "out"
+  ],
+  "experimentalSortPackageJson": {}
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "prompt": "This template is built to be driven by coding agents — read AGENTS.md first. Provisioning is `pnpm install` then `AI_GATEWAY_API_KEY=vck_…` in `.env.local`; there is no Docker, database or login. Gate every change with `pnpm verify`.",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm verify:*)",
+      "Bash(agent-browser:*)"
+    ]
+  }
+}

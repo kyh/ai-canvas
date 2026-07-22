@@ -28,7 +28,7 @@ const ControllerBox = React.forwardRef<HTMLDivElement, ControllerBoxProps>(
       itemClassName,
       contentClassName,
     },
-    ref
+    ref,
   ) => {
     const generatedId = React.useId().replace(/[:]/g, "");
 
@@ -46,21 +46,17 @@ const ControllerBox = React.forwardRef<HTMLDivElement, ControllerBoxProps>(
             {
               "border-t": borderTop,
             },
-            itemClassName
+            itemClassName,
           )}
         >
-          <AccordionTrigger className="text-sm font-semibold">
-            {title}
-          </AccordionTrigger>
-          <AccordionContent
-            className={cn("flex flex-col gap-2.5", contentClassName)}
-          >
+          <AccordionTrigger className="text-sm font-semibold">{title}</AccordionTrigger>
+          <AccordionContent className={cn("flex flex-col gap-2.5", contentClassName)}>
             {children}
           </AccordionContent>
         </AccordionItem>
       </Accordion>
     );
-  }
+  },
 );
 
 ControllerBox.displayName = "ControllerBox";

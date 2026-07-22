@@ -13,11 +13,7 @@ export function ModeToggle() {
       size="icon"
       className="size-10"
     >
-      {theme === "dark" ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
+      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </Button>
   );
 }

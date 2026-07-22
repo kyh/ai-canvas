@@ -20,13 +20,10 @@ export const parseTemplate = (template?: Template) => {
   const background = validated?.background ?? "#ffffff";
   const blocks = (validated?.blocks ?? []).map(ensureBlockDefaults);
   const blockOrder = blocks.map((block) => block.id);
-  const blocksById = blocks.reduce<Record<string, IEditorBlocks>>(
-    (acc, block) => {
-      acc[block.id] = block;
-      return acc;
-    },
-    {}
-  );
+  const blocksById = blocks.reduce<Record<string, IEditorBlocks>>((acc, block) => {
+    acc[block.id] = block;
+    return acc;
+  }, {});
 
   return {
     canvasSize,
@@ -37,5 +34,4 @@ export const parseTemplate = (template?: Template) => {
   };
 };
 
-export const parseBlock = (block: IEditorBlocks) =>
-  ensureBlockDefaults(blockSchema.parse(block));
+export const parseBlock = (block: IEditorBlocks) => ensureBlockDefaults(blockSchema.parse(block));

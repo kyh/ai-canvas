@@ -11,7 +11,7 @@ interface LineHeightControlProps {
 
 function LineHeightControl({ blockId, block, className }: LineHeightControlProps) {
   const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined
+    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
   );
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);

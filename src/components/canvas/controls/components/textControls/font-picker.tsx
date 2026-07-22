@@ -1,10 +1,6 @@
 import * as React from "react";
 import type { IEditorBlockText } from "@/lib/schema";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronDown as CaretDownIcon, X as Cross2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ControllerRow from "../controller-row";
@@ -18,24 +14,14 @@ interface FontControlProps {
   className?: string;
 }
 
-const DEFAULT_WEIGHTS = [
-  "100",
-  "200",
-  "300",
-  "400",
-  "500",
-  "600",
-  "700",
-  "800",
-  "900",
-];
+const DEFAULT_WEIGHTS = ["100", "200", "300", "400", "500", "600", "700", "800", "900"];
 
 const findFont = (family?: string) =>
   family ? fontsList.find((font) => font.family === family) : undefined;
 
 function FontControl({ blockId, block, className }: FontControlProps) {
   const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined
+    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
   );
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -95,11 +81,7 @@ function FontControl({ blockId, block, className }: FontControlProps) {
   const selectedFontFamily = resolvedBlock.font.family;
   const selectedFont = findFont(selectedFontFamily);
 
-  const applyFontWeights = (
-    family: string,
-    fontWeightsList: string[],
-    desiredWeight: string
-  ) => {
+  const applyFontWeights = (family: string, fontWeightsList: string[], desiredWeight: string) => {
     if (!resolvedBlock) {
       return;
     }
@@ -107,8 +89,8 @@ function FontControl({ blockId, block, className }: FontControlProps) {
     const nextWeight = fontWeightsList.includes(desiredWeight)
       ? desiredWeight
       : fontWeightsList.includes("400")
-      ? "400"
-      : fontWeightsList[0] ?? desiredWeight;
+        ? "400"
+        : (fontWeightsList[0] ?? desiredWeight);
 
     updateBlockValues(blockId, {
       font: {
@@ -133,7 +115,7 @@ function FontControl({ blockId, block, className }: FontControlProps) {
     applyFontWeights(
       family,
       availableWeights.length ? availableWeights : DEFAULT_WEIGHTS,
-      resolvedBlock.font.weight
+      resolvedBlock.font.weight,
     );
     const targetWeight = resolvedBlock.font.weight;
     await loadedFont.loadFont(undefined, {
@@ -155,11 +137,7 @@ function FontControl({ blockId, block, className }: FontControlProps) {
 
   return (
     <>
-      <ControllerRow
-        label="Font"
-        className={className}
-        contentClassName="justify-between"
-      >
+      <ControllerRow label="Font" className={className} contentClassName="justify-between">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger
             render={
@@ -195,7 +173,7 @@ function FontControl({ blockId, block, className }: FontControlProps) {
                       "flex h-[28px] w-full items-center rounded-md px-2 text-left text-sm transition hover:bg-accent",
                       {
                         "bg-muted": font.family === selectedFontFamily,
-                      }
+                      },
                     )}
                     onClick={() => {
                       void handleUpdateFontFamily(font.family);

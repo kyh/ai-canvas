@@ -37,8 +37,8 @@ cd ai-canvas
 # Install
 pnpm install
 
-# Configure (dev)
-echo "AI_GATEWAY_API_KEY=vck_..." > .env.local
+# Configure (dev) — copy the example, then set AI_GATEWAY_API_KEY=vck_...
+cp .env.example .env.local
 
 # Run
 pnpm dev
@@ -47,6 +47,8 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000)
 
 `pnpm dev` boots both runtimes: the Next.js dev server and eve's agent dev server (proxied same-origin by `withEve`). In development the agent uses `AI_GATEWAY_API_KEY`; in production, keyless visitors are prompted for their own gateway key, which rides each request as a bearer token and backs a per-session model.
+
+Driving this repo with a coding agent? [`AGENTS.md`](AGENTS.md) is the runnable guide — provisioning, the static gate (`pnpm verify`), and a browser recipe for verifying a change end to end.
 
 ## AI Architecture
 

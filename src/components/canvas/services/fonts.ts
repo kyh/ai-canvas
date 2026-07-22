@@ -1,24 +1,24 @@
-import { fontsList } from '../controls/components/textControls/fonts';
-import type { IEditorBlockText, IEditorBlocks } from '@/lib/schema';
+import { fontsList } from "../controls/components/textControls/fonts";
+import type { IEditorBlockText, IEditorBlocks } from "@/lib/schema";
 
 const loadedFontWeights = new Map<string, Set<string>>();
 
 const ensureFontStyleElement = () => {
-  if (typeof document === 'undefined') {
+  if (typeof document === "undefined") {
     return null;
   }
-  const existing = document.getElementById('dynamic-font-loader') as HTMLStyleElement | null;
+  const existing = document.getElementById("dynamic-font-loader") as HTMLStyleElement | null;
   if (existing) {
     return existing;
   }
-  const style = document.createElement('style');
-  style.id = 'dynamic-font-loader';
+  const style = document.createElement("style");
+  style.id = "dynamic-font-loader";
   document.head.appendChild(style);
   return style;
 };
 
 const loadFontFamily = async (fontKey: string, weights: string[]) => {
-  if (!weights.length || typeof document === 'undefined') {
+  if (!weights.length || typeof document === "undefined") {
     return;
   }
 
@@ -56,12 +56,10 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
 
       const font = new FontFace(fontKey, `url(${fontUrl})`, {
         weight: weight.toString(),
-        style: 'normal',
+        style: "normal",
       });
 
-      const loadPromise = font.load().then((loadedFont) => {
-        document.fonts.add(loadedFont);
-      });
+      const loadPromise = font.load().then((loadedFont) => void document.fonts.add(loadedFont));
       loadPromises.push(loadPromise);
 
       cssRules.push(`
@@ -83,9 +81,9 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
 
     const styleElement = ensureFontStyleElement();
     if (styleElement && cssRules.length) {
-      styleElement.textContent = [styleElement.textContent ?? '', cssRules.join('\n')]
+      styleElement.textContent = [styleElement.textContent ?? "", cssRules.join("\n")]
         .filter(Boolean)
-        .join('\n');
+        .join("\n");
     }
 
     const updatedWeights = cachedWeights;
@@ -97,7 +95,7 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
 };
 
 export const loadFontsForBlocks = async (blocks: IEditorBlocks[]) => {
-  const textBlocks = blocks.filter((block) => block.type === 'text') as IEditorBlockText[];
+  const textBlocks = blocks.filter((block) => block.type === "text") as IEditorBlockText[];
   const fontWeightMap = new Map<string, Set<string>>();
 
   textBlocks.forEach((block) => {

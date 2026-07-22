@@ -12,20 +12,10 @@ export const editorSizeSchema = z.object({
 export const textAlignSchema = z.enum(["center", "left", "right", "justify"]);
 export type ITextAlign = z.infer<typeof textAlignSchema>;
 
-export const textTransformSchema = z.enum([
-  "inherit",
-  "capitalize",
-  "uppercase",
-  "lowercase",
-]);
+export const textTransformSchema = z.enum(["inherit", "capitalize", "uppercase", "lowercase"]);
 export type ITextTransform = z.infer<typeof textTransformSchema>;
 
-export const textDecorationSchema = z.enum([
-  "inherit",
-  "overline",
-  "line-through",
-  "underline",
-]);
+export const textDecorationSchema = z.enum(["inherit", "overline", "line-through", "underline"]);
 export type ITextDecoration = z.infer<typeof textDecorationSchema>;
 
 export const fontSchema = z.object({
@@ -113,14 +103,8 @@ export const imageBlockSchema = blockBaseSchema.extend({
   type: z.literal("image"),
   url: z.string(),
   prompt: z.string().optional(), // Prompt for AI image generation
-  fit: z
-    .enum(["contain", "cover", "fill", "fitWidth", "fitHeight"])
-    .default("contain")
-    .optional(),
-  position: z
-    .enum(["center", "top", "bottom", "left", "right"])
-    .default("center")
-    .optional(),
+  fit: z.enum(["contain", "cover", "fill", "fitWidth", "fitHeight"]).default("contain").optional(),
+  position: z.enum(["center", "top", "bottom", "left", "right"]).default("center").optional(),
 });
 
 export const arrowBlockSchema = blockBaseSchema.extend({
@@ -169,15 +153,7 @@ export const canvasStateSchema = z.object({
   size: editorSizeSchema,
   zoom: z.number(),
   background: z.string().optional(),
-  mode: z.enum([
-    "move",
-    "select",
-    "text",
-    "frame",
-    "arrow",
-    "image",
-    "draw",
-  ]),
+  mode: z.enum(["move", "select", "text", "frame", "arrow", "image", "draw"]),
   isTextEditing: z.boolean(),
   stagePosition: z
     .object({

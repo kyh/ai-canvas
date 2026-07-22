@@ -2,11 +2,7 @@ import * as React from "react";
 import { NumberInput } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X as Cross2Icon } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import ControllerRow from "./controller-row";
 import ColorControl from "./color-control";
 import { useEditorStore } from "@/components/canvas/use-editor";
@@ -60,11 +56,7 @@ function BorderControl({ blockId, className }: BorderControlProps) {
   };
 
   return (
-    <ControllerRow
-      label="Border"
-      className={className}
-      contentClassName="justify-between"
-    >
+    <ControllerRow label="Border" className={className} contentClassName="justify-between">
       <Popover open={open} onOpenChange={setOpen}>
         <div className="relative w-full">
           <PopoverTrigger
