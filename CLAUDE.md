@@ -52,7 +52,7 @@ src/
 ```bash
 pnpm dev             # Dev server — boots Next.js AND the eve agent runtime
 pnpm build           # Production build (Next). Vercel builds the eve service via withEve
-pnpm verify          # typecheck · lint · format (the whole static gate — run before committing)
+pnpm verify          # typecheck · lint · format · test (the whole static gate — run before committing)
 pnpm typecheck       # tsc --noEmit
 pnpm lint            # oxlint (warnings are errors)
 pnpm format          # oxfmt --check
@@ -68,13 +68,13 @@ pnpm format:fix      # oxfmt --write
 - **Provision**: `pnpm install`, then `AI_GATEWAY_API_KEY=vck_…` in `.env.local`. No Docker, no database, no seed.
 - **No login exists.** In dev the key dialog is suppressed and turns run on the server key; in a production build a keyless visitor gets the dialog (mounted twice — bottom toolbar and left-sidebar gear). Headless prod runs pre-seed `localStorage["gateway-api-key"]`.
 - **Verify**: `pnpm verify` for the static gate, then drive the running app with `agent-browser` — web is the only runtime-verifiable surface, and the left "Layers" panel (not the `<canvas>` pixels) is what you assert on.
-- There is no test suite and no CI workflow; nothing runs these gates for you on a PR.
+- A vitest harness is wired into `pnpm verify` but no tests are written yet; there is no CI workflow, so nothing runs these gates for you on a PR.
 
 ## Conventions
 
 - Path alias: `@/*` → `./src/*` — but files imported by `agent/` code MUST use relative imports (eve's compiler doesn't read tsconfig paths)
 - kebab-case filenames for TS/TSX; `agent/tools/*` are snake_case (eve derives tool names from filenames)
-- No `any`, no `!` — enforced by `pnpm lint` via `.oxlintrc.json`. Avoid `as` in new code and zod-parse at boundaries (stream events, tool payloads, localStorage); `consistent-type-assertions` stays off until `controls/components/textControls/fonts.ts` is de-cast — see `AGENTS.md`
+- No `any`, no `!` — enforced by `pnpm lint` via `.oxlintrc.json`. Avoid `as` in new code and zod-parse at boundaries (stream events, tool payloads, localStorage); `consistent-type-assertions` is enabled — `as` is an error, so parse or narrow instead
 
 ## Key Files
 

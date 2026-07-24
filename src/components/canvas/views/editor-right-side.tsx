@@ -6,7 +6,6 @@ import TextController from "../controls/text-controller";
 import LayerController from "../controls/layer-controller";
 import CanvasController from "../controls/canvas-controller";
 import { useEditorStore } from "../use-editor";
-import type { IEditorBlockText } from "@/lib/schema";
 
 function EditorRightSide({ className }: { className?: string }) {
   // Select separately to avoid creating new array references
@@ -32,8 +31,8 @@ function EditorRightSide({ className }: { className?: string }) {
         {activeBlock && blockType ? (
           <>
             <LayoutController blockId={activeBlock.id} />
-            {blockType === "text" ? (
-              <TextController blockId={activeBlock.id} block={activeBlock as IEditorBlockText} />
+            {activeBlock.type === "text" ? (
+              <TextController blockId={activeBlock.id} block={activeBlock} />
             ) : null}
             {blockType !== "text" && <LayerController blockId={activeBlock.id} />}
           </>

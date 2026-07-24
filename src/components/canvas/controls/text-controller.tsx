@@ -9,7 +9,7 @@ import LineHeightControl from "./components/textControls/line-height-control";
 import TextAlignControl from "./components/textControls/text-align-control";
 import TextDecorationControl from "./components/textControls/text-decoration-control";
 import TextTransformControl from "./components/textControls/text-transform-control";
-import { useEditorStore } from "@/components/canvas/use-editor";
+import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 
 interface TextControllerProps {
   blockId: string;
@@ -18,9 +18,7 @@ interface TextControllerProps {
 }
 
 function TextController({ blockId, block, className }: TextControllerProps) {
-  const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
-  );
+  const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
 

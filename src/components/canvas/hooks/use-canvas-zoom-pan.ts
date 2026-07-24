@@ -90,7 +90,7 @@ export const useCanvasZoomPan = ({
         const scaleBy = evt.deltaMode === WheelEvent.DOM_DELTA_LINE ? 1.06 : 1.02;
         const direction = deltaY > 0 ? -1 : 1;
         const nextScale = direction > 0 ? zoom * scaleBy : zoom / scaleBy;
-        applyZoom(nextScale, pointer as CanvasPointer);
+        applyZoom(nextScale, pointer);
         return;
       }
 

@@ -145,6 +145,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               value={label}
               onChange={(event) => setLabel(event.target.value)}
               className="sidebar-item-label-input flex-1 h-6 overflow-hidden text-ellipsis px-1 text-sm truncate border-border bg-muted"
+              // oxlint-disable-next-line jsx-a11y/no-autofocus -- inline rename input, mounted on user intent
               autoFocus
               onFocus={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}

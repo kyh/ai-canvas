@@ -1,6 +1,7 @@
-import type { IEditorBlockText, ITextDecoration } from "@/lib/schema";
+import type { IEditorBlockText } from "@/lib/schema";
+import { textDecorationSchema } from "@/lib/schema";
 import ControllerRow from "../controller-row";
-import { useEditorStore } from "@/components/canvas/use-editor";
+import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 interface TextDecorationControlProps {
@@ -10,9 +11,7 @@ interface TextDecorationControlProps {
 }
 
 function TextDecorationControl({ blockId, block, className }: TextDecorationControlProps) {
-  const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
-  );
+  const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!resolvedBlock) {
@@ -25,9 +24,11 @@ function TextDecorationControl({ blockId, block, className }: TextDecorationCont
         id="textDecoration"
         value={resolvedBlock.textDecoration || "inherit"}
         onChange={(e) => {
-          updateBlockValues(blockId, {
-            textDecoration: e.target.value as ITextDecoration,
-          });
+          const parsed = textDecorationSchema.safeParse(e.target.value);
+          if (!parsed.success) {
+            return;
+          }
+          updateBlockValues(blockId, { textDecoration: parsed.data });
         }}
       >
         <NativeSelectOption value="inherit">Default</NativeSelectOption>

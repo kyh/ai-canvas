@@ -1,7 +1,7 @@
 import type { IEditorBlockText } from "@/lib/schema";
 import { Input } from "@/components/ui/input";
 import ControllerRow from "../controller-row";
-import { useEditorStore } from "@/components/canvas/use-editor";
+import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 
 interface ContentControlProps {
   blockId: string;
@@ -10,9 +10,7 @@ interface ContentControlProps {
 }
 
 function ContentControl({ blockId, block, className }: ContentControlProps) {
-  const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
-  );
+  const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
 

@@ -37,7 +37,12 @@ import {
   groupPositionToBlockPosition,
   scaleArrowPoints,
 } from "../utils/arrow-bounds";
-import { editorStoreApi, selectOrderedBlocks, useEditorStore } from "../use-editor";
+import {
+  editorStoreApi,
+  selectOrderedBlocks,
+  selectTextBlock,
+  useEditorStore,
+} from "../use-editor";
 import { ensureBlockDefaults, MAX_IMAGE_DIMENSION } from "../services/templates";
 import { useCanvasStore } from "../hooks/use-canvas-store";
 import { useTransformerSync } from "../hooks/use-transformer-sync";
@@ -68,7 +73,7 @@ const isTransformerNode = (node: Konva.Node | null, transformer: Konva.Transform
     if (parent === transformer) {
       return true;
     }
-    parent = (parent.getParent() as Konva.Node | null) ?? null;
+    parent = parent.getParent();
   }
   return false;
 };
@@ -507,6 +512,8 @@ const HtmlContent = React.memo(
       <iframe
         key={htmlKey}
         title="Generated HTML block"
+        // model-authored markup: allow it to script itself, but not to reach this origin
+        sandbox="allow-scripts"
         srcDoc={html}
         style={{
           width: "100%",
@@ -607,7 +614,7 @@ function HtmlNode({
 // Helper to get outline bounds for any block type - ensures consistency
 const getBlockOutlineBounds = (block: IEditorBlocks) => {
   if (block.type === "arrow") {
-    const arrowBlock = block as IEditorBlockArrow;
+    const arrowBlock = block;
     const bounds = calculateArrowBounds(arrowBlock);
     const groupPos = blockPositionToGroupPosition(arrowBlock.x, arrowBlock.y, arrowBlock);
     return {
@@ -837,13 +844,7 @@ function PlacementPreview({
   }
 
   // For other block types, use shared calculation
-  const placement = calculateBlockPlacement(
-    start,
-    current,
-    mode as "text" | "frame" | "image",
-    isDrag,
-    pendingImageData,
-  );
+  const placement = calculateBlockPlacement(start, current, mode, isDrag, pendingImageData);
 
   if (!placement) {
     return null;
@@ -973,9 +974,12 @@ function EditorCanvas() {
   });
 
   // Mode helpers
-  const isPlacementMode = React.useCallback(() => {
-    return mode === "text" || mode === "frame" || mode === "arrow" || mode === "image";
-  }, [mode]);
+  // `placementMode` carries the narrowing to the JSX below: a boolean helper
+  // proves nothing to the compiler about `mode` at the use site, so keep the
+  // narrowed value itself and derive the predicate from it.
+  const placementMode: React.ComponentProps<typeof PlacementPreview>["mode"] | null =
+    mode === "text" || mode === "frame" || mode === "arrow" || mode === "image" ? mode : null;
+  const isPlacementMode = React.useCallback(() => placementMode !== null, [placementMode]);
 
   const isSelectMode = mode === "select";
   const isMoveMode = mode === "move";
@@ -1544,7 +1548,7 @@ function EditorCanvas() {
           originalPositionsRef.current.clear();
           const block = blocks.find((b) => b.id === id);
           if (block?.type === "arrow") {
-            const arrowBlock = block as IEditorBlockArrow;
+            const arrowBlock = block;
             const blockPos = groupPositionToBlockPosition(position.x, position.y, arrowBlock);
             setBlockPosition(id, blockPos);
           } else {
@@ -1560,7 +1564,7 @@ function EditorCanvas() {
 
         if (draggedBlock?.type === "arrow") {
           // For arrows, convert both positions to block coordinates
-          const arrowBlock = draggedBlock as IEditorBlockArrow;
+          const arrowBlock = draggedBlock;
           const originalBlockPos = groupPositionToBlockPosition(
             originalPos.x,
             originalPos.y,
@@ -1592,7 +1596,7 @@ function EditorCanvas() {
         originalPositionsRef.current.forEach((originalPos, blockId) => {
           const block = blocks.find((b) => b.id === blockId);
           if (block?.type === "arrow") {
-            const arrowBlock = block as IEditorBlockArrow;
+            const arrowBlock = block;
             const blockPos = groupPositionToBlockPosition(originalPos.x, originalPos.y, arrowBlock);
             setBlockPosition(blockId, blockPos);
           } else {
@@ -1607,7 +1611,7 @@ function EditorCanvas() {
         // Normal drag behavior
         const block = blocks.find((b) => b.id === id);
         if (block?.type === "arrow") {
-          const arrowBlock = block as IEditorBlockArrow;
+          const arrowBlock = block;
           // Convert Group position back to block position
           const blockPos = groupPositionToBlockPosition(position.x, position.y, arrowBlock);
           setBlockPosition(id, blockPos);
@@ -1689,7 +1693,7 @@ function EditorCanvas() {
 
       // For arrow blocks, we need to scale only the stem length, not the arrowhead
       if (block.type === "arrow") {
-        const arrowBlock = block as IEditorBlockArrow;
+        const arrowBlock = block;
 
         // Calculate scale based on the bounding box diagonal change
         // This gives us a more accurate scale for the arrow length
@@ -1722,7 +1726,7 @@ function EditorCanvas() {
           // Keep arrowhead size constant - don't update pointerLength or pointerWidth
         });
       } else if (block.type === "draw") {
-        const drawBlock = block as IEditorBlockDraw;
+        const drawBlock = block;
         const scaledPoints = drawBlock.points.map((value, index) =>
           index % 2 === 0 ? value * scaleX : value * scaleY,
         );
@@ -1811,7 +1815,7 @@ function EditorCanvas() {
     if (!editingText) {
       return null;
     }
-    return (storeApi.getState().blocksById[editingText.id] as IEditorBlockText | undefined) ?? null;
+    return selectTextBlock(editingText.id)(storeApi.getState()) ?? null;
   }, [editingText, storeApi]);
 
   return (
@@ -1915,7 +1919,7 @@ function EditorCanvas() {
                     const selectedBlock = blocks.find((b) => b.id === selectedId);
                     if (selectedBlock) {
                       if (selectedBlock.type === "arrow") {
-                        const arrowBlock = selectedBlock as IEditorBlockArrow;
+                        const arrowBlock = selectedBlock;
                         // For arrows, we need to get the Group position
                         const groupPos = blockPositionToGroupPosition(
                           arrowBlock.x,
@@ -1955,7 +1959,7 @@ function EditorCanvas() {
               content = (
                 <FrameNode
                   key={block.id}
-                  block={block as IEditorBlockFrame}
+                  block={block}
                   onClick={handleBlockClick}
                   {...dragHandlers}
                 />
@@ -1964,11 +1968,11 @@ function EditorCanvas() {
               content = (
                 <Group key={block.id}>
                   <TextNode
-                    block={block as IEditorBlockText}
+                    block={block}
                     {...dragHandlers}
                     onClick={(evt) => {
                       if (evt.evt.detail === 2) {
-                        handleStartTextEdit(block as IEditorBlockText);
+                        handleStartTextEdit(block);
                         return;
                       }
                       handleNodeSelection(block, evt);
@@ -1980,7 +1984,7 @@ function EditorCanvas() {
               content = (
                 <ImageNode
                   key={block.id}
-                  block={block as IEditorBlockImage}
+                  block={block}
                   onClick={handleBlockClick}
                   {...dragHandlers}
                 />
@@ -1989,7 +1993,7 @@ function EditorCanvas() {
               content = (
                 <ArrowNode
                   key={block.id}
-                  block={block as IEditorBlockArrow}
+                  block={block}
                   onClick={handleBlockClick}
                   {...dragHandlers}
                 />
@@ -1998,7 +2002,7 @@ function EditorCanvas() {
               content = (
                 <DrawNode
                   key={block.id}
-                  block={block as IEditorBlockDraw}
+                  block={block}
                   onClick={handleBlockClick}
                   {...dragHandlers}
                 />
@@ -2007,7 +2011,7 @@ function EditorCanvas() {
               content = (
                 <HtmlNode
                   key={block.id}
-                  block={block as IEditorBlockHtml}
+                  block={block}
                   onClick={handleBlockClick}
                   {...dragHandlers}
                   isSelecting={isSelecting}
@@ -2040,9 +2044,9 @@ function EditorCanvas() {
 
         <Layer listening={false}>
           <SelectionOutline rect={selectionRect} zoom={zoom} />
-          {isPlacingBlock && placementStart && placementHasMoved && isPlacementMode() ? (
+          {isPlacingBlock && placementStart && placementHasMoved && placementMode ? (
             <PlacementPreview
-              mode={mode as "text" | "frame" | "arrow" | "image"}
+              mode={placementMode}
               start={placementStart}
               current={placementCurrent}
               zoom={zoom}
@@ -2107,6 +2111,7 @@ function EditorCanvas() {
               commitTextEdit();
             }
           }}
+          // oxlint-disable-next-line jsx-a11y/no-autofocus -- text-edit overlay replaces the block the user just double-clicked
           autoFocus
         />
       ) : null}

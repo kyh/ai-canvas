@@ -13,6 +13,7 @@ import type {
   Template,
 } from "@/lib/schema";
 import {
+  blockSchema,
   frameBlockSchema,
   imageBlockSchema,
   textBlockSchema,
@@ -113,6 +114,19 @@ const createSnapshot = (state: EditorState): HistoryEntry => ({
 
 export const selectOrderedBlocks = (state: EditorState): IEditorBlocks[] =>
   state.blockOrder.map((id) => state.blocksById[id]).filter(Boolean);
+
+/**
+ * Narrow a stored block to a text block. `blocksById` holds the full
+ * `blockSchema` discriminated union, so text controls have to check the
+ * discriminant rather than assert — an id can address a block of any type, and
+ * a stale id after a delete/replace addresses none.
+ */
+export const selectTextBlock =
+  (blockId: string) =>
+  (state: EditorState): IEditorBlockText | undefined => {
+    const block = state.blocksById[blockId];
+    return block?.type === "text" ? block : undefined;
+  };
 
 const blocksArray = selectOrderedBlocks;
 
@@ -719,10 +733,14 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         return state;
       }
       const snapshot = createSnapshot(state);
-      const nextBlock = ensureBlockDefaults({
-        ...block,
-        ...values,
-      } as IEditorBlocks);
+      // `values` is `Partial<IEditorBlocks>`, so a merge can in principle produce a
+      // shape that is no longer a legal block (mixed-variant fields). Parse the
+      // result rather than assert it; an invalid merge leaves state untouched.
+      const merged = blockSchema.safeParse({ ...block, ...values });
+      if (!merged.success) {
+        return state;
+      }
+      const nextBlock = ensureBlockDefaults(merged.data);
       return {
         ...state,
         blocksById: {

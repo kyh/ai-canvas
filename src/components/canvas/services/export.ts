@@ -1,5 +1,5 @@
 import type Konva from "konva";
-import type { IEditorBlocks, IEditorSize, IEditorBlockArrow } from "@/lib/schema";
+import type { IEditorBlocks, IEditorSize } from "@/lib/schema";
 import { loadFontsForBlocks } from "./fonts";
 import { calculateArrowBounds, blockPositionToGroupPosition } from "../utils/arrow-bounds";
 import { blockNodeId } from "../utils";
@@ -64,7 +64,7 @@ export function calculateSelectedBlocksBounds(
     let bounds: Bounds;
 
     if (block.type === "arrow") {
-      const arrowBlock = block as IEditorBlockArrow;
+      const arrowBlock = block;
       const arrowBounds = calculateArrowBounds(arrowBlock);
       const groupPos = blockPositionToGroupPosition(arrowBlock.x, arrowBlock.y, arrowBlock);
       // For arrows, use the group position and arrow bounds
@@ -228,9 +228,9 @@ function hideNonSelectedElements(
     // But keep the background layer (it has a Rect fill)
     else if (!hasContentNodes) {
       // Check if this is the background layer (has a Rect with fill)
-      const rects = layer.find("Rect");
+      const rects = layer.find<Konva.Rect>("Rect");
       const isBackgroundLayer = rects.some((rect) => {
-        const fill = (rect as Konva.Rect).fill();
+        const fill = rect.fill();
         return fill && fill !== "transparent";
       });
 
@@ -265,7 +265,7 @@ function hideNonSelectedElements(
 
   // Hide any Rect elements that are hover/selection outlines
   // These are typically Rect elements with stroke but no fill
-  const allRects = stage.find("Rect");
+  const allRects = stage.find<Konva.Rect>("Rect");
   const selectedBlockIds = new Set(selectedIds);
 
   allRects.forEach((rect) => {
@@ -283,8 +283,8 @@ function hideNonSelectedElements(
 
     // If it's not a canvas-node, it might be an outline
     if (!rectName || rectName !== "canvas-node") {
-      const fill = (rect as Konva.Rect).fill();
-      const stroke = (rect as Konva.Rect).stroke();
+      const fill = rect.fill();
+      const stroke = rect.stroke();
 
       // Hide outlines (has stroke, no fill or transparent fill)
       // Also hide if it's the background canvas rect (we want to keep that, but it has a fill)

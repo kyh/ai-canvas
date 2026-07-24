@@ -1,0 +1,10 @@
+version = 1
+name = "ai-canvas"
+
+[setup]
+script = "pnpm i"
+
+[[actions]]
+name = "dev"
+icon = "run"
+command = "pnpm dev"

@@ -63,6 +63,7 @@ function BorderControl({ blockId, className }: BorderControlProps) {
             render={
               <button
                 type="button"
+                aria-label="Border"
                 onClick={ensureBorder}
                 className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-1 pr-7 text-xs transition hover:border-primary"
               />

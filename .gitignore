@@ -1,28 +1,22 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-node_modules
-.pnp
-.pnp.js
-.wrangler
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # testing
-coverage
+/coverage
 
 # next.js
-.next/
-out/
-next-env.d.ts
+/.next/
+/out/
 
-# nitro
-.nitro/
-.output/
-
-# expo
-.expo/
-dist/
-expo-env.d.ts
-apps/expo/.gitignore
+# production
+/build
 
 # misc
 .DS_Store
@@ -34,24 +28,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env
-.env*.local
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
-.cache
-
-# turbo
-.turbo
-
-# Supabase
-.branches
-.temp
-.superset
+next-env.d.ts
 
 # claude
 .claude/scheduled_tasks.lock
@@ -61,3 +47,4 @@ yarn-error.log*
 # eve
 .eve/
 .workflow-data/
+.output/

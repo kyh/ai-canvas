@@ -5,7 +5,7 @@ import { ChevronDown as CaretDownIcon, X as Cross2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ControllerRow from "../controller-row";
 import { fontsList, fontWeights } from "./fonts";
-import { useEditorStore } from "@/components/canvas/use-editor";
+import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 interface FontControlProps {
@@ -20,9 +20,7 @@ const findFont = (family?: string) =>
   family ? fontsList.find((font) => font.family === family) : undefined;
 
 function FontControl({ blockId, block, className }: FontControlProps) {
-  const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
-  );
+  const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   const [open, setOpen] = React.useState(false);
@@ -143,6 +141,7 @@ function FontControl({ blockId, block, className }: FontControlProps) {
             render={
               <button
                 type="button"
+                aria-label="Font"
                 className="flex h-7 w-full items-center justify-between rounded-md border border-border bg-muted px-2 text-xs transition hover:border-primary"
               />
             }

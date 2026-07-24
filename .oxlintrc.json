@@ -29,15 +29,11 @@
   "rules": {
     "typescript/no-explicit-any": "error",
     "typescript/no-non-null-assertion": "error",
+    "typescript/consistent-type-assertions": ["error", { "assertionStyle": "never" }],
     "react/react-in-jsx-scope": "off",
     "eslint/no-shadow": "off",
     "eslint/no-await-in-loop": "off",
     "react/no-unstable-nested-components": ["warn", { "allowAsProps": true }],
-    "jsx-a11y/prefer-tag-over-role": "off",
-    "jsx-a11y/control-has-associated-label": "off",
-    "jsx-a11y/no-autofocus": "off",
-    "jsx-a11y/click-events-have-key-events": "off",
-    "jsx-a11y/no-noninteractive-element-interactions": "off",
-    "react/iframe-missing-sandbox": "off"
+    "jsx-a11y/prefer-tag-over-role": "off"
   }
 }

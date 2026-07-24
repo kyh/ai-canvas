@@ -53,10 +53,10 @@ The canvas always opens on a demo template (one image, two text blocks) — that
 Static gate — run before every commit:
 
 ```sh
-pnpm verify     # typecheck · lint · format
+pnpm verify     # typecheck · lint · format · test
 ```
 
-There is no test suite and no CI workflow in this repo: `pnpm verify` plus `pnpm build` is the entire static gate, and nothing runs it for you on a PR.
+A vitest harness runs as part of `pnpm verify`, but no tests are written yet and there is no CI workflow: `pnpm verify` plus `pnpm build` is the entire static gate, and nothing runs it for you on a PR.
 
 Runtime — the web app is the only driveable surface. With `pnpm dev` running, use [agent-browser](https://github.com/vercel-labs/agent-browser). It is not a dependency of this repo; install it once if missing:
 
@@ -97,7 +97,7 @@ Notes that make this actually work:
 
 - **`agent/tools/*` filenames are snake_case** because eve derives the model-visible tool name from the filename. Everything else in the repo is kebab-case.
 - **Never run `eve build` while `pnpm dev` is running** — it corrupts eve's dev workflow cache. Recovery: delete `.eve/` and `.workflow-data/`, restart.
-- **No `any`, no non-null `!`.** Both are `error` in `.oxlintrc.json`, so `pnpm lint` enforces them. **Avoid `as` casts in new code** too — zod-parse at boundaries (stream events, tool payloads, localStorage). `typescript/consistent-type-assertions` is deliberately _not_ enabled yet: `src/components/canvas/controls/components/textControls/fonts.ts` is a large generated font table with ~100 casts. Turn the rule on once that file is cleaned up; every other fork in this family already runs it.
+- **No `any`, no non-null `!`.** Both are `error` in `.oxlintrc.json`, so `pnpm lint` enforces them. **Avoid `as` casts in new code** too — zod-parse at boundaries (stream events, tool payloads, localStorage). `typescript/consistent-type-assertions` is enabled, matching every other fork in this family. The font table in `src/components/canvas/controls/components/textControls/fonts.ts` funnels its one unavoidable widening through `asLoadedFont`; add no new casts.
 - Never commit `.env` / `.env.local`. New env vars go in `.env.example`.
 
 ## Map

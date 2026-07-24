@@ -1,4 +1,5 @@
-import type { IEditorBlockText, ITextAlign } from "@/lib/schema";
+import type { IEditorBlockText } from "@/lib/schema";
+import { textAlignSchema } from "@/lib/schema";
 import {
   AlignLeft as TextAlignLeftIcon,
   AlignCenter as TextAlignCenterIcon,
@@ -7,7 +8,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ControllerRow from "../controller-row";
-import { useEditorStore } from "@/components/canvas/use-editor";
+import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 
 interface TextAlignControlProps {
   blockId: string;
@@ -16,9 +17,7 @@ interface TextAlignControlProps {
 }
 
 function TextAlignControl({ blockId, block, className }: TextAlignControlProps) {
-  const storeBlock = useEditorStore(
-    (state) => state.blocksById[blockId] as IEditorBlockText | undefined,
-  );
+  const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!resolvedBlock) {
@@ -30,9 +29,11 @@ function TextAlignControl({ blockId, block, className }: TextAlignControlProps) 
         value={resolvedBlock.textAlign}
         className="w-full"
         onValueChange={(e) => {
-          updateBlockValues(blockId, {
-            textAlign: e as ITextAlign,
-          });
+          const parsed = textAlignSchema.safeParse(e);
+          if (!parsed.success) {
+            return;
+          }
+          updateBlockValues(blockId, { textAlign: parsed.data });
         }}
       >
         <TabsList>

@@ -1,5 +1,5 @@
 import { fontsList } from "../controls/components/textControls/fonts";
-import type { IEditorBlockText, IEditorBlocks } from "@/lib/schema";
+import type { IEditorBlocks } from "@/lib/schema";
 
 const loadedFontWeights = new Map<string, Set<string>>();
 
@@ -7,8 +7,8 @@ const ensureFontStyleElement = () => {
   if (typeof document === "undefined") {
     return null;
   }
-  const existing = document.getElementById("dynamic-font-loader") as HTMLStyleElement | null;
-  if (existing) {
+  const existing = document.getElementById("dynamic-font-loader");
+  if (existing instanceof HTMLStyleElement) {
     return existing;
   }
   const style = document.createElement("style");
@@ -95,7 +95,7 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
 };
 
 export const loadFontsForBlocks = async (blocks: IEditorBlocks[]) => {
-  const textBlocks = blocks.filter((block) => block.type === "text") as IEditorBlockText[];
+  const textBlocks = blocks.filter((block) => block.type === "text");
   const fontWeightMap = new Map<string, Set<string>>();
 
   textBlocks.forEach((block) => {
