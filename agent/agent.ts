@@ -30,12 +30,8 @@ export default defineAgent({
       },
     },
   }),
-  limits: {
-    // eve 0.22 rejects 0 here (positive integers only), so the built-in
-    // `agent` self-delegation tool cannot be removed by config. Depth 1
-    // bounds the damage (a child session cannot delegate again); the
-    // instructions forbid delegation outright, and the toolbar bridge
-    // unwraps `subagent.event` so a stray delegated tool call still lands.
-    maxSubagentDepth: 1,
-  },
+  // eve 0.27 removed `limits.maxSubagentDepth`: the built-in `agent` tool is
+  // root-only, so a delegated child session can no longer delegate again.
+  // The instructions forbid delegation outright, and the UI bridge unwraps
+  // `subagent.event` so a stray delegated tool call still lands in the UI.
 });
