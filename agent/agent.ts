@@ -10,21 +10,20 @@ const MODEL_ID = "openai/gpt-5.1-instant";
  *
  * BYO-key: when the channel verifier (agent/channels/eve.ts) admitted a
  * bearer token, the dynamic model resolver builds a per-session gateway
- * model with the caller's own AI Gateway key. Otherwise the string
- * `fallback` routes through the server's AI_GATEWAY_API_KEY (or Vercel
- * OIDC). The resolver MUST hang off `step.started`: session/turn-scoped
+ * model with the caller's own AI Gateway key. Otherwise the bare model id
+ * routes through the server's AI_GATEWAY_API_KEY (or Vercel OIDC). The
+ * resolver MUST hang off `step.started`: session/turn-scoped
  * selections have to be serializable, and only step-scoped selections may
  * return a live provider instance.
  */
 export default defineAgent({
   model: defineDynamic({
-    fallback: MODEL_ID,
     events: {
       "step.started": (_event, ctx) => {
         const auth = ctx.session.auth.current ?? ctx.session.auth.initiator;
         const gatewayApiKey = auth?.attributes["gatewayApiKey"];
         if (typeof gatewayApiKey !== "string" || gatewayApiKey.length === 0) {
-          return null; // fall back to the server-credentialed model
+          return MODEL_ID; // fall back to the server-credentialed model
         }
         return createGateway({ apiKey: gatewayApiKey })(MODEL_ID);
       },

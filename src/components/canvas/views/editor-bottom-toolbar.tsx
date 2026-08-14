@@ -324,8 +324,7 @@ function EditorBottomToolbar() {
         : trimmed;
 
       agent
-        .send({
-          message,
+        .send(message, {
           clientContext: buildCanvasContext({
             canvasSize,
             background: canvasBackground,
