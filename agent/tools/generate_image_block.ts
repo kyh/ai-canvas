@@ -3,6 +3,7 @@ import { defineTool } from "eve/tools";
 
 // Relative imports: agent/ is compiled by eve, which resolves plain relative
 // paths but not tsconfig `@/*` aliases. Domain schemas stay in src/lib.
+import { parseGatewayApiKey } from "../gateway-key";
 import {
   generatedBlockPayloadSchema,
   generateImageBlockInputSchema,
@@ -41,11 +42,9 @@ Do not include "id" or "url" fields — both are generated for you.`,
     // agent/agent.ts uses). Keyless sessions fall back to the server's
     // AI_GATEWAY_API_KEY / OIDC credential via the gateway defaults.
     const auth = ctx.session.auth.current ?? ctx.session.auth.initiator;
-    const gatewayApiKey = auth?.attributes["gatewayApiKey"];
+    const gatewayApiKey = parseGatewayApiKey(auth?.attributes["gatewayApiKey"]);
     const gateway =
-      typeof gatewayApiKey === "string" && gatewayApiKey.length > 0
-        ? createGateway({ apiKey: gatewayApiKey })
-        : createGateway({});
+      gatewayApiKey === null ? createGateway({}) : createGateway({ apiKey: gatewayApiKey });
     const model = gateway.imageModel(IMAGE_MODEL_ID);
 
     const { images } = await generateImage({

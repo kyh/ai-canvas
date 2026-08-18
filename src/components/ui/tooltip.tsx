@@ -54,15 +54,9 @@ function TooltipContent({
 }
 
 function parseHotkey(hotkey: string): React.ReactNode {
-  const specialKeys: Record<string, string> = {
-    "⌘": "⌘",
-    "⌥": "⌥",
-    "⌃": "⌃",
-    "⇧": "⇧",
-    Space: "Space",
-  };
+  const specialKeys = new Set(["⌘", "⌥", "⌃", "⇧", "Space"]);
 
-  if (hotkey.length === 1 && !specialKeys[hotkey]) {
+  if (hotkey.length === 1 && !specialKeys.has(hotkey)) {
     return <Kbd>{hotkey.toUpperCase()}</Kbd>;
   }
 
@@ -95,7 +89,7 @@ function CustomTooltip({
 }: {
   content: string;
   hotkey?: string;
-  children: React.ReactElement<Record<string, unknown>>;
+  children: React.ReactElement;
 }) {
   return (
     <Tooltip>

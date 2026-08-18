@@ -88,7 +88,7 @@ const getCornerRadius = (block: IEditorBlocks) => {
 };
 
 const getOpacity = (value?: number) => {
-  if (typeof value !== "number") {
+  if (value === undefined) {
     return 1;
   }
   return Math.max(0, Math.min(1, value / 100));

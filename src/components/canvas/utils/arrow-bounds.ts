@@ -109,7 +109,7 @@ export function groupPositionToBlockPosition(
   groupX: number,
   groupY: number,
   block: IEditorBlockArrow,
-): { x: number; y: number } {
+) {
   const bounds = calculateArrowBounds(block);
   return {
     x: groupX - bounds.offsetX,
@@ -125,7 +125,7 @@ export function blockPositionToGroupPosition(
   blockX: number,
   blockY: number,
   block: IEditorBlockArrow,
-): { x: number; y: number } {
+) {
   const bounds = calculateArrowBounds(block);
   return {
     x: blockX + bounds.offsetX,

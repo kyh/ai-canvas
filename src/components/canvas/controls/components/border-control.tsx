@@ -12,11 +12,14 @@ interface BorderControlProps {
   className?: string;
 }
 
-const DASH_PRESETS: Record<string, number[] | undefined> = {
+const DASH_PRESETS = {
   solid: undefined,
   dashed: [12, 8],
   dotted: [2, 6],
-};
+} satisfies Record<string, number[] | undefined>;
+
+const isDashPresetKey = (value: string): value is keyof typeof DASH_PRESETS =>
+  value in DASH_PRESETS;
 
 const getDashKey = (dash?: number[]) => {
   if (!dash || dash.length === 0) return "solid";
@@ -140,7 +143,8 @@ function BorderControl({ blockId, className }: BorderControlProps) {
                     updateBlockValues(blockId, {
                       border: {
                         ...border,
-                        dash: DASH_PRESETS[value] ?? border.dash,
+                        dash:
+                          (isDashPresetKey(value) ? DASH_PRESETS[value] : undefined) ?? border.dash,
                       },
                     });
                   }}

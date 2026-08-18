@@ -16,6 +16,7 @@ import {
   Undo,
 } from "lucide-react";
 import type { UserContent } from "ai";
+import type { SubagentChildEventStreamEvent } from "eve/client";
 import { useEveAgent } from "eve/react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -105,11 +106,8 @@ const toolResultEventSchema = z.object({
   }),
 });
 
-/** `subagent.event` wraps a child session's stream event under `data.event`. */
-const subagentEventSchema = z.object({
-  type: z.literal("subagent.event"),
-  data: z.object({ event: z.unknown() }),
-});
+/** A session's own stream event, or one a `subagent.event` wraps (unstamped). */
+type AgentStreamEvent = SubagentChildEventStreamEvent["data"]["event"];
 
 /** callId -> placeholder block id for in-flight build_html_block calls. */
 const pendingHtmlBuilds = new Map<string, string>();
@@ -126,12 +124,11 @@ const dropPendingLoadingBlocks = (): void => {
   pendingHtmlBuilds.clear();
 };
 
-const applyAgentEvent = (event: unknown): void => {
+const applyAgentEvent = (event: AgentStreamEvent): void => {
   // Delegation is forbidden by the instructions, but if the model strays,
   // unwrap the child's events so its tool results still reach the canvas.
-  const wrapped = subagentEventSchema.safeParse(event);
-  if (wrapped.success) {
-    applyAgentEvent(wrapped.data.data.event);
+  if (event.type === "subagent.event") {
+    applyAgentEvent(event.data.event);
     return;
   }
 
@@ -263,11 +260,7 @@ function EditorBottomToolbar() {
       2,
     );
 
-    if (
-      typeof navigator === "undefined" ||
-      !navigator.clipboard ||
-      typeof navigator.clipboard.writeText !== "function"
-    ) {
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
       toast.error("Clipboard is not available in this environment.");
       return;
     }
@@ -604,7 +597,8 @@ function EditorBottomToolbar() {
             const reader = new FileReader();
             reader.addEventListener("load", () => {
               // readAsDataURL always yields a string result
-              if (typeof reader.result !== "string") return;
+              const dataUrl = z.string().safeParse(reader.result);
+              if (!dataUrl.success) return;
               const img = new Image();
               img.addEventListener("load", () => {
                 setPendingImageData({
@@ -614,7 +608,7 @@ function EditorBottomToolbar() {
                 });
                 setMode("image");
               });
-              img.src = reader.result;
+              img.src = dataUrl.data;
             });
             reader.readAsDataURL(file);
             // reset input value

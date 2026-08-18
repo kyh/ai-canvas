@@ -98,10 +98,7 @@ interface EditorActions {
 
 export type EditorStore = EditorState & EditorActions;
 
-const clone = <T>(value: T): T =>
-  typeof structuredClone === "function"
-    ? structuredClone(value)
-    : JSON.parse(JSON.stringify(value));
+const clone = <T>(value: T): T => structuredClone(value);
 
 const createSnapshot = (state: EditorState): HistoryEntry => ({
   blocks: state.blockOrder
@@ -870,11 +867,13 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         return state;
       }
       const snapshot = createSnapshot(state);
-      const nextBlock = {
-        ...block,
-        ...(typeof size.width === "number" ? { width: Math.max(1, size.width) } : {}),
-        ...(typeof size.height === "number" ? { height: Math.max(1, size.height) } : {}),
-      };
+      const nextBlock = { ...block };
+      if (size.width !== null && size.width !== undefined) {
+        nextBlock.width = Math.max(1, size.width);
+      }
+      if (size.height !== null && size.height !== undefined) {
+        nextBlock.height = Math.max(1, size.height);
+      }
       return {
         ...state,
         blocksById: {

@@ -1,6 +1,8 @@
 import { createGateway } from "ai";
 import { defineAgent, defineDynamic } from "eve";
 
+import { parseGatewayApiKey } from "./gateway-key";
+
 const MODEL_ID = "openai/gpt-5.1-instant";
 
 /**
@@ -21,8 +23,8 @@ export default defineAgent({
     events: {
       "step.started": (_event, ctx) => {
         const auth = ctx.session.auth.current ?? ctx.session.auth.initiator;
-        const gatewayApiKey = auth?.attributes["gatewayApiKey"];
-        if (typeof gatewayApiKey !== "string" || gatewayApiKey.length === 0) {
+        const gatewayApiKey = parseGatewayApiKey(auth?.attributes["gatewayApiKey"]);
+        if (gatewayApiKey === null) {
           return MODEL_ID; // fall back to the server-credentialed model
         }
         return createGateway({ apiKey: gatewayApiKey })(MODEL_ID);

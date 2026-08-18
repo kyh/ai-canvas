@@ -21,8 +21,19 @@ type LoadedFont = {
   ) => { waitUntilDone: () => Promise<undefined> };
 };
 
+/** The surface every `@remotion/google-fonts/<Family>` module shares verbatim. */
+type FontFamilyModule = {
+  getInfo: () => FontInfo;
+};
+
+// SAFETY: every `@remotion/google-fonts/<Family>` module ships a `loadFont`
+// whose per-family literal `weights`/`style` parameters only narrow, never
+// change, this shape; callers validate each weight against
+// `getInfo().fonts.normal` before passing it (font-picker.tsx,
+// services/fonts.ts), so the widened signature can't receive an unsupported
+// weight at runtime.
 // oxlint-disable-next-line typescript/consistent-type-assertions
-const asLoadedFont = (mod: unknown) => mod as LoadedFont;
+const asLoadedFont = (mod: FontFamilyModule) => mod as LoadedFont;
 
 type FontEntry = {
   family: string;

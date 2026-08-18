@@ -8,7 +8,8 @@
     ".eve",
     ".workflow-data",
     ".output",
-    "out"
+    "out",
+    "tools/oxlint/anti-slop"
   ],
   "experimentalSortPackageJson": {}
 }

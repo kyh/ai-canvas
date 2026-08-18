@@ -72,6 +72,9 @@ importers:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
     devDependencies:
+      '@oxlint/plugins':
+        specifier: 1.78.0
+        version: 1.78.0
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -846,6 +849,10 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [win32]
+
+  '@oxlint/plugins@1.78.0':
+    resolution: {integrity: sha512-Ypt8KeRYw+4jUtlPirfcHWMrn5ms12VrrFPD+Mds477/7tJxG1Kcz2Yrg2nVcTQEUx/GdlhS+BUg1kmxNm04Ug==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   '@remotion/google-fonts@4.0.512':
     resolution: {integrity: sha512-QDL51k6LTe5fCwPqPZRcFR5DLJ3l/ondXpXIssuHcI9nPtFxKY7cojt12UtSaDtoeE21cEGyT6u8mHblrIWODg==}
@@ -3727,6 +3734,8 @@ snapshots:
 
   '@oxlint/binding-win32-x64-msvc@1.78.0':
     optional: true
+
+  '@oxlint/plugins@1.78.0': {}
 
   '@remotion/google-fonts@4.0.512(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:

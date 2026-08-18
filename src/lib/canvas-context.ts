@@ -51,14 +51,21 @@ const describeBlock = (block: IEditorBlocks): SelectedBlockDescription => {
   switch (block.type) {
     case "text":
       return { ...base, text: block.text, color: block.color, fontSize: block.fontSize };
-    case "frame":
-      return {
-        ...base,
-        ...(block.background !== undefined ? { background: block.background } : {}),
-      };
-    case "image":
+    case "frame": {
+      const description = { ...base };
+      if (block.background !== undefined) {
+        description.background = block.background;
+      }
+      return description;
+    }
+    case "image": {
       // Deliberately omit `url` — generated images are multi-hundred-KB data: URLs.
-      return { ...base, ...(block.prompt !== undefined ? { prompt: block.prompt } : {}) };
+      const description = { ...base };
+      if (block.prompt !== undefined) {
+        description.prompt = block.prompt;
+      }
+      return description;
+    }
     case "html":
       return { ...base, htmlLength: block.html.length };
     default:
