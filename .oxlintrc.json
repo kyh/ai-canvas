@@ -12,10 +12,9 @@
     ".claude",
     ".codex",
     ".conductor",
-    ".superset",
-    "tools/oxlint/anti-slop"
+    ".superset"
   ],
-  "jsPlugins": [{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" }],
+  "jsPlugins": [{ "name": "anti-slop", "specifier": "@kyh/oxlint/anti-slop" }],
   "plugins": [
     "eslint",
     "typescript",

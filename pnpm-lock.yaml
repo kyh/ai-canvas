@@ -72,9 +72,9 @@ importers:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
     devDependencies:
-      '@oxlint/plugins':
-        specifier: 1.78.0
-        version: 1.78.0
+      '@kyh/oxlint':
+        specifier: ^0.1.2
+        version: 0.1.2
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -511,6 +511,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@kyh/oxlint@0.1.2':
+    resolution: {integrity: sha512-jaIXZ+9nE8mk+e7VYSPyGC7akDqD8NG/eQKzQv5Xv7RzPsakf3WCZk8TIgJeC/qLRqOGbcI0gtaDI5blMIZHvg==}
 
   '@modelcontextprotocol/sdk@1.30.0':
     resolution: {integrity: sha512-xKd8OIzlqNzcqcNumGAa6g+PW2kjD5vrpcKOnfldAUPP3j7lnqMPwlTXQm8gF+UwH72z0lqaRbjr9hqGz0eITA==}
@@ -3546,6 +3549,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@kyh/oxlint@0.1.2':
+    dependencies:
+      '@oxlint/plugins': 1.78.0
 
   '@modelcontextprotocol/sdk@1.30.0(zod@3.25.76)':
     dependencies:
