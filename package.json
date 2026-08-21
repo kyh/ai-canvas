@@ -2,7 +2,7 @@
   "name": "ai-canvas",
   "version": "0.1.0",
   "private": true,
-  "description": "Forkable Next.js template featuring an AI design canvas — generate, edit, and compose on an infinite canvas in natural language.",
+  "description": "Forkable Next.js template featuring an AI design canvas \u2014 generate, edit, and compose on an infinite canvas in natural language.",
   "keywords": [
     "ai",
     "canvas",
@@ -72,11 +72,5 @@
     "node": ">=24"
   },
   "packageManager": "pnpm@10.33.0",
-  "pnpm": {
-    "updateConfig": {
-      "ignoreDependencies": [
-        "typescript"
-      ]
-    }
-  }
+  "pnpm": {}
 }
