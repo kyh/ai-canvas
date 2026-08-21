@@ -77,14 +77,16 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
     },
     ref,
   ) => {
-    const [label, setLabel] = React.useState(block.label);
-    const [editable, setEditable] = React.useState(false);
+    // `null` means "not renaming" — a draft only exists while the input is up,
+    // so the committed label never needs syncing back into state.
+    const [draftLabel, setDraftLabel] = React.useState<string | null>(null);
 
-    React.useEffect(() => {
-      if (!editable) {
-        setLabel(block.label);
+    const commitRename = (label: string) => {
+      setDraftLabel(null);
+      if (block.label !== label) {
+        onRename?.(block.id, label);
       }
-    }, [block.label, editable]);
+    };
 
     const handleSelect = React.useCallback(() => {
       if (!block.visible) {
@@ -137,34 +139,27 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
               },
             )}
           >
-            <div className="text-base opacity-70">{BlockIcon(block.type)}</div>
+            <div className="text-base opacity-70">
+              <BlockIcon type={block.type} />
+            </div>
           </div>
-          {editable ? (
+          {draftLabel !== null ? (
             <Input
               type="text"
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
+              value={draftLabel}
+              onChange={(event) => setDraftLabel(event.target.value)}
               className="sidebar-item-label-input flex-1 h-6 overflow-hidden text-ellipsis px-1 text-sm truncate border-border bg-muted"
               // oxlint-disable-next-line jsx-a11y/no-autofocus -- inline rename input, mounted on user intent
               autoFocus
               onFocus={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
-              onBlur={() => {
-                setEditable(false);
-                if (block.label !== label) {
-                  onRename?.(block.id, label);
-                }
-              }}
+              onBlur={() => commitRename(draftLabel)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
-                  setEditable(false);
-                  if (block.label !== label) {
-                    onRename?.(block.id, label);
-                  }
+                  commitRename(draftLabel);
                 }
                 if (event.key === "Escape") {
-                  setEditable(false);
-                  setLabel(block.label);
+                  setDraftLabel(null);
                 }
               }}
             />
@@ -188,7 +183,7 @@ const BlockItem = React.forwardRef<HTMLDivElement, BlockItemProps>(
             }
           />
           <DropdownMenuContent className="w-52">
-            <DropdownMenuItem onClick={() => setEditable(true)}>
+            <DropdownMenuItem onClick={() => setDraftLabel(block.label)}>
               <Pencil className="mr-1 size-4" />
               Rename
             </DropdownMenuItem>

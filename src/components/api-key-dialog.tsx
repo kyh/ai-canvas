@@ -22,15 +22,20 @@ interface ApiKeyDialogProps {
 }
 
 export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
-  const [apiKey, setApiKey, removeApiKey] = useLocalStorage(GATEWAY_API_KEY_STORAGE_KEY, "");
-  const [apiKeyInput, setApiKeyInput] = React.useState("");
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <ApiKeyForm onOpenChange={onOpenChange} />
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-  // Sync input with stored value when dialog opens
-  React.useEffect(() => {
-    if (open) {
-      setApiKeyInput(apiKey);
-    }
-  }, [open, apiKey]);
+// Own component so the input seeds from localStorage on mount: the dialog
+// portal unmounts on close, so opening it always starts a fresh form.
+function ApiKeyForm({ onOpenChange }: Pick<ApiKeyDialogProps, "onOpenChange">) {
+  const [apiKey, setApiKey, removeApiKey] = useLocalStorage(GATEWAY_API_KEY_STORAGE_KEY, "");
+  const [apiKeyInput, setApiKeyInput] = React.useState(apiKey);
 
   const handleSaveApiKey = () => {
     if (apiKeyInput.trim()) {
@@ -43,45 +48,43 @@ export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Enter Vercel Gateway API Key</DialogTitle>
-          <DialogDescription>
-            Enter your{" "}
-            <a
-              href="https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys%3Futm_source%3Dcanvas.kyh.io&title=Get+an+API+Key"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              Vercel Gateway API key
-            </a>{" "}
-            to use AI features. Your key will be stored locally in your browser.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4 flex flex-col gap-2">
-          <Input
-            type="password"
-            placeholder="vck_..."
-            value={apiKeyInput}
-            onChange={(e) => setApiKeyInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && apiKeyInput.trim()) {
-                handleSaveApiKey();
-              }
-            }}
-            // oxlint-disable-next-line jsx-a11y/no-autofocus -- modal dialog with a single field
-            autoFocus
-          />
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSaveApiKey}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <>
+      <DialogHeader>
+        <DialogTitle>Enter Vercel Gateway API Key</DialogTitle>
+        <DialogDescription>
+          Enter your{" "}
+          <a
+            href="https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys%3Futm_source%3Dcanvas.kyh.io&title=Get+an+API+Key"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Vercel Gateway API key
+          </a>{" "}
+          to use AI features. Your key will be stored locally in your browser.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="py-4 flex flex-col gap-2">
+        <Input
+          type="password"
+          placeholder="vck_..."
+          value={apiKeyInput}
+          onChange={(e) => setApiKeyInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && apiKeyInput.trim()) {
+              handleSaveApiKey();
+            }
+          }}
+          // oxlint-disable-next-line jsx-a11y/no-autofocus -- modal dialog with a single field
+          autoFocus
+        />
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button onClick={handleSaveApiKey}>Save</Button>
+      </DialogFooter>
+    </>
   );
 }

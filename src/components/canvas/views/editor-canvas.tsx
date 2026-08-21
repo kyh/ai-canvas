@@ -95,18 +95,18 @@ const getOpacity = (value?: number) => {
 };
 
 const useImageElement = (src: string | undefined) => {
-  const [image, setImage] = React.useState<HTMLImageElement | null>(null);
+  // Keyed by src so a pending load never renders the previous block's image.
+  const [loaded, setLoaded] = React.useState<{ src: string; image: HTMLImageElement } | null>(null);
 
   React.useEffect(() => {
     if (!src) {
-      setImage(null);
       return;
     }
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.src = src;
-    const handleLoad = () => setImage(img);
-    const handleError = () => setImage(null);
+    const handleLoad = () => setLoaded({ src, image: img });
+    const handleError = () => setLoaded(null);
     img.addEventListener("load", handleLoad);
     img.addEventListener("error", handleError);
     return () => {
@@ -115,7 +115,7 @@ const useImageElement = (src: string | undefined) => {
     };
   }, [src]);
 
-  return image;
+  return loaded && loaded.src === src ? loaded.image : null;
 };
 
 const getScaleWithFlip = (block: IEditorBlocks) => {
@@ -880,7 +880,6 @@ function EditorCanvas() {
   const selectionChangedRef = React.useRef(false);
   const isAltDragRef = React.useRef(false);
   const originalPositionsRef = React.useRef<Map<string, { x: number; y: number }>>(new Map());
-  const storeApi = editorStoreApi;
 
   const [selectionRect, setSelectionRect] = React.useState<SelectionRect | null>(null);
   const [previewSelectionIds, setPreviewSelectionIds] = React.useState<string[]>([]);
@@ -902,11 +901,6 @@ function EditorCanvas() {
   const [placementStart, setPlacementStart] = React.useState<PointerPosition | null>(null);
   const [placementCurrent, setPlacementCurrent] = React.useState<PointerPosition | null>(null);
   const [placementHasMoved, setPlacementHasMoved] = React.useState(false);
-  const [pendingImageData, setPendingImageData] = React.useState<{
-    url: string;
-    width: number;
-    height: number;
-  } | null>(null);
 
   const {
     blocks,
@@ -932,15 +926,7 @@ function EditorCanvas() {
     updateBlockValues,
   } = useCanvasStore();
 
-  // Sync pendingImageData from store
-  React.useEffect(() => {
-    const store = editorStoreApi;
-    const unsubscribe = store.subscribe((state) => {
-      setPendingImageData(state.pendingImageData);
-    });
-    setPendingImageData(store.getState().pendingImageData);
-    return unsubscribe;
-  }, []);
+  const pendingImageData = useEditorStore((state) => state.pendingImageData);
 
   const { applyZoom, handleWheel } = useCanvasZoomPan({
     stageRef,
@@ -1004,7 +990,7 @@ function EditorCanvas() {
       size?: { width: number; height: number },
     ) => {
       const blockType = mode;
-      const blocks = selectOrderedBlocks(storeApi.getState());
+      const blocks = selectOrderedBlocks(editorStoreApi.getState());
 
       if (blockType === "text") {
         // Use shared calculation for consistency
@@ -1040,7 +1026,7 @@ function EditorCanvas() {
             opacity: 100,
           } satisfies IEditorBlockText),
         );
-        storeApi.getState().addBlock(defaultBlock);
+        editorStoreApi.getState().addBlock(defaultBlock);
         setMode("select");
       } else if (blockType === "frame") {
         // Use shared calculation for consistency
@@ -1075,7 +1061,7 @@ function EditorCanvas() {
             opacity: 100,
           } satisfies IEditorBlockFrame),
         );
-        storeApi.getState().addBlock(defaultBlock);
+        editorStoreApi.getState().addBlock(defaultBlock);
         setMode("select");
       } else if (blockType === "arrow") {
         // Use same calculation as preview
@@ -1083,7 +1069,7 @@ function EditorCanvas() {
           ? [0, 0, size.width, size.height]
           : [0, 0, 200, 0];
         const placement = calculateArrowPlacement(position, points);
-        const blocks = selectOrderedBlocks(storeApi.getState());
+        const blocks = selectOrderedBlocks(editorStoreApi.getState());
         const defaultBlock = ensureBlockDefaults(
           arrowBlockSchema.parse({
             id: generateId(),
@@ -1106,7 +1092,7 @@ function EditorCanvas() {
             opacity: 100,
           } satisfies IEditorBlockArrow),
         );
-        storeApi.getState().addBlock(defaultBlock);
+        editorStoreApi.getState().addBlock(defaultBlock);
         setMode("select");
       } else if (blockType === "image" && pendingImageData) {
         // Use shared calculation for consistency
@@ -1139,13 +1125,12 @@ function EditorCanvas() {
             opacity: 100,
           } satisfies IEditorBlockImage),
         );
-        storeApi.getState().addBlock(defaultBlock);
-        setPendingImageData(null);
-        storeApi.getState().setPendingImageData(null);
+        editorStoreApi.getState().addBlock(defaultBlock);
+        editorStoreApi.getState().setPendingImageData(null);
         setMode("select");
       }
     },
-    [mode, pendingImageData, setMode, storeApi],
+    [mode, pendingImageData, setMode],
   );
 
   const finishDrawing = React.useCallback(() => {
@@ -1167,7 +1152,7 @@ function EditorCanvas() {
       index % 2 === 0 ? value - bounds.minX : value - bounds.minY,
     );
 
-    const blocks = selectOrderedBlocks(storeApi.getState());
+    const blocks = selectOrderedBlocks(editorStoreApi.getState());
     const drawBlock = ensureBlockDefaults(
       drawBlockSchema.parse({
         id: generateId(),
@@ -1189,10 +1174,10 @@ function EditorCanvas() {
       } satisfies IEditorBlockDraw),
     );
 
-    storeApi.getState().addBlock(drawBlock);
+    editorStoreApi.getState().addBlock(drawBlock);
     drawingPointsRef.current = [];
     setDrawingPoints([]);
-  }, [isDrawing, storeApi]);
+  }, [isDrawing]);
 
   React.useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -1218,11 +1203,11 @@ function EditorCanvas() {
 
   const updateSelection = React.useCallback(
     (updater: (current: string[]) => string[]) => {
-      const current = storeApi.getState().selectedIds;
+      const current = editorStoreApi.getState().selectedIds;
       const next = updater(current);
       setSelectedIds(next);
     },
-    [setSelectedIds, storeApi],
+    [setSelectedIds],
   );
 
   const handleNodeSelection = React.useCallback(
@@ -1782,7 +1767,7 @@ function EditorCanvas() {
     if (!editingText) {
       return;
     }
-    const block = storeApi.getState().blocksById[editingText.id];
+    const block = editorStoreApi.getState().blocksById[editingText.id];
     if (!block || block.type !== "text") {
       setEditingText(null);
       setIsTextEditing(false);
@@ -1797,7 +1782,7 @@ function EditorCanvas() {
     });
     setEditingText(null);
     setIsTextEditing(false);
-  }, [editingText, setIsTextEditing, storeApi, updateBlockValues]);
+  }, [editingText, setIsTextEditing, updateBlockValues]);
 
   const zoomIn = React.useCallback(() => {
     applyZoom(zoom * ZOOM_STEP);
@@ -1815,8 +1800,8 @@ function EditorCanvas() {
     if (!editingText) {
       return null;
     }
-    return selectTextBlock(editingText.id)(storeApi.getState()) ?? null;
-  }, [editingText, storeApi]);
+    return selectTextBlock(editingText.id)(editorStoreApi.getState()) ?? null;
+  }, [editingText]);
 
   return (
     <div ref={containerRef} className="relative flex-1 canvas-stage">
@@ -1911,8 +1896,10 @@ function EditorCanvas() {
                   isAltDragRef.current = true;
                   // Store original positions of all selected blocks
                   // Get current selected IDs from store to ensure we have the latest state
-                  const currentSelectedIds = storeApi.getState().selectedIds.includes(block.id)
-                    ? storeApi.getState().selectedIds
+                  const currentSelectedIds = editorStoreApi
+                    .getState()
+                    .selectedIds.includes(block.id)
+                    ? editorStoreApi.getState().selectedIds
                     : [block.id];
                   originalPositionsRef.current.clear();
                   currentSelectedIds.forEach((selectedId) => {

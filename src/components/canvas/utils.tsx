@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import type { IEditorBlockType } from "@/lib/schema";
 
-export function BlockIcon(type: IEditorBlockType) {
+export function BlockIcon({ type }: { type: IEditorBlockType }) {
   switch (type) {
     case "text":
       return <TextIcon />;

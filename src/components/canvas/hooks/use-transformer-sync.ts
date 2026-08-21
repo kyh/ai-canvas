@@ -15,8 +15,11 @@ export const useTransformerSync = (
     if (!stage || !transformer) {
       return;
     }
-    const nodes = selectedIds
-      .map((id) => stage.findOne(`#${blockNodeId(id)}`))
+    // Resolve through `blocks` so the transformer re-attaches after react-konva
+    // has (re)mounted the nodes, and never holds one whose block is gone.
+    const nodes = blocks
+      .filter((block) => selectedIds.includes(block.id))
+      .map((block) => stage.findOne(`#${blockNodeId(block.id)}`))
       .filter((node): node is Konva.Node => Boolean(node));
     transformer.nodes(nodes);
     transformer.getLayer()?.batchDraw();

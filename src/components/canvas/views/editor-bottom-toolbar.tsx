@@ -343,16 +343,6 @@ function EditorBottomToolbar() {
     if (needsKey) setShowApiKeyModal(true);
   };
 
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  React.useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [input]);
-
   // Handle keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -376,7 +366,7 @@ function EditorBottomToolbar() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [setToolbarMode, toolbarMode, input, isLoading, handleSubmit]);
+  }, [setToolbarMode]);
 
   return (
     <>
@@ -416,7 +406,7 @@ function EditorBottomToolbar() {
                       onClick={() => setMode("text")}
                       className={cn(mode === "text" && "bg-muted")}
                     >
-                      {BlockIcon("text")}
+                      <BlockIcon type="text" />
                     </Button>
                   </CustomTooltip>
                   <CustomTooltip content="Add Image">
@@ -430,7 +420,7 @@ function EditorBottomToolbar() {
                       }}
                       className={cn(mode === "image" && "bg-muted")}
                     >
-                      {BlockIcon("image")}
+                      <BlockIcon type="image" />
                     </Button>
                   </CustomTooltip>
                   <CustomTooltip content="Add Frame" hotkey="F">
@@ -440,7 +430,7 @@ function EditorBottomToolbar() {
                       onClick={() => setMode("frame")}
                       className={cn(mode === "frame" && "bg-muted")}
                     >
-                      {BlockIcon("frame")}
+                      <BlockIcon type="frame" />
                     </Button>
                   </CustomTooltip>
                   <CustomTooltip content="Add Arrow" hotkey="A">
@@ -450,7 +440,7 @@ function EditorBottomToolbar() {
                       onClick={() => setMode("arrow")}
                       className={cn(mode === "arrow" && "bg-muted")}
                     >
-                      {BlockIcon("arrow")}
+                      <BlockIcon type="arrow" />
                     </Button>
                   </CustomTooltip>
                   <CustomTooltip content="Draw" hotkey="D">
@@ -533,7 +523,6 @@ function EditorBottomToolbar() {
                 )}
                 <InputGroup className="min-w-[300px] pr-1">
                   <InputGroupTextarea
-                    ref={textareaRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
