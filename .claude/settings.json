@@ -8,5 +8,19 @@
       "Bash(pnpm verify:*)",
       "Bash(agent-browser:*)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ \"$CLAUDE_CODE_REMOTE\" = \"true\" ] && cd \"$CLAUDE_PROJECT_DIR\" && pnpm install || true",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
   }
 }
