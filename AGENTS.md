@@ -53,10 +53,10 @@ The canvas always opens on a demo template (one image, two text blocks) — that
 Static gate — run before every commit:
 
 ```sh
-pnpm verify     # typecheck · lint · format · test
+pnpm verify     # typecheck · lint · format
 ```
 
-A vitest harness runs as part of `pnpm verify`, but no tests are written yet and there is no CI workflow: `pnpm verify` plus `pnpm build` is the entire static gate, and nothing runs it for you on a PR.
+`pnpm test` is wired to Node's built-in runner (`node --import tsx --test 'src/**/*.test.ts'`) but no tests are written yet, so it exits non-zero and is deliberately left out of `pnpm verify` — add `&& pnpm test` back to `verify` with the first test file. There is no CI workflow: `pnpm verify` plus `pnpm build` is the entire static gate, and nothing runs it for you on a PR.
 
 Runtime — the web app is the only driveable surface. With `pnpm dev` running, use [agent-browser](https://github.com/vercel-labs/agent-browser). It is not a dependency of this repo; install it once if missing:
 

@@ -52,7 +52,7 @@ src/
 ```bash
 pnpm dev             # Dev server — boots Next.js AND the eve agent runtime
 pnpm build           # Production build (Next). Vercel builds the eve service via withEve
-pnpm verify          # typecheck · lint · format · test (the whole static gate — run before committing)
+pnpm verify          # typecheck · lint · format (the whole static gate — run before committing)
 pnpm typecheck       # tsc --noEmit
 pnpm lint            # oxlint (warnings are errors)
 pnpm format          # oxfmt --check
@@ -68,7 +68,7 @@ pnpm format:fix      # oxfmt --write
 - **Provision**: `pnpm install`, then `AI_GATEWAY_API_KEY=vck_…` in `.env.local`. No Docker, no database, no seed.
 - **No login exists.** In dev the key dialog is suppressed and turns run on the server key; in a production build a keyless visitor gets the dialog (mounted twice — bottom toolbar and left-sidebar gear). Headless prod runs pre-seed `localStorage["gateway-api-key"]`.
 - **Verify**: `pnpm verify` for the static gate, then drive the running app with `agent-browser` — web is the only runtime-verifiable surface, and the left "Layers" panel (not the `<canvas>` pixels) is what you assert on.
-- A vitest harness is wired into `pnpm verify` but no tests are written yet; there is no CI workflow, so nothing runs these gates for you on a PR.
+- `pnpm test` runs Node's built-in runner via tsx, but no tests are written yet, so it is deliberately not part of `pnpm verify` (a node:test run that matches no files exits non-zero); add `&& pnpm test` back to `verify` with the first test file. There is no CI workflow, so nothing runs these gates for you on a PR.
 
 ## Conventions
 
