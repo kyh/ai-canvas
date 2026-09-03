@@ -37,7 +37,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.84",
     "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
+    "cn": "^0.2.3",
     "eve": "^0.47.3",
     "konva": "^10.3.2",
     "lucide-react": "^1.35.0",
@@ -49,7 +49,6 @@
     "react-konva": "^19.2.5",
     "react-konva-utils": "^2.0.0",
     "sonner": "^2.0.8",
-    "tailwind-merge": "^3.6.0",
     "zod": "^4.5.2",
     "zustand": "^5.0.15"
   },
