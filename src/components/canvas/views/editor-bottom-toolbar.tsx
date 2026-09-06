@@ -20,7 +20,7 @@ import type { SubagentChildEventStreamEvent } from "eve/client";
 import { useEveAgent } from "eve/react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 import { generatedBlockPayloadSchema, updateHtmlBlockPayloadSchema } from "@/lib/assistant-schemas";
 import { buildCanvasContext } from "@/lib/canvas-context";
 import { Button } from "@/components/ui/button";

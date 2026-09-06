@@ -1,6 +1,6 @@
 import { FlipHorizontal, FlipVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 import ControllerRow from "./controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";
 
