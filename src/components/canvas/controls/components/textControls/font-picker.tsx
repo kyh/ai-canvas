@@ -2,7 +2,7 @@ import * as React from "react";
 import type { IEditorBlockText } from "@/lib/schema";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronDown as CaretDownIcon, X as Cross2Icon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 import ControllerRow from "../controller-row";
 import { fontsList, fontWeights } from "./fonts";
 import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 import LayoutController from "../controls/layout-controller";
 import TextController from "../controls/text-controller";
 import LayerController from "../controls/layer-controller";

@@ -37,7 +37,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.84",
     "class-variance-authority": "^0.7.1",
-    "cn": "^0.2.3",
+    "cn": "^0.2.5",
     "eve": "^0.47.3",
     "konva": "^10.3.2",
     "lucide-react": "^1.35.0",

@@ -1,5 +1,5 @@
 import { NumberInput } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 import ControllerRow from "./components/controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";
 

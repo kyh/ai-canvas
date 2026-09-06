@@ -12,7 +12,7 @@ import {
   ArrowDownToLine,
   Pencil,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ApiKeyDialog } from "@/components/api-key-dialog";
