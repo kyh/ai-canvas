@@ -10,7 +10,7 @@ interface TextDecorationControlProps {
   className?: string;
 }
 
-function TextDecorationControl({ blockId, block, className }: TextDecorationControlProps) {
+const TextDecorationControl = ({ blockId, block, className }: TextDecorationControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -38,6 +38,6 @@ function TextDecorationControl({ blockId, block, className }: TextDecorationCont
       </NativeSelect>
     </ControllerRow>
   );
-}
+};
 
 export default TextDecorationControl;

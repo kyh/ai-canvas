@@ -1,4 +1,4 @@
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import ControllerRow from "../controller-row";
 import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 import type { IEditorBlockText } from "@/lib/schema";
@@ -9,7 +9,7 @@ interface LineHeightControlProps {
   className?: string;
 }
 
-function LineHeightControl({ blockId, block, className }: LineHeightControlProps) {
+const LineHeightControl = ({ blockId, block, className }: LineHeightControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -21,8 +21,8 @@ function LineHeightControl({ blockId, block, className }: LineHeightControlProps
     const linesApprox = Math.max(1, resolvedBlock.height / resolvedBlock.lineHeight);
     const newHeight = Math.round(linesApprox * value);
     updateBlockValues(blockId, {
-      lineHeight: value,
       height: newHeight,
+      lineHeight: value,
     });
   };
 
@@ -40,11 +40,11 @@ function LineHeightControl({ blockId, block, className }: LineHeightControlProps
         max={100}
         min={5}
         onChange={(event) => {
-          onChange(Number.parseInt(event.target.value, 10));
+          onChange(Math.trunc(Number(event.target.value)));
         }}
       />
     </ControllerRow>
   );
-}
+};
 
 export default LineHeightControl;

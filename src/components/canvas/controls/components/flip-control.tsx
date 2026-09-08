@@ -9,7 +9,7 @@ interface FlipControlProps {
   className?: string;
 }
 
-function FlipControl({ blockId, className }: FlipControlProps) {
+const FlipControl = ({ blockId, className }: FlipControlProps) => {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!block) {
@@ -53,6 +53,6 @@ function FlipControl({ blockId, className }: FlipControlProps) {
       </Button>
     </ControllerRow>
   );
-}
+};
 
 export default FlipControl;

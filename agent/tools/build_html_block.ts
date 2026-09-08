@@ -37,8 +37,6 @@ export default defineTool({
 - If \`selectionBounds\` is present in the per-turn context, set x = selectionBounds.x + selectionBounds.width + 30 and y = selectionBounds.y (place the build next to its source)
 - Otherwise omit x/y to center the block on the canvas
 - Default size is 400x300 — pass width/height when the content needs more room`,
-  inputSchema: buildHtmlBlockInputSchema,
-  outputSchema: generatedBlockPayloadSchema,
   execute: (input) => {
     const width = input.width ?? LOADING_HTML_BLOCK_WIDTH;
     const height = input.height ?? LOADING_HTML_BLOCK_HEIGHT;
@@ -47,31 +45,33 @@ export default defineTool({
     // Safeguard: strip markdown fences if the model wrapped the document.
     const html = input.html
       .trim()
-      .replace(/^```html?\s*/i, "")
-      .replace(/\s*```$/g, "")
+      .replace(/^```html?\s*/iu, "")
+      .replaceAll(/\s*```$/gu, "")
       .trim();
 
     return {
       block: blockSchema.parse({
-        type: "html",
+        background: "#ffffff",
+        border: { color: "#d1d5db", width: 1 },
+        height,
+        html,
         id: generateId(),
         label: input.label ?? "HTML",
-        html,
-        x: input.x ?? centerPosition.x,
-        y: input.y ?? centerPosition.y,
-        width,
-        height,
+        opacity: 100,
+        radius: { bl: 16, br: 16, tl: 16, tr: 16 },
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
+        type: "html",
         visible: true,
-        opacity: 100,
-        background: "#ffffff",
-        border: { color: "#d1d5db", width: 1 },
-        radius: { tl: 16, tr: 16, br: 16, bl: 16 },
+        width,
+        x: input.x ?? centerPosition.x,
+        y: input.y ?? centerPosition.y,
       }),
     };
   },
+  inputSchema: buildHtmlBlockInputSchema,
+  outputSchema: generatedBlockPayloadSchema,
   // The client swaps its loading placeholder for the full block from
   // `action.result`; the model only needs a short ack with the id.
   toModelOutput: (output) => ({

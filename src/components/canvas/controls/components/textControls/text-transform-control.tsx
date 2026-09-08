@@ -10,7 +10,7 @@ interface TextTransformControlProps {
   className?: string;
 }
 
-function TextTransformControl({ blockId, block, className }: TextTransformControlProps) {
+const TextTransformControl = ({ blockId, block, className }: TextTransformControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -38,6 +38,6 @@ function TextTransformControl({ blockId, block, className }: TextTransformContro
       </NativeSelect>
     </ControllerRow>
   );
-}
+};
 
 export default TextTransformControl;

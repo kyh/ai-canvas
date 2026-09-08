@@ -12,7 +12,7 @@ interface CanvasProps {
   template?: Template;
 }
 
-function Canvas({ template }: CanvasProps) {
+const Canvas = ({ template }: CanvasProps) => {
   React.useLayoutEffect(() => {
     initializeEditorStore(template);
   }, [template]);
@@ -27,6 +27,6 @@ function Canvas({ template }: CanvasProps) {
       <EditorBottomToolbar />
     </div>
   );
-}
+};
 
 export default Canvas;

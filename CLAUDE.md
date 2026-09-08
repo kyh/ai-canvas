@@ -8,7 +8,7 @@ AI Canvas - interactive canvas app w/ AI-powered design generation. Build Canva/
 
 - Next.js 16 (App Router)
 - React 19
-- TypeScript (strict; no `any`, no `!` — both `error` in `.oxlintrc.json`; avoid `as` in new code)
+- TypeScript (strict; no `any`, no `!`, no `as` — all errors under the ultracite presets in `oxlint.config.ts`)
 - Konva (canvas rendering)
 - Zustand (state)
 - shadcn base-vega on Base UI (`@base-ui/react`, `render` prop — NOT Radix/asChild)
@@ -54,7 +54,7 @@ pnpm dev             # Dev server — boots Next.js AND the eve agent runtime
 pnpm build           # Production build (Next). Vercel builds the eve service via withEve
 pnpm verify          # typecheck · lint · format (the whole static gate — run before committing)
 pnpm typecheck       # tsc --noEmit
-pnpm lint            # oxlint (warnings are errors)
+pnpm lint            # oxlint — a clean gate: every rule is an error
 pnpm format          # oxfmt --check
 pnpm format:fix      # oxfmt --write
 ```
@@ -74,7 +74,7 @@ pnpm format:fix      # oxfmt --write
 
 - Path alias: `@/*` → `./src/*` — but files imported by `agent/` code MUST use relative imports (eve's compiler doesn't read tsconfig paths)
 - kebab-case filenames for TS/TSX; `agent/tools/*` are snake_case (eve derives tool names from filenames)
-- No `any`, no `!` — enforced by `pnpm lint` via `.oxlintrc.json`. Avoid `as` in new code and zod-parse at boundaries (stream events, tool payloads, localStorage); `consistent-type-assertions` is enabled — `as` is an error, so parse or narrow instead
+- No `any`, no `!`, no `as` — enforced by `pnpm lint`. `oxlint.config.ts` extends the ultracite presets (core, react, next, anti-slop); every rule is an error. Fix the code, don't add config overrides; a `// oxlint-disable-next-line rule -- why` needs a stated reason. Zod-parse at boundaries (stream events, tool payloads, localStorage) and narrow instead of asserting
 
 ## Key Files
 

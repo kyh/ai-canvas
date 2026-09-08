@@ -7,7 +7,7 @@ import LayerController from "../controls/layer-controller";
 import CanvasController from "../controls/canvas-controller";
 import { useEditorStore } from "../use-editor";
 
-function EditorRightSide({ className }: { className?: string }) {
+const EditorRightSide = ({ className }: { className?: string }) => {
   // Select separately to avoid creating new array references
   const selectedIds = useEditorStore((state) => state.selectedIds);
   const blocksById = useEditorStore((state) => state.blocksById);
@@ -42,6 +42,6 @@ function EditorRightSide({ className }: { className?: string }) {
       </ScrollArea>
     </div>
   );
-}
+};
 
 export default EditorRightSide;

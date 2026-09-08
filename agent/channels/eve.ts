@@ -10,9 +10,11 @@ import { eveChannel } from "eve/channels/eve";
  * validated here — a bad key fails at the model call and surfaces as a
  * turn error the toolbar maps back to the key dialog.
  */
-const gatewayKeyBearer = (): AuthFn<Request> => (request) => {
+const gatewayKeyBearer: AuthFn<Request> = (request) => {
   const token = extractBearerToken(request.headers.get("authorization"));
-  if (token === null || token.length === 0) return null;
+  if (token === null || token.length === 0) {
+    return null;
+  }
   return {
     attributes: { gatewayApiKey: token },
     authenticator: "gateway-key-bearer",
@@ -27,4 +29,4 @@ const gatewayKeyBearer = (): AuthFn<Request> => (request) => {
  * browsers in production — gets a 401, which the toolbar turns into
  * the key dialog.
  */
-export default eveChannel({ auth: [gatewayKeyBearer(), vercelOidc(), localDev()] });
+export default eveChannel({ auth: [gatewayKeyBearer, vercelOidc(), localDev()] });

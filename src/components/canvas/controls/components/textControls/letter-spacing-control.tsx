@@ -1,4 +1,4 @@
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import ControllerRow from "../controller-row";
 import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 import type { IEditorBlockText } from "@/lib/schema";
@@ -9,7 +9,7 @@ interface LetterSpacingControlProps {
   className?: string;
 }
 
-function LetterSpacingControl({ blockId, block, className }: LetterSpacingControlProps) {
+const LetterSpacingControl = ({ blockId, block, className }: LetterSpacingControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -37,11 +37,11 @@ function LetterSpacingControl({ blockId, block, className }: LetterSpacingContro
         max={50}
         min={0}
         onChange={(event) => {
-          onChange(Number.parseInt(event.target.value, 10));
+          onChange(Math.trunc(Number(event.target.value)));
         }}
       />
     </ControllerRow>
   );
-}
+};
 
 export default LetterSpacingControl;

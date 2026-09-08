@@ -13,18 +13,18 @@ import type { FontInfo } from "@remotion/google-fonts";
  * replaces the ~100 per-entry `as Promise<GoogleFont>` casts this list used to
  * carry. Model the weight/family relationship properly and it can go away.
  */
-type LoadedFont = {
+interface LoadedFont {
   getInfo: () => FontInfo;
   loadFont: (
     style?: never,
     options?: { weights?: string[]; subsets?: string[] },
   ) => { waitUntilDone: () => Promise<undefined> };
-};
+}
 
 /** The surface every `@remotion/google-fonts/<Family>` module shares verbatim. */
-type FontFamilyModule = {
+interface FontFamilyModule {
   getInfo: () => FontInfo;
-};
+}
 
 // SAFETY: every `@remotion/google-fonts/<Family>` module ships a `loadFont`
 // whose per-family literal `weights`/`style` parameters only narrow, never
@@ -35,512 +35,512 @@ type FontFamilyModule = {
 // oxlint-disable-next-line typescript/consistent-type-assertions
 const asLoadedFont = (mod: FontFamilyModule) => mod as LoadedFont;
 
-type FontEntry = {
+interface FontEntry {
   family: string;
   load: () => Promise<LoadedFont>;
   fontKey: string;
-};
+}
 
 export const fontsList: FontEntry[] = [
   {
     family: "Abel",
-    load: () => import("@remotion/google-fonts/Abel").then(asLoadedFont),
     fontKey: "Abel",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Abel")),
   },
   {
     family: "Anton",
-    load: () => import("@remotion/google-fonts/Anton").then(asLoadedFont),
     fontKey: "Anton",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Anton")),
   },
   {
     family: "Archivo",
-    load: () => import("@remotion/google-fonts/Archivo").then(asLoadedFont),
     fontKey: "Archivo",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Archivo")),
   },
   {
     family: "Arimo",
-    load: () => import("@remotion/google-fonts/Arimo").then(asLoadedFont),
     fontKey: "Arimo",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Arimo")),
   },
   {
     family: "Arvo",
-    load: () => import("@remotion/google-fonts/Arvo").then(asLoadedFont),
     fontKey: "Arvo",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Arvo")),
   },
   {
     family: "Asap",
-    load: () => import("@remotion/google-fonts/Asap").then(asLoadedFont),
     fontKey: "Asap",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Asap")),
   },
   {
     family: "Assistant",
-    load: () => import("@remotion/google-fonts/Assistant").then(asLoadedFont),
     fontKey: "Assistant",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Assistant")),
   },
   {
     family: "Barlow",
-    load: () => import("@remotion/google-fonts/Barlow").then(asLoadedFont),
     fontKey: "Barlow",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Barlow")),
   },
   {
     family: "Barlow Condensed",
-    load: () => import("@remotion/google-fonts/BarlowCondensed").then(asLoadedFont),
     fontKey: "BarlowCondensed",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/BarlowCondensed")),
   },
   {
     family: "Barlow Semi Condensed",
-    load: () => import("@remotion/google-fonts/BarlowSemiCondensed").then(asLoadedFont),
     fontKey: "BarlowSemiCondensed",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/BarlowSemiCondensed")),
   },
   {
     family: "Bebas Neue",
-    load: () => import("@remotion/google-fonts/BebasNeue").then(asLoadedFont),
     fontKey: "BebasNeue",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/BebasNeue")),
   },
   {
     family: "Bitter",
-    load: () => import("@remotion/google-fonts/Bitter").then(asLoadedFont),
     fontKey: "Bitter",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Bitter")),
   },
   {
     family: "Cabin",
-    load: () => import("@remotion/google-fonts/Cabin").then(asLoadedFont),
     fontKey: "Cabin",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Cabin")),
   },
   {
     family: "Cairo",
-    load: () => import("@remotion/google-fonts/Cairo").then(asLoadedFont),
     fontKey: "Cairo",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Cairo")),
   },
   {
     family: "Caveat",
-    load: () => import("@remotion/google-fonts/Caveat").then(asLoadedFont),
     fontKey: "Caveat",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Caveat")),
   },
   {
     family: "Chakra Petch",
-    load: () => import("@remotion/google-fonts/ChakraPetch").then(asLoadedFont),
     fontKey: "ChakraPetch",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/ChakraPetch")),
   },
   {
     family: "Comfortaa",
-    load: () => import("@remotion/google-fonts/Comfortaa").then(asLoadedFont),
     fontKey: "Comfortaa",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Comfortaa")),
   },
   {
     family: "Cormorant Garamond",
-    load: () => import("@remotion/google-fonts/CormorantGaramond").then(asLoadedFont),
     fontKey: "CormorantGaramond",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/CormorantGaramond")),
   },
   {
     family: "Crimson Text",
-    load: () => import("@remotion/google-fonts/CrimsonText").then(asLoadedFont),
     fontKey: "CrimsonText",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/CrimsonText")),
   },
   {
     family: "DM Sans",
-    load: () => import("@remotion/google-fonts/DMSans").then(asLoadedFont),
     fontKey: "DMSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/DMSans")),
   },
   {
     family: "Dancing Script",
-    load: () => import("@remotion/google-fonts/DancingScript").then(asLoadedFont),
     fontKey: "DancingScript",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/DancingScript")),
   },
   {
     family: "Dosis",
-    load: () => import("@remotion/google-fonts/Dosis").then(asLoadedFont),
     fontKey: "Dosis",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Dosis")),
   },
   {
     family: "EB Garamond",
-    load: () => import("@remotion/google-fonts/EBGaramond").then(asLoadedFont),
     fontKey: "EBGaramond",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/EBGaramond")),
   },
   {
     family: "Exo 2",
-    load: () => import("@remotion/google-fonts/Exo2").then(asLoadedFont),
     fontKey: "Exo2",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Exo2")),
   },
   {
     family: "Figtree",
-    load: () => import("@remotion/google-fonts/Figtree").then(asLoadedFont),
     fontKey: "Figtree",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Figtree")),
   },
   {
     family: "Fira Sans",
-    load: () => import("@remotion/google-fonts/FiraSans").then(asLoadedFont),
     fontKey: "FiraSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/FiraSans")),
   },
   {
     family: "Fira Sans Condensed",
-    load: () => import("@remotion/google-fonts/FiraSansCondensed").then(asLoadedFont),
     fontKey: "FiraSansCondensed",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/FiraSansCondensed")),
   },
   {
     family: "Fjalla One",
-    load: () => import("@remotion/google-fonts/FjallaOne").then(asLoadedFont),
     fontKey: "FjallaOne",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/FjallaOne")),
   },
   {
     family: "Heebo",
-    load: () => import("@remotion/google-fonts/Heebo").then(asLoadedFont),
     fontKey: "Heebo",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Heebo")),
   },
   {
     family: "Hind",
-    load: () => import("@remotion/google-fonts/Hind").then(asLoadedFont),
     fontKey: "Hind",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Hind")),
   },
   {
     family: "Hind Siliguri",
-    load: () => import("@remotion/google-fonts/HindSiliguri").then(asLoadedFont),
     fontKey: "HindSiliguri",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/HindSiliguri")),
   },
   {
     family: "IBM Plex Mono",
-    load: () => import("@remotion/google-fonts/IBMPlexMono").then(asLoadedFont),
     fontKey: "IBMPlexMono",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/IBMPlexMono")),
   },
   {
     family: "IBM Plex Sans",
-    load: () => import("@remotion/google-fonts/IBMPlexSans").then(asLoadedFont),
     fontKey: "IBMPlexSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/IBMPlexSans")),
   },
   {
     family: "Inconsolata",
-    load: () => import("@remotion/google-fonts/Inconsolata").then(asLoadedFont),
     fontKey: "Inconsolata",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Inconsolata")),
   },
   {
     family: "Inter",
-    load: () => import("@remotion/google-fonts/Inter").then(asLoadedFont),
     fontKey: "Inter",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Inter")),
   },
   {
     family: "Josefin Sans",
-    load: () => import("@remotion/google-fonts/JosefinSans").then(asLoadedFont),
     fontKey: "JosefinSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/JosefinSans")),
   },
   {
     family: "Jost",
-    load: () => import("@remotion/google-fonts/Jost").then(asLoadedFont),
     fontKey: "Jost",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Jost")),
   },
   {
     family: "Kanit",
-    load: () => import("@remotion/google-fonts/Kanit").then(asLoadedFont),
     fontKey: "Kanit",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Kanit")),
   },
   {
     family: "Karla",
-    load: () => import("@remotion/google-fonts/Karla").then(asLoadedFont),
     fontKey: "Karla",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Karla")),
   },
   {
     family: "Lato",
-    load: () => import("@remotion/google-fonts/Lato").then(asLoadedFont),
     fontKey: "Lato",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Lato")),
   },
   {
     family: "Lexend",
-    load: () => import("@remotion/google-fonts/Lexend").then(asLoadedFont),
     fontKey: "Lexend",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Lexend")),
   },
   {
     family: "Libre Baskerville",
-    load: () => import("@remotion/google-fonts/LibreBaskerville").then(asLoadedFont),
     fontKey: "LibreBaskerville",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/LibreBaskerville")),
   },
   {
     family: "Libre Franklin",
-    load: () => import("@remotion/google-fonts/LibreFranklin").then(asLoadedFont),
     fontKey: "LibreFranklin",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/LibreFranklin")),
   },
   {
     family: "Lobster",
-    load: () => import("@remotion/google-fonts/Lobster").then(asLoadedFont),
     fontKey: "Lobster",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Lobster")),
   },
   {
     family: "Lora",
-    load: () => import("@remotion/google-fonts/Lora").then(asLoadedFont),
     fontKey: "Lora",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Lora")),
   },
   {
     family: "M PLUS Rounded 1c",
-    load: () => import("@remotion/google-fonts/MPLUSRounded1c").then(asLoadedFont),
     fontKey: "MPLUSRounded1c",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/MPLUSRounded1c")),
   },
   {
     family: "Manrope",
-    load: () => import("@remotion/google-fonts/Manrope").then(asLoadedFont),
     fontKey: "Manrope",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Manrope")),
   },
   {
     family: "Maven Pro",
-    load: () => import("@remotion/google-fonts/MavenPro").then(asLoadedFont),
     fontKey: "MavenPro",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/MavenPro")),
   },
   {
     family: "Merriweather",
-    load: () => import("@remotion/google-fonts/Merriweather").then(asLoadedFont),
     fontKey: "Merriweather",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Merriweather")),
   },
   {
     family: "Montserrat",
-    load: () => import("@remotion/google-fonts/Montserrat").then(asLoadedFont),
     fontKey: "Montserrat",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Montserrat")),
   },
   {
     family: "Mukta",
-    load: () => import("@remotion/google-fonts/Mukta").then(asLoadedFont),
     fontKey: "Mukta",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Mukta")),
   },
   {
     family: "Mulish",
-    load: () => import("@remotion/google-fonts/Mulish").then(asLoadedFont),
     fontKey: "Mulish",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Mulish")),
   },
   {
     family: "Nanum Gothic",
-    load: () => import("@remotion/google-fonts/NanumGothic").then(asLoadedFont),
     fontKey: "NanumGothic",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NanumGothic")),
   },
   {
     family: "Noto Color Emoji",
-    load: () => import("@remotion/google-fonts/NotoColorEmoji").then(asLoadedFont),
     fontKey: "NotoColorEmoji",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoColorEmoji")),
   },
   {
     family: "Noto Sans",
-    load: () => import("@remotion/google-fonts/NotoSans").then(asLoadedFont),
     fontKey: "NotoSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSans")),
   },
   {
     family: "Noto Sans Arabic",
-    load: () => import("@remotion/google-fonts/NotoSansArabic").then(asLoadedFont),
     fontKey: "NotoSansArabic",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSansArabic")),
   },
   {
     family: "Noto Sans HK",
-    load: () => import("@remotion/google-fonts/NotoSansHK").then(asLoadedFont),
     fontKey: "NotoSansHK",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSansHK")),
   },
   {
     family: "Noto Sans JP",
-    load: () => import("@remotion/google-fonts/NotoSansJP").then(asLoadedFont),
     fontKey: "NotoSansJP",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSansJP")),
   },
   {
     family: "Noto Sans KR",
-    load: () => import("@remotion/google-fonts/NotoSansKR").then(asLoadedFont),
     fontKey: "NotoSansKR",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSansKR")),
   },
   {
     family: "Noto Sans SC",
-    load: () => import("@remotion/google-fonts/NotoSansSC").then(asLoadedFont),
     fontKey: "NotoSansSC",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSansSC")),
   },
   {
     family: "Noto Sans TC",
-    load: () => import("@remotion/google-fonts/NotoSansTC").then(asLoadedFont),
     fontKey: "NotoSansTC",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSansTC")),
   },
   {
     family: "Noto Serif",
-    load: () => import("@remotion/google-fonts/NotoSerif").then(asLoadedFont),
     fontKey: "NotoSerif",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSerif")),
   },
   {
     family: "Noto Serif JP",
-    load: () => import("@remotion/google-fonts/NotoSerifJP").then(asLoadedFont),
     fontKey: "NotoSerifJP",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NotoSerifJP")),
   },
   {
     family: "Nunito",
-    load: () => import("@remotion/google-fonts/Nunito").then(asLoadedFont),
     fontKey: "Nunito",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Nunito")),
   },
   {
     family: "Nunito Sans",
-    load: () => import("@remotion/google-fonts/NunitoSans").then(asLoadedFont),
     fontKey: "NunitoSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/NunitoSans")),
   },
   {
     family: "Open Sans",
-    load: () => import("@remotion/google-fonts/OpenSans").then(asLoadedFont),
     fontKey: "OpenSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/OpenSans")),
   },
   {
     family: "Oswald",
-    load: () => import("@remotion/google-fonts/Oswald").then(asLoadedFont),
     fontKey: "Oswald",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Oswald")),
   },
   {
     family: "Outfit",
-    load: () => import("@remotion/google-fonts/Outfit").then(asLoadedFont),
     fontKey: "Outfit",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Outfit")),
   },
   {
     family: "Overpass",
-    load: () => import("@remotion/google-fonts/Overpass").then(asLoadedFont),
     fontKey: "Overpass",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Overpass")),
   },
   {
     family: "Oxygen",
-    load: () => import("@remotion/google-fonts/Oxygen").then(asLoadedFont),
     fontKey: "Oxygen",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Oxygen")),
   },
   {
     family: "PT Sans",
-    load: () => import("@remotion/google-fonts/PTSans").then(asLoadedFont),
     fontKey: "PTSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/PTSans")),
   },
   {
     family: "PT Sans Narrow",
-    load: () => import("@remotion/google-fonts/PTSansNarrow").then(asLoadedFont),
     fontKey: "PTSansNarrow",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/PTSansNarrow")),
   },
   {
     family: "PT Serif",
-    load: () => import("@remotion/google-fonts/PTSerif").then(asLoadedFont),
     fontKey: "PTSerif",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/PTSerif")),
   },
   {
     family: "Pacifico",
-    load: () => import("@remotion/google-fonts/Pacifico").then(asLoadedFont),
     fontKey: "Pacifico",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Pacifico")),
   },
   {
     family: "Play",
-    load: () => import("@remotion/google-fonts/Play").then(asLoadedFont),
     fontKey: "Play",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Play")),
   },
   {
     family: "Playfair Display",
-    load: () => import("@remotion/google-fonts/PlayfairDisplay").then(asLoadedFont),
     fontKey: "PlayfairDisplay",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/PlayfairDisplay")),
   },
   {
     family: "Poppins",
-    load: () => import("@remotion/google-fonts/Poppins").then(asLoadedFont),
     fontKey: "Poppins",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Poppins")),
   },
   {
     family: "Prompt",
-    load: () => import("@remotion/google-fonts/Prompt").then(asLoadedFont),
     fontKey: "Prompt",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Prompt")),
   },
   {
     family: "Public Sans",
-    load: () => import("@remotion/google-fonts/PublicSans").then(asLoadedFont),
     fontKey: "PublicSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/PublicSans")),
   },
   {
     family: "Quicksand",
-    load: () => import("@remotion/google-fonts/Quicksand").then(asLoadedFont),
     fontKey: "Quicksand",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Quicksand")),
   },
   {
     family: "Rajdhani",
-    load: () => import("@remotion/google-fonts/Rajdhani").then(asLoadedFont),
     fontKey: "Rajdhani",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Rajdhani")),
   },
   {
     family: "Raleway",
-    load: () => import("@remotion/google-fonts/Raleway").then(asLoadedFont),
     fontKey: "Raleway",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Raleway")),
   },
   {
     family: "Red Hat Display",
-    load: () => import("@remotion/google-fonts/RedHatDisplay").then(asLoadedFont),
     fontKey: "RedHatDisplay",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/RedHatDisplay")),
   },
   {
     family: "Roboto",
-    load: () => import("@remotion/google-fonts/Roboto").then(asLoadedFont),
     fontKey: "Roboto",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Roboto")),
   },
   {
     family: "Roboto Condensed",
-    load: () => import("@remotion/google-fonts/RobotoCondensed").then(asLoadedFont),
     fontKey: "RobotoCondensed",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/RobotoCondensed")),
   },
   {
     family: "Roboto Mono",
-    load: () => import("@remotion/google-fonts/RobotoMono").then(asLoadedFont),
     fontKey: "RobotoMono",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/RobotoMono")),
   },
   {
     family: "Roboto Slab",
-    load: () => import("@remotion/google-fonts/RobotoSlab").then(asLoadedFont),
     fontKey: "RobotoSlab",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/RobotoSlab")),
   },
   {
     family: "Rubik",
-    load: () => import("@remotion/google-fonts/Rubik").then(asLoadedFont),
     fontKey: "Rubik",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Rubik")),
   },
   {
     family: "Shadows Into Light",
-    load: () => import("@remotion/google-fonts/ShadowsIntoLight").then(asLoadedFont),
     fontKey: "ShadowsIntoLight",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/ShadowsIntoLight")),
   },
   {
     family: "Signika Negative",
-    load: () => import("@remotion/google-fonts/SignikaNegative").then(asLoadedFont),
     fontKey: "SignikaNegative",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/SignikaNegative")),
   },
   {
     family: "Slabo 27px",
-    load: () => import("@remotion/google-fonts/Slabo27px").then(asLoadedFont),
     fontKey: "Slabo27px",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Slabo27px")),
   },
   {
     family: "Source Code Pro",
-    load: () => import("@remotion/google-fonts/SourceCodePro").then(asLoadedFont),
     fontKey: "SourceCodePro",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/SourceCodePro")),
   },
   {
     family: "Source Sans 3",
-    load: () => import("@remotion/google-fonts/SourceSans3").then(asLoadedFont),
     fontKey: "SourceSans3",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/SourceSans3")),
   },
   {
     family: "Space Grotesk",
-    load: () => import("@remotion/google-fonts/SpaceGrotesk").then(asLoadedFont),
     fontKey: "SpaceGrotesk",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/SpaceGrotesk")),
   },
   {
     family: "Teko",
-    load: () => import("@remotion/google-fonts/Teko").then(asLoadedFont),
     fontKey: "Teko",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Teko")),
   },
   {
     family: "Titillium Web",
-    load: () => import("@remotion/google-fonts/TitilliumWeb").then(asLoadedFont),
     fontKey: "TitilliumWeb",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/TitilliumWeb")),
   },
   {
     family: "Ubuntu",
-    load: () => import("@remotion/google-fonts/Ubuntu").then(asLoadedFont),
     fontKey: "Ubuntu",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/Ubuntu")),
   },
   {
     family: "Varela Round",
-    load: () => import("@remotion/google-fonts/VarelaRound").then(asLoadedFont),
     fontKey: "VarelaRound",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/VarelaRound")),
   },
   {
     family: "Work Sans",
-    load: () => import("@remotion/google-fonts/WorkSans").then(asLoadedFont),
     fontKey: "WorkSans",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/WorkSans")),
   },
   {
     family: "Zilla Slab",
-    load: () => import("@remotion/google-fonts/ZillaSlab").then(asLoadedFont),
     fontKey: "ZillaSlab",
+    load: async () => asLoadedFont(await import("@remotion/google-fonts/ZillaSlab")),
   },
 ];
 

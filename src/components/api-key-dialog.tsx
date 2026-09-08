@@ -21,19 +21,9 @@ interface ApiKeyDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <ApiKeyForm onOpenChange={onOpenChange} />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // Own component so the input seeds from localStorage on mount: the dialog
 // portal unmounts on close, so opening it always starts a fresh form.
-function ApiKeyForm({ onOpenChange }: Pick<ApiKeyDialogProps, "onOpenChange">) {
+const ApiKeyForm = ({ onOpenChange }: Pick<ApiKeyDialogProps, "onOpenChange">) => {
   const [apiKey, setApiKey, removeApiKey] = useLocalStorage(GATEWAY_API_KEY_STORAGE_KEY, "");
   const [apiKeyInput, setApiKeyInput] = React.useState(apiKey);
 
@@ -87,4 +77,12 @@ function ApiKeyForm({ onOpenChange }: Pick<ApiKeyDialogProps, "onOpenChange">) {
       </DialogFooter>
     </>
   );
-}
+};
+
+export const ApiKeyDialog = ({ open, onOpenChange }: ApiKeyDialogProps) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent>
+      <ApiKeyForm onOpenChange={onOpenChange} />
+    </DialogContent>
+  </Dialog>
+);

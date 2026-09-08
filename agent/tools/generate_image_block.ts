@@ -32,8 +32,6 @@ export default defineTool({
 - **opacity / visible / rotation / shadow / border / radius**: Optional styling
 
 Do not include "id" or "url" fields — both are generated for you.`,
-  inputSchema: generateImageBlockInputSchema,
-  outputSchema: generatedBlockPayloadSchema,
   execute: async (input, ctx) => {
     const imagePrompt = input.prompt || input.label;
 
@@ -48,22 +46,24 @@ Do not include "id" or "url" fields — both are generated for you.`,
     const model = gateway.imageModel(IMAGE_MODEL_ID);
 
     const { images } = await generateImage({
-      model,
-      prompt: imagePrompt,
-      n: 1,
-      size: "1024x1024",
       abortSignal: ctx.abortSignal,
+      model,
+      n: 1,
+      prompt: imagePrompt,
+      size: "1024x1024",
     });
     if (images.length === 0) {
       throw new Error("No images were generated");
     }
-    const generatedImage = images[0];
+    const [generatedImage] = images;
     const url = `data:${generatedImage.mediaType};base64,${generatedImage.base64}`;
 
     return {
-      block: blockSchema.parse({ ...input, prompt: imagePrompt, url, id: generateId() }),
+      block: blockSchema.parse({ ...input, id: generateId(), prompt: imagePrompt, url }),
     };
   },
+  inputSchema: generateImageBlockInputSchema,
+  outputSchema: generatedBlockPayloadSchema,
   // The full block (with its multi-hundred-KB data: URL) goes to the client
   // via `action.result`; the model only ever sees this short ack.
   toModelOutput: (output) => ({

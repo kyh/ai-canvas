@@ -7,13 +7,13 @@ const ensureFontStyleElement = () => {
   if (typeof document === "undefined") {
     return null;
   }
-  const existing = document.getElementById("dynamic-font-loader");
+  const existing = document.querySelector("#dynamic-font-loader");
   if (existing instanceof HTMLStyleElement) {
     return existing;
   }
   const style = document.createElement("style");
   style.id = "dynamic-font-loader";
-  document.head.appendChild(style);
+  document.head.append(style);
   return style;
 };
 
@@ -22,7 +22,7 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
     return;
   }
 
-  const uniqueRequestedWeights = Array.from(new Set(weights));
+  const uniqueRequestedWeights = [...new Set(weights)];
   const cachedWeights = loadedFontWeights.get(fontKey) ?? new Set<string>();
   const weightsToLoad = uniqueRequestedWeights.filter((weight) => !cachedWeights.has(weight));
 
@@ -55,11 +55,13 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
       }
 
       const font = new FontFace(fontKey, `url(${fontUrl})`, {
-        weight: weight.toString(),
         style: "normal",
+        weight: weight.toString(),
       });
 
-      const loadPromise = font.load().then((loadedFont) => void document.fonts.add(loadedFont));
+      const loadPromise = (async () => {
+        document.fonts.add(await font.load());
+      })();
       loadPromises.push(loadPromise);
 
       cssRules.push(`
@@ -87,7 +89,9 @@ const loadFontFamily = async (fontKey: string, weights: string[]) => {
     }
 
     const updatedWeights = cachedWeights;
-    weightsToLoad.forEach((weight) => updatedWeights.add(weight));
+    for (const weight of weightsToLoad) {
+      updatedWeights.add(weight);
+    }
     loadedFontWeights.set(fontKey, updatedWeights);
   } catch {
     // ignore font load errors
@@ -98,14 +102,14 @@ export const loadFontsForBlocks = async (blocks: IEditorBlocks[]) => {
   const textBlocks = blocks.filter((block) => block.type === "text");
   const fontWeightMap = new Map<string, Set<string>>();
 
-  textBlocks.forEach((block) => {
+  for (const block of textBlocks) {
     const weightSet = fontWeightMap.get(block.font.family) ?? new Set<string>();
     weightSet.add(block.font.weight);
     fontWeightMap.set(block.font.family, weightSet);
-  });
+  }
 
   for (const [font, weights] of fontWeightMap.entries()) {
-    await loadFontFamily(font, Array.from(weights));
+    await loadFontFamily(font, [...weights]);
   }
 };
 

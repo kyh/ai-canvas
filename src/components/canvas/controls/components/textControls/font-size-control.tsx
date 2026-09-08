@@ -1,4 +1,4 @@
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import ControllerRow from "../controller-row";
 import { selectTextBlock, useEditorStore } from "@/components/canvas/use-editor";
 import type { IEditorBlockText } from "@/lib/schema";
@@ -9,7 +9,7 @@ interface FontSizeControlProps {
   className?: string;
 }
 
-function FontSizeControl({ blockId, block, className }: FontSizeControlProps) {
+const FontSizeControl = ({ blockId, block, className }: FontSizeControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -24,8 +24,8 @@ function FontSizeControl({ blockId, block, className }: FontSizeControlProps) {
     const newHeight = Math.round(linesApprox * newLineHeight);
     updateBlockValues(blockId, {
       fontSize: value,
-      lineHeight: newLineHeight,
       height: newHeight,
+      lineHeight: newLineHeight,
     });
   };
 
@@ -43,12 +43,12 @@ function FontSizeControl({ blockId, block, className }: FontSizeControlProps) {
         max={100}
         min={5}
         onChange={(event) => {
-          const next = Number.parseInt(event.target.value, 10);
+          const next = Math.trunc(Number(event.target.value));
           onChange(next);
         }}
       />
     </ControllerRow>
   );
-}
+};
 
 export default FontSizeControl;

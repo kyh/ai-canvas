@@ -15,18 +15,18 @@ export default defineTool({
 - **label / width / height / visible / opacity**: optional block property updates
 
 Only call this for blocks of type "html" whose id appears in the per-turn context. To create a new HTML block, use build_html_block instead.`,
-  inputSchema: updateHtmlBlockInputSchema,
-  outputSchema: updateHtmlBlockPayloadSchema,
   // Tools are stateless and cannot see the canvas, so the patch is echoed
   // back; the client validates the id against the store before applying.
   execute: (input) => ({
     ...input,
     html: input.html
       .trim()
-      .replace(/^```html?\s*/i, "")
-      .replace(/\s*```$/g, "")
+      .replace(/^```html?\s*/iu, "")
+      .replaceAll(/\s*```$/gu, "")
       .trim(),
   }),
+  inputSchema: updateHtmlBlockInputSchema,
+  outputSchema: updateHtmlBlockPayloadSchema,
   toModelOutput: (output) => ({
     type: "text",
     value: `Successfully updated HTML block ${output.updateBlockId}.`,

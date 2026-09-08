@@ -1,11 +1,11 @@
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import ControllerBox from "./components/controller-box";
 import ColorControl from "./components/color-control";
 import ControllerRow from "./components/controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";
 import { useShallow } from "zustand/react/shallow";
 
-function CanvasController({ className }: { className?: string }) {
+const CanvasController = ({ className }: { className?: string }) => {
   const [size, updateCanvasSize, setCanvasBackground, background] = useEditorStore(
     useShallow((state) => [
       state.canvas.size,
@@ -49,6 +49,6 @@ function CanvasController({ className }: { className?: string }) {
       />
     </ControllerBox>
   );
-}
+};
 
 export default CanvasController;

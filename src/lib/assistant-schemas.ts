@@ -2,26 +2,18 @@ import { z } from "zod";
 
 // Relative (not `@/`) imports so eve's compiler can bundle this module for
 // agent tools — eve does not read tsconfig path aliases.
-import {
-  blockSchema,
-  frameBlockSchemaWithoutId,
-  imageBlockSchemaWithoutId,
-  textBlockSchemaWithoutId,
+import { blockSchema, imageBlockSchemaWithoutId } from "./schema";
+
+export {
+  frameBlockSchemaWithoutId as generateFrameBlockInputSchema,
+  textBlockSchemaWithoutId as generateTextBlockInputSchema,
 } from "./schema";
-
-// ---------------------------------------------------------------------------
-// Tool input schemas (what the model provides). Ids are server-generated, so
-// every input schema omits `id`; the image tool also fills `url` itself.
-// ---------------------------------------------------------------------------
-
-export const generateTextBlockInputSchema = textBlockSchemaWithoutId;
-
-export const generateFrameBlockInputSchema = frameBlockSchemaWithoutId;
 
 /** Image input: the model never sets `url` — DALL-E fills it in `execute`. */
 export const generateImageBlockInputSchema = imageBlockSchemaWithoutId.omit({ url: true });
 
 export const buildHtmlBlockInputSchema = z.object({
+  height: z.number().optional().describe("Block height in px (default 300)"),
   html: z
     .string()
     .describe("Complete, self-contained HTML document (doctype, head, body, inline CSS/JS)"),
@@ -30,7 +22,6 @@ export const buildHtmlBlockInputSchema = z.object({
     .optional()
     .describe("Short descriptive name for the block (e.g. 'Signup form')"),
   width: z.number().optional().describe("Block width in px (default 400)"),
-  height: z.number().optional().describe("Block height in px (default 300)"),
   x: z
     .number()
     .optional()
@@ -46,15 +37,15 @@ export const buildHtmlBlockInputSchema = z.object({
 });
 
 export const updateHtmlBlockInputSchema = z.object({
+  height: z.number().optional(),
+  html: z.string().describe("Full replacement HTML document"),
+  label: z.string().optional(),
+  opacity: z.number().optional(),
   updateBlockId: z
     .string()
     .describe("Id of the existing html block to update (from the per-turn context)"),
-  html: z.string().describe("Full replacement HTML document"),
-  label: z.string().optional(),
-  width: z.number().optional(),
-  height: z.number().optional(),
   visible: z.boolean().optional(),
-  opacity: z.number().optional(),
+  width: z.number().optional(),
 });
 
 // ---------------------------------------------------------------------------

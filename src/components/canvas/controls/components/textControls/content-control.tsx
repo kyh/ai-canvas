@@ -9,7 +9,7 @@ interface ContentControlProps {
   className?: string;
 }
 
-function ContentControl({ blockId, block, className }: ContentControlProps) {
+const ContentControl = ({ blockId, block, className }: ContentControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -23,16 +23,16 @@ function ContentControl({ blockId, block, className }: ContentControlProps) {
             return;
           }
           const nextText = event.target.value;
-          const lines = nextText.split(/\n/).length;
+          const lines = nextText.split(/\n/u).length;
           const nextHeight = Math.max(resolvedBlock.lineHeight, lines * resolvedBlock.lineHeight);
           updateBlockValues(blockId, {
-            text: nextText,
             height: nextHeight,
+            text: nextText,
           });
         }}
       />
     </ControllerRow>
   );
-}
+};
 
 export default ContentControl;

@@ -8,24 +8,31 @@ import {
 } from "lucide-react";
 import type { IEditorBlockType } from "@/lib/schema";
 
-export function BlockIcon({ type }: { type: IEditorBlockType }) {
+export const BlockIcon = ({ type }: { type: IEditorBlockType }) => {
   switch (type) {
-    case "text":
+    case "text": {
       return <TextIcon />;
-    case "frame":
+    }
+    case "frame": {
       return <BoxIcon />;
-    case "image":
+    }
+    case "image": {
       return <ImageIcon />;
-    case "arrow":
+    }
+    case "arrow": {
       return <ArrowRightIcon />;
-    case "html":
+    }
+    case "html": {
       return <CodeIcon />;
-    case "draw":
+    }
+    case "draw": {
       return <Pencil className="h-4 w-4" />;
-    default:
+    }
+    default: {
       return <BoxIcon />;
+    }
   }
-}
+};
 
 export const blockNodeId = (blockId: string) => `block-${blockId}`;
 
@@ -88,21 +95,17 @@ const splitGradientArgs = (input: string) => {
 
 const parseStop = (value: string, index: number, total: number) => {
   const colorMatch = value.match(
-    /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)/,
+    /(?:rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)/u,
   );
   const color = colorMatch ? colorMatch[0].trim() : value.trim();
   const remainder = value.replace(color, "").trim();
   let offset: number;
   if (remainder.endsWith("%")) {
-    offset = Number.parseFloat(remainder) / 100;
+    offset = Number(remainder.slice(0, -1)) / 100;
   } else if (remainder.length === 0) {
-    if (total === 1) {
-      offset = 0;
-    } else {
-      offset = index / (total - 1);
-    }
+    offset = total === 1 ? 0 : index / (total - 1);
   } else {
-    offset = Number.parseFloat(remainder);
+    offset = Number(remainder);
     if (Number.isNaN(offset)) {
       offset = total === 1 ? 0 : index / (total - 1);
     }
@@ -114,57 +117,63 @@ const angleToPoints = (angleDeg: number, width: number, height: number) => {
   const angleRad = ((90 - angleDeg) * Math.PI) / 180;
   const halfWidth = width / 2;
   const halfHeight = height / 2;
-  const diagonal = Math.sqrt(width * width + height * height);
+  const diagonal = Math.hypot(width, height);
   const distance = diagonal / 2;
   const dx = Math.cos(angleRad) * distance;
   const dy = Math.sin(angleRad) * distance;
   return {
-    start: { x: halfWidth - dx, y: halfHeight - dy },
     end: { x: halfWidth + dx, y: halfHeight + dy },
+    start: { x: halfWidth - dx, y: halfHeight - dy },
   };
 };
 
+const DIRECTION_ANGLES = new Map([
+  ["right", 90],
+  ["left", 270],
+  ["bottom", 180],
+  ["top", 0],
+  ["top right", 45],
+  ["right top", 45],
+  ["bottom right", 135],
+  ["right bottom", 135],
+  ["bottom left", 225],
+  ["left bottom", 225],
+  ["top left", 315],
+  ["left top", 315],
+]);
+
 export const parseLinearGradientFill = (value: string, width: number, height: number) => {
-  const match = value.match(/linear-gradient\((.*)\)/i);
-  if (!match) {
+  const inner = value.match(/linear-gradient\((?<inner>.*)\)/iu)?.groups?.inner;
+  if (inner === undefined) {
     return { fill: value };
   }
-  const inner = match[1];
   const parts = splitGradientArgs(inner);
   if (!parts.length) {
     return { fill: value };
   }
   let angle = 180;
-  const first = parts[0];
-  const directionMatch = first.match(/^to\s+([a-z\s]+)/i);
-  if (directionMatch) {
-    const dir = directionMatch[1].trim().toLowerCase();
-    if (dir === "right") angle = 90;
-    else if (dir === "left") angle = 270;
-    else if (dir === "bottom") angle = 180;
-    else if (dir === "top") angle = 0;
-    else if (dir === "top right" || dir === "right top") angle = 45;
-    else if (dir === "bottom right" || dir === "right bottom") angle = 135;
-    else if (dir === "bottom left" || dir === "left bottom") angle = 225;
-    else if (dir === "top left" || dir === "left top") angle = 315;
-    parts.shift();
-  } else {
-    const angleMatch = first.match(/(-?\d+(?:\.\d+)?)deg/);
-    if (angleMatch) {
-      angle = Number.parseFloat(angleMatch[1]);
+  const [first] = parts;
+  const direction = first.match(/^to\s+(?<direction>[a-z\s]+)/iu)?.groups?.direction;
+  if (direction === undefined) {
+    const angleValue = first.match(/(?<angle>-?\d+(?:\.\d+)?)deg/u)?.groups?.angle;
+    if (angleValue !== undefined) {
+      angle = Number(angleValue);
       parts.shift();
     }
+  } else {
+    angle = DIRECTION_ANGLES.get(direction.trim().toLowerCase()) ?? angle;
+    parts.shift();
   }
   const stops = parts.length ? parts : [first];
   const parsedStops = stops.map((stop, index) => parseStop(stop, index, stops.length));
   const colorStops: (number | string)[] = [];
-  parsedStops.forEach((stop) => {
+  for (const stop of parsedStops) {
     colorStops.push(stop.offset, stop.color);
-  });
+  }
   const { start, end } = angleToPoints(angle, width, height);
   return {
-    fillLinearGradientStartPoint: start,
-    fillLinearGradientEndPoint: end,
     fillLinearGradientColorStops: colorStops,
+    fillLinearGradientEndPoint: end,
+    fillLinearGradientStartPoint: start,
   } as const;
 };

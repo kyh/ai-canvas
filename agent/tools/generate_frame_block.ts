@@ -42,11 +42,11 @@ export default defineTool({
 - Position blocks thoughtfully, leaving space for other elements
 - Use vibrant, appropriate colors for the objects you draw
 - Do not include an "id" field — it is generated for you`,
-  inputSchema: generateFrameBlockInputSchema,
-  outputSchema: generatedBlockPayloadSchema,
   execute: (input) => ({
     block: blockSchema.parse({ ...input, id: generateId() }),
   }),
+  inputSchema: generateFrameBlockInputSchema,
+  outputSchema: generatedBlockPayloadSchema,
   toModelOutput: (output) => ({
     type: "text",
     value: `Successfully generated frame block "${output.block.label}" with ID ${output.block.id}.`,

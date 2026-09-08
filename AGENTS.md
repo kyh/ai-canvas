@@ -97,7 +97,8 @@ Notes that make this actually work:
 
 - **`agent/tools/*` filenames are snake_case** because eve derives the model-visible tool name from the filename. Everything else in the repo is kebab-case.
 - **Never run `eve build` while `pnpm dev` is running** — it corrupts eve's dev workflow cache. Recovery: delete `.eve/` and `.workflow-data/`, restart.
-- **No `any`, no non-null `!`.** Both are `error` in `.oxlintrc.json`, so `pnpm lint` enforces them. **Avoid `as` casts in new code** too — zod-parse at boundaries (stream events, tool payloads, localStorage). `typescript/consistent-type-assertions` is enabled, matching every other fork in this family. The font table in `src/components/canvas/controls/components/textControls/fonts.ts` funnels its one unavoidable widening through `asLoadedFont`; add no new casts.
+- **Lint is a clean gate.** `oxlint.config.ts` extends the ultracite presets (`ultracite/oxlint/core`, `react`, `next`, `anti-slop`); every rule is an error and `lint` fails on the first one. `no-await-in-loop` is the one deliberate override (sequential awaits are intentional), plus `agent/tools/**` pinned to snake_case filenames. Prefer fixing code over `oxlint-disable` comments; when a rule is genuinely wrong for a line, disable that line with a `-- reason`.
+- **No `any`, no non-null `!`, no `as` casts.** All three are errors, so `pnpm lint` enforces them — zod-parse at boundaries (stream events, tool payloads, localStorage). The font table in `src/components/canvas/controls/components/textControls/fonts.ts` funnels its one unavoidable widening through `asLoadedFont`; add no new casts.
 - Never commit `.env` / `.env.local`. New env vars go in `.env.example`.
 
 ## Map

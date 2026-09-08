@@ -1,7 +1,11 @@
 import * as React from "react";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
-type CanvasPointer = { x: number; y: number };
+
+interface CanvasPointer {
+  x: number;
+  y: number;
+}
 
 interface UseCanvasZoomPanArgs {
   stageRef: React.RefObject<Konva.Stage | null>;
@@ -75,8 +79,8 @@ export const useCanvasZoomPan = ({
       }
 
       const { evt } = event;
-      const deltaX = evt.deltaX;
-      const deltaY = evt.deltaY;
+      const { deltaX } = evt;
+      const { deltaY } = evt;
       const deltaZ = evt.deltaZ ?? 0;
       const isPinchGesture =
         evt.ctrlKey || Math.abs(deltaZ) > Math.max(Math.abs(deltaX), Math.abs(deltaY));
