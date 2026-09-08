@@ -19,7 +19,9 @@ const detailSchema = z.object({
 });
 
 const readValue = (key: string, fallback: string): string => {
-  if (typeof window === "undefined") return fallback;
+  if (typeof window === "undefined") {
+    return fallback;
+  }
   try {
     return window.localStorage.getItem(key) ?? fallback;
   } catch (error) {
@@ -28,10 +30,10 @@ const readValue = (key: string, fallback: string): string => {
   }
 };
 
-export function useLocalStorage(
+export const useLocalStorage = (
   key: string,
   initialValue: string,
-): [string, (value: string) => void, () => void] {
+): [string, (value: string) => void, () => void] => {
   const [storedValue, setStoredValue] = useState(() => readValue(key, initialValue));
 
   const setValue = useCallback(
@@ -60,13 +62,17 @@ export function useLocalStorage(
   useEffect(() => {
     const handleChange = (event: Event) => {
       if (event instanceof StorageEvent) {
-        if (event.key !== key) return;
+        if (event.key !== key) {
+          return;
+        }
         setStoredValue(event.newValue ?? initialValue);
         return;
       }
       if (event instanceof CustomEvent) {
         const detail = detailSchema.safeParse(event.detail);
-        if (!detail.success || detail.data.key !== key) return;
+        if (!detail.success || detail.data.key !== key) {
+          return;
+        }
         setStoredValue(detail.data.newValue ?? initialValue);
       }
     };
@@ -79,4 +85,4 @@ export function useLocalStorage(
   }, [key, initialValue]);
 
   return [storedValue, setValue, removeValue];
-}
+};

@@ -1,4 +1,4 @@
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import ControllerRow from "./controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";
 import type { IEditorBlocks } from "@/lib/schema";
@@ -9,19 +9,19 @@ interface RadiusControlProps {
 }
 
 const getRadius = (block?: IEditorBlocks) => {
-  const defaults = { tl: 0, tr: 0, br: 0, bl: 0 } as const;
+  const defaults = { bl: 0, br: 0, tl: 0, tr: 0 } as const;
   if (!block?.radius) {
     return defaults;
   }
   return {
+    bl: block.radius.bl ?? 0,
+    br: block.radius.br ?? 0,
     tl: block.radius.tl ?? 0,
     tr: block.radius.tr ?? 0,
-    br: block.radius.br ?? 0,
-    bl: block.radius.bl ?? 0,
   } as const;
 };
 
-function RadiusControl({ blockId, className = "flex flex-col gap-2" }: RadiusControlProps) {
+const RadiusControl = ({ blockId, className = "flex flex-col gap-2" }: RadiusControlProps) => {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!block) {
@@ -32,10 +32,10 @@ function RadiusControl({ blockId, className = "flex flex-col gap-2" }: RadiusCon
   const setAllCorners = (value: number) => {
     updateBlockValues(blockId, {
       radius: {
+        bl: value,
+        br: value,
         tl: value,
         tr: value,
-        br: value,
-        bl: value,
       },
     });
   };
@@ -88,6 +88,6 @@ function RadiusControl({ blockId, className = "flex flex-col gap-2" }: RadiusCon
       </ControllerRow>
     </div>
   );
-}
+};
 
 export default RadiusControl;

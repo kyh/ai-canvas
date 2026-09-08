@@ -7,6 +7,7 @@ import type { SelectionBounds } from "./types";
  * exact shape; the values are JSON-serialized into a user-role context
  * message for the next model call only (never persisted).
  */
+// oxlint-disable-next-line typescript/consistent-type-definitions -- eve's JsonObject needs the implicit index signature only a type alias has
 export type CanvasContext = {
   canvasSize: IEditorSize;
   background: string | null;
@@ -15,6 +16,7 @@ export type CanvasContext = {
 };
 
 /** Compact, JSON-safe description of one selected block for the model. */
+// oxlint-disable-next-line typescript/consistent-type-definitions -- see CanvasContext
 export type SelectedBlockDescription = {
   id: string;
   type: IEditorBlocks["type"];
@@ -37,20 +39,21 @@ export type SelectedBlockDescription = {
 
 const describeBlock = (block: IEditorBlocks): SelectedBlockDescription => {
   const base: SelectedBlockDescription = {
+    height: block.height,
     id: block.id,
-    type: block.type,
     label: block.label,
+    opacity: block.opacity,
+    rotation: block.rotation,
+    type: block.type,
+    visible: block.visible,
+    width: block.width,
     x: block.x,
     y: block.y,
-    width: block.width,
-    height: block.height,
-    rotation: block.rotation,
-    opacity: block.opacity,
-    visible: block.visible,
   };
   switch (block.type) {
-    case "text":
-      return { ...base, text: block.text, color: block.color, fontSize: block.fontSize };
+    case "text": {
+      return { ...base, color: block.color, fontSize: block.fontSize, text: block.text };
+    }
     case "frame": {
       const description = { ...base };
       if (block.background !== undefined) {
@@ -66,10 +69,12 @@ const describeBlock = (block: IEditorBlocks): SelectedBlockDescription => {
       }
       return description;
     }
-    case "html":
+    case "html": {
       return { ...base, htmlLength: block.html.length };
-    default:
+    }
+    default: {
       return base;
+    }
   }
 };
 
@@ -80,10 +85,10 @@ export const buildCanvasContext = (input: {
   blocks: IEditorBlocks[];
   selectedIds: string[];
 }): CanvasContext => ({
-  canvasSize: input.canvasSize,
   background: input.background ?? null,
-  selectionBounds: input.selectionBounds,
+  canvasSize: input.canvasSize,
   selectedBlocks: input.blocks
     .filter((block) => input.selectedIds.includes(block.id))
     .map(describeBlock),
+  selectionBounds: input.selectionBounds,
 });

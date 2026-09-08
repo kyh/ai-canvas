@@ -8,12 +8,12 @@ import CustomColorPicker from "./color-picker";
 interface ColorControlProps {
   name: string;
   value: string | undefined;
-  onChange: (value: string | undefined) => void;
+  onChange: (value?: string) => void;
   disableGradient?: boolean;
   className?: string;
 }
 
-function ColorControl({ name, onChange, value, disableGradient, className }: ColorControlProps) {
+const ColorControl = ({ name, onChange, value, disableGradient, className }: ColorControlProps) => {
   const [open, setOpen] = React.useState(false);
   const onClick = () => {
     if (!value) {
@@ -23,7 +23,7 @@ function ColorControl({ name, onChange, value, disableGradient, className }: Col
 
   const handleClear = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    onChange(undefined);
+    onChange();
     setOpen(false);
   };
 
@@ -81,6 +81,6 @@ function ColorControl({ name, onChange, value, disableGradient, className }: Col
       </Popover>
     </ControllerRow>
   );
-}
+};
 
 export default ColorControl;

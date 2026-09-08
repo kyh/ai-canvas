@@ -16,7 +16,7 @@ interface TextAlignControlProps {
   className?: string;
 }
 
-function TextAlignControl({ blockId, block, className }: TextAlignControlProps) {
+const TextAlignControl = ({ blockId, block, className }: TextAlignControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -53,6 +53,6 @@ function TextAlignControl({ blockId, block, className }: TextAlignControlProps) 
       </Tabs>
     </ControllerRow>
   );
-}
+};
 
 export default TextAlignControl;

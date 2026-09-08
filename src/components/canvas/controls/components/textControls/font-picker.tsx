@@ -19,7 +19,17 @@ const DEFAULT_WEIGHTS = ["100", "200", "300", "400", "500", "600", "700", "800",
 const findFont = (family?: string) =>
   family ? fontsList.find((font) => font.family === family) : undefined;
 
-function FontControl({ blockId, block, className }: FontControlProps) {
+const pickWeight = (fontWeightsList: string[], desiredWeight: string) => {
+  if (fontWeightsList.includes(desiredWeight)) {
+    return desiredWeight;
+  }
+  if (fontWeightsList.includes("400")) {
+    return "400";
+  }
+  return fontWeightsList[0] ?? desiredWeight;
+};
+
+const FontControl = ({ blockId, block, className }: FontControlProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -27,14 +37,14 @@ function FontControl({ blockId, block, className }: FontControlProps) {
   const [weights, setWeights] = React.useState<string[]>(DEFAULT_WEIGHTS);
 
   React.useEffect(() => {
-    const block = resolvedBlock;
-    if (!block || !block.font.family) {
+    const textBlock = resolvedBlock;
+    if (!textBlock || !textBlock.font.family) {
       return;
     }
     let cancelled = false;
 
     const loadWeights = async () => {
-      const font = findFont(block.font.family);
+      const font = findFont(textBlock.font.family);
       if (!font) {
         if (!cancelled) {
           setWeights(DEFAULT_WEIGHTS);
@@ -49,12 +59,12 @@ function FontControl({ blockId, block, className }: FontControlProps) {
       const availableWeights = Object.keys(info?.fonts?.normal || {});
       const nextWeights = availableWeights.length ? availableWeights : DEFAULT_WEIGHTS;
       setWeights(nextWeights);
-      if (!nextWeights.includes(block.font.weight) && nextWeights.length > 0) {
+      if (!nextWeights.includes(textBlock.font.weight) && nextWeights.length > 0) {
         const fallbackWeight = nextWeights.includes("400") ? "400" : nextWeights[0];
-        if (fallbackWeight && fallbackWeight !== block.font.weight) {
-          updateBlockValues(block.id, {
+        if (fallbackWeight && fallbackWeight !== textBlock.font.weight) {
+          updateBlockValues(textBlock.id, {
             font: {
-              ...block.font,
+              ...textBlock.font,
               weight: fallbackWeight,
             },
           });
@@ -84,11 +94,7 @@ function FontControl({ blockId, block, className }: FontControlProps) {
       return;
     }
     setWeights(fontWeightsList);
-    const nextWeight = fontWeightsList.includes(desiredWeight)
-      ? desiredWeight
-      : fontWeightsList.includes("400")
-        ? "400"
-        : (fontWeightsList[0] ?? desiredWeight);
+    const nextWeight = pickWeight(fontWeightsList, desiredWeight);
 
     updateBlockValues(blockId, {
       font: {
@@ -214,6 +220,6 @@ function FontControl({ blockId, block, className }: FontControlProps) {
       </ControllerRow>
     </>
   );
-}
+};
 
 export default FontControl;

@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import CustomTooltip from "@/components/ui/tooltip";
 import { useEditorStore } from "../use-editor";
+import type { EditorStore } from "../use-editor";
 import { BlockIcon } from "../utils";
 import { useShallow } from "zustand/react/shallow";
 import { useOrderedBlocks } from "../hooks/use-ordered-blocks";
@@ -58,7 +59,9 @@ import {
  * resolver once at store creation, so React state would go stale.
  */
 const resolveAuthHeaders = (): Readonly<Record<string, string>> => {
-  if (typeof window === "undefined") return {};
+  if (typeof window === "undefined") {
+    return {};
+  }
   const key = window.localStorage.getItem(GATEWAY_API_KEY_STORAGE_KEY);
   return key !== null && key.length > 0 ? { authorization: `Bearer ${key}` } : {};
 };
@@ -69,7 +72,7 @@ const resolveAuthHeaders = (): Readonly<Record<string, string>> => {
  * All of them route back to the key dialog.
  */
 const isAuthError = (error: Error): boolean =>
-  /unauthorized|forbidden|authentication|api.?key|credential|401|403/i.test(error.message);
+  /unauthorized|forbidden|authentication|api.?key|credential|401|403/iu.test(error.message);
 
 // -----------------------------------------------------------------------------
 // Stream events -> store mutations
@@ -82,28 +85,28 @@ const isAuthError = (error: Error): boolean =>
 // -----------------------------------------------------------------------------
 
 const toolCallActionSchema = z.object({
-  kind: z.literal("tool-call"),
   callId: z.string(),
+  kind: z.literal("tool-call"),
   toolName: z.string(),
 });
 
 const actionsRequestedEventSchema = z.object({
-  type: z.literal("actions.requested"),
   data: z.object({ actions: z.array(z.unknown()) }),
+  type: z.literal("actions.requested"),
 });
 
 const toolResultEventSchema = z.object({
-  type: z.literal("action.result"),
   data: z.object({
-    status: z.enum(["completed", "failed", "rejected"]),
     result: z.object({
-      kind: z.literal("tool-result"),
       callId: z.string(),
-      toolName: z.string(),
-      output: z.unknown(),
       isError: z.boolean().optional(),
+      kind: z.literal("tool-result"),
+      output: z.unknown(),
+      toolName: z.string(),
     }),
+    status: z.enum(["completed", "failed", "rejected"]),
   }),
+  type: z.literal("action.result"),
 });
 
 /** A session's own stream event, or one a `subagent.event` wraps (unstamped). */
@@ -124,6 +127,61 @@ const dropPendingLoadingBlocks = (): void => {
   pendingHtmlBuilds.clear();
 };
 
+type ToolResult = z.infer<typeof toolResultEventSchema>["data"]["result"];
+
+const applyToolOutput = (
+  store: EditorStore,
+  result: ToolResult,
+  loadingBlockId: string | undefined,
+): void => {
+  switch (result.toolName) {
+    case "generate_text_block":
+    case "generate_frame_block":
+    case "generate_image_block": {
+      const payload = generatedBlockPayloadSchema.safeParse(result.output);
+      if (!payload.success) {
+        return;
+      }
+      store.addBlock(payload.data.block);
+      break;
+    }
+    case "build_html_block": {
+      const payload = generatedBlockPayloadSchema.safeParse(result.output);
+      if (!payload.success) {
+        return;
+      }
+      let { block } = payload.data;
+      if (loadingBlockId !== undefined) {
+        pendingHtmlBuilds.delete(result.callId);
+        const placeholder: IEditorBlocks | undefined = store.blocksById[loadingBlockId];
+        if (placeholder) {
+          // Land exactly where the placeholder sat, then swap it out.
+          block = { ...block, x: placeholder.x, y: placeholder.y };
+          store.deleteBlock(loadingBlockId);
+        }
+      }
+      store.addBlock(block);
+      break;
+    }
+    case "update_html_block": {
+      const payload = updateHtmlBlockPayloadSchema.safeParse(result.output);
+      if (!payload.success) {
+        return;
+      }
+      const { updateBlockId, ...updates } = payload.data;
+      if (!store.blocksById[updateBlockId]) {
+        toast.error("The assistant tried to update a block that no longer exists");
+        return;
+      }
+      store.updateBlockValues(updateBlockId, updates);
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+};
+
 const applyAgentEvent = (event: AgentStreamEvent): void => {
   // Delegation is forbidden by the instructions, but if the model strays,
   // unwrap the child's events so its tool results still reach the canvas.
@@ -140,9 +198,13 @@ const applyAgentEvent = (event: AgentStreamEvent): void => {
   if (requested.success) {
     for (const rawAction of requested.data.data.actions) {
       const action = toolCallActionSchema.safeParse(rawAction);
-      if (!action.success) continue;
+      if (!action.success) {
+        continue;
+      }
       const { callId, toolName } = action.data;
-      if (toolName !== "build_html_block" || pendingHtmlBuilds.has(callId)) continue;
+      if (toolName !== "build_html_block" || pendingHtmlBuilds.has(callId)) {
+        continue;
+      }
       const loadingBlock = createLoadingBlock(lastSelectionBounds);
       pendingHtmlBuilds.set(callId, loadingBlock.id);
       store.addBlock(loadingBlock);
@@ -151,7 +213,9 @@ const applyAgentEvent = (event: AgentStreamEvent): void => {
   }
 
   const parsed = toolResultEventSchema.safeParse(event);
-  if (!parsed.success) return;
+  if (!parsed.success) {
+    return;
+  }
   const { status, result } = parsed.data.data;
 
   const loadingBlockId = pendingHtmlBuilds.get(result.callId);
@@ -165,46 +229,10 @@ const applyAgentEvent = (event: AgentStreamEvent): void => {
     return;
   }
 
-  switch (result.toolName) {
-    case "generate_text_block":
-    case "generate_frame_block":
-    case "generate_image_block": {
-      const payload = generatedBlockPayloadSchema.safeParse(result.output);
-      if (!payload.success) return;
-      store.addBlock(payload.data.block);
-      break;
-    }
-    case "build_html_block": {
-      const payload = generatedBlockPayloadSchema.safeParse(result.output);
-      if (!payload.success) return;
-      let block = payload.data.block;
-      if (loadingBlockId !== undefined) {
-        pendingHtmlBuilds.delete(result.callId);
-        const placeholder: IEditorBlocks | undefined = store.blocksById[loadingBlockId];
-        if (placeholder) {
-          // Land exactly where the placeholder sat, then swap it out.
-          block = { ...block, x: placeholder.x, y: placeholder.y };
-          store.deleteBlock(loadingBlockId);
-        }
-      }
-      store.addBlock(block);
-      break;
-    }
-    case "update_html_block": {
-      const payload = updateHtmlBlockPayloadSchema.safeParse(result.output);
-      if (!payload.success) return;
-      const { updateBlockId, ...updates } = payload.data;
-      if (!store.blocksById[updateBlockId]) {
-        toast.error("The assistant tried to update a block that no longer exists");
-        return;
-      }
-      store.updateBlockValues(updateBlockId, updates);
-      break;
-    }
-  }
+  applyToolOutput(store, result, loadingBlockId);
 };
 
-function EditorBottomToolbar() {
+const EditorBottomToolbar = () => {
   const [toolbarMode, setToolbarMode] = React.useState<"design" | "ai">("ai");
   const imageInputRef = React.useRef<HTMLInputElement>(null);
   const [mode, setMode] = useEditorStore(useShallow((state) => [state.canvas.mode, state.setMode]));
@@ -232,7 +260,6 @@ function EditorBottomToolbar() {
 
   const agent = useEveAgent({
     headers: resolveAuthHeaders,
-    onEvent: applyAgentEvent,
     onError: (error) => {
       dropPendingLoadingBlocks();
       if (isAuthError(error)) {
@@ -243,6 +270,7 @@ function EditorBottomToolbar() {
         toast.error(error.message || "Failed to generate block");
       }
     },
+    onEvent: applyAgentEvent,
   });
   const { status, error } = agent;
 
@@ -252,9 +280,9 @@ function EditorBottomToolbar() {
   const handleCopyJson = React.useCallback(async () => {
     const serialized = JSON.stringify(
       {
+        background: canvasBackground,
         blocks,
         size: canvasSize,
-        background: canvasBackground,
       },
       null,
       2,
@@ -268,8 +296,8 @@ function EditorBottomToolbar() {
     try {
       await navigator.clipboard.writeText(serialized);
       toast.success("Canvas JSON copied to clipboard.");
-    } catch (error) {
-      console.error("Failed to copy canvas JSON", error);
+    } catch (copyError) {
+      console.error("Failed to copy canvas JSON", copyError);
       toast.error("Failed to copy JSON to clipboard.");
     }
   }, [blocks, canvasBackground, canvasSize]);
@@ -278,7 +306,9 @@ function EditorBottomToolbar() {
     async (e: React.FormEvent) => {
       e.preventDefault();
       const trimmed = input.trim();
-      if (!trimmed || isLoading) return;
+      if (!trimmed || isLoading) {
+        return;
+      }
       if (needsKey) {
         setShowApiKeyModal(true);
         return;
@@ -289,10 +319,10 @@ function EditorBottomToolbar() {
         const boundsWithPadding = calculateSelectedBlocksBounds(blocks, selectedIds);
         if (boundsWithPadding) {
           selectionBounds = {
+            height: boundsWithPadding.height - EXPORT_PADDING * 2,
+            width: boundsWithPadding.width - EXPORT_PADDING * 2,
             x: boundsWithPadding.x + EXPORT_PADDING,
             y: boundsWithPadding.y + EXPORT_PADDING,
-            width: boundsWithPadding.width - EXPORT_PADDING * 2,
-            height: boundsWithPadding.height - EXPORT_PADDING * 2,
           };
         }
       }
@@ -311,23 +341,26 @@ function EditorBottomToolbar() {
 
       const message: string | UserContent = canvasImage
         ? [
-            { type: "text", text: trimmed },
-            { type: "file", data: canvasImage, mediaType: "image/png", filename: "canvas.png" },
+            { text: trimmed, type: "text" },
+            { data: canvasImage, filename: "canvas.png", mediaType: "image/png", type: "file" },
           ]
         : trimmed;
 
-      agent
-        .send(message, {
-          clientContext: buildCanvasContext({
-            canvasSize,
-            background: canvasBackground,
-            selectionBounds,
-            blocks,
-            selectedIds,
-          }),
-        })
-        .catch(() => undefined); // failures surface via status/error/onError
+      const sending = agent.send(message, {
+        clientContext: buildCanvasContext({
+          background: canvasBackground,
+          blocks,
+          canvasSize,
+          selectedIds,
+          selectionBounds,
+        }),
+      });
       setInput("");
+      try {
+        await sending;
+      } catch {
+        // failures surface via status/error/onError
+      }
     },
     [input, isLoading, needsKey, agent, stage, blocks, selectedIds, canvasSize, canvasBackground],
   );
@@ -340,13 +373,15 @@ function EditorBottomToolbar() {
   };
 
   const handleTextareaFocus = () => {
-    if (needsKey) setShowApiKeyModal(true);
+    if (needsKey) {
+      setShowApiKeyModal(true);
+    }
   };
 
   // Handle keyboard shortcuts
   React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target;
+    const handleToolbarModeHotkey = (event: KeyboardEvent) => {
+      const { target } = event;
       const isInInput =
         target instanceof HTMLElement &&
         (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
@@ -358,13 +393,12 @@ function EditorBottomToolbar() {
         }
         event.preventDefault();
         setToolbarMode((prev) => (prev === "design" ? "ai" : "design"));
-        return;
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleToolbarModeHotkey);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleToolbarModeHotkey);
     };
   }, [setToolbarMode]);
 
@@ -587,13 +621,15 @@ function EditorBottomToolbar() {
             reader.addEventListener("load", () => {
               // readAsDataURL always yields a string result
               const dataUrl = z.string().safeParse(reader.result);
-              if (!dataUrl.success) return;
+              if (!dataUrl.success) {
+                return;
+              }
               const img = new Image();
               img.addEventListener("load", () => {
                 setPendingImageData({
+                  height: img.height,
                   url: img.src,
                   width: img.width,
-                  height: img.height,
                 });
                 setMode("image");
               });
@@ -608,6 +644,6 @@ function EditorBottomToolbar() {
       <ApiKeyDialog open={showApiKeyModal} onOpenChange={setShowApiKeyModal} />
     </>
   );
-}
+};
 
 export default EditorBottomToolbar;

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { X as Cross2Icon } from "lucide-react";
 import ControllerRow from "./controller-row";
@@ -11,7 +11,7 @@ interface ShadowControlProps {
   className?: string;
 }
 
-function ShadowControl({ blockId, className }: ShadowControlProps) {
+const ShadowControl = ({ blockId, className }: ShadowControlProps) => {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   const [open, setOpen] = React.useState(false);
@@ -20,7 +20,7 @@ function ShadowControl({ blockId, className }: ShadowControlProps) {
     return null;
   }
 
-  const shadow = block.shadow;
+  const { shadow } = block;
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -34,11 +34,11 @@ function ShadowControl({ blockId, className }: ShadowControlProps) {
     }
     updateBlockValues(blockId, {
       shadow: {
+        blur: 24,
         color: "#00000044",
+        enabled: true,
         offsetX: 0,
         offsetY: 12,
-        blur: 24,
-        enabled: true,
       },
     });
   };
@@ -166,6 +166,6 @@ function ShadowControl({ blockId, className }: ShadowControlProps) {
       </Popover>
     </ControllerRow>
   );
-}
+};
 
 export default ShadowControl;

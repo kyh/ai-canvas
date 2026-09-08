@@ -1,15 +1,26 @@
 import * as React from "react";
 import { editorStoreApi } from "../use-editor";
+import type { EditorStore } from "../use-editor";
 import type Konva from "konva";
 
+type EditorMode = EditorStore["canvas"]["mode"];
+
 interface UseCanvasHotkeysOptions {
-  setMode: (mode: "move" | "select" | "text" | "frame" | "arrow" | "image" | "draw") => void;
+  setMode: (mode: EditorMode) => void;
   deleteSelectedBlocks: () => void;
   copySelectedBlocks: () => void;
   pasteBlocks: (position?: { x: number; y: number }) => void;
   stage: Konva.Stage | null;
   zoom: number;
 }
+
+const MODE_HOTKEYS = new Map<string, EditorMode>([
+  ["a", "arrow"],
+  ["d", "draw"],
+  ["f", "frame"],
+  ["t", "text"],
+  ["v", "select"],
+]);
 
 const isEditableTarget = (target: EventTarget | null) => {
   if (!target || !(target instanceof HTMLElement)) {
@@ -18,12 +29,15 @@ const isEditableTarget = (target: EventTarget | null) => {
   if (target.isContentEditable) {
     return true;
   }
-  const tagName = target.tagName;
+  const { tagName } = target;
   if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") {
     return true;
   }
   return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
 };
+
+const isTypingInto = (event: KeyboardEvent, state: EditorStore) =>
+  isEditableTarget(event.target) || state.canvas.isTextEditing;
 
 const getPointerPosition = (stage: Konva.Stage | null) => {
   if (!stage) {
@@ -57,12 +71,69 @@ export const useCanvasHotkeys = ({
   zoom,
 }: UseCanvasHotkeysOptions) => {
   const spacePressedRef = React.useRef(false);
-  const spacePrevModeRef = React.useRef<
-    "move" | "select" | "text" | "frame" | "arrow" | "image" | "draw" | null
-  >(null);
+  const spacePrevModeRef = React.useRef<EditorMode | null>(null);
 
   React.useEffect(() => {
     const store = editorStoreApi;
+
+    const selectAllBlocks = (state: EditorStore) => {
+      const allBlockIds = state.blockOrder.flatMap((id) => {
+        const block = state.blocksById[id];
+        return block?.visible ? [block.id] : [];
+      });
+      if (allBlockIds.length > 0) {
+        store.getState().setSelectedIds(allBlockIds);
+      }
+    };
+
+    const pasteAtPointer = () => {
+      const pointer = getPointerPosition(stage);
+      const pastePosition =
+        pointer && stage ? toCanvasCoordinates(stage, pointer, zoom) : undefined;
+      pasteBlocks(pastePosition);
+    };
+
+    // Cmd/Ctrl combos; the browser keeps them inside inputs
+    const handleCommandKey = (event: KeyboardEvent, state: EditorStore) => {
+      if (isTypingInto(event, state)) {
+        return;
+      }
+      switch (event.key.toLowerCase()) {
+        case "a": {
+          event.preventDefault();
+          selectAllBlocks(state);
+          break;
+        }
+        case "c": {
+          if (state.selectedIds.length > 0) {
+            event.preventDefault();
+            copySelectedBlocks();
+          }
+          break;
+        }
+        case "v": {
+          if (state.clipboard && state.clipboard.length > 0) {
+            event.preventDefault();
+            pasteAtPointer();
+          }
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    };
+
+    const holdSpaceForMove = (state: EditorStore) => {
+      if (spacePressedRef.current) {
+        return;
+      }
+      spacePressedRef.current = true;
+      spacePrevModeRef.current = state.canvas.mode;
+      if (state.canvas.mode !== "move") {
+        setMode("move");
+      }
+    };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented) {
@@ -71,115 +142,32 @@ export const useCanvasHotkeys = ({
 
       const state = store.getState();
 
-      // Handle Cmd+A / Ctrl+A to select all blocks
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "a") {
-        if (isEditableTarget(event.target) || state.canvas.isTextEditing) {
-          return; // Let browser handle select all in input fields
-        }
-        event.preventDefault();
-        // Get all visible blocks
-        const allBlockIds = state.blockOrder.flatMap((id) => {
-          const block = state.blocksById[id];
-          return block?.visible ? [block.id] : [];
-        });
-        if (allBlockIds.length > 0) {
-          store.getState().setSelectedIds(allBlockIds);
-        }
+      if (event.metaKey || event.ctrlKey) {
+        handleCommandKey(event, state);
         return;
       }
 
-      // Handle Cmd+C / Ctrl+C to copy selected blocks
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "c") {
-        if (isEditableTarget(event.target) || state.canvas.isTextEditing) {
-          return; // Let browser handle copy in input fields
-        }
-        if (state.selectedIds.length > 0) {
-          event.preventDefault();
-          copySelectedBlocks();
-        }
-        return;
-      }
-
-      // Handle Cmd+V / Ctrl+V to paste blocks
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "v") {
-        if (isEditableTarget(event.target) || state.canvas.isTextEditing) {
-          return; // Let browser handle paste in input fields
-        }
-        if (state.clipboard && state.clipboard.length > 0) {
-          event.preventDefault();
-          // Get pointer position on canvas for paste location
-          const pointer = getPointerPosition(stage);
-          const pastePosition =
-            pointer && stage ? toCanvasCoordinates(stage, pointer, zoom) : undefined;
-          pasteBlocks(pastePosition);
-        }
+      if (event.altKey || isTypingInto(event, state)) {
         return;
       }
 
       if (event.code === "Space") {
-        if (event.metaKey || event.ctrlKey || event.altKey) {
-          return;
-        }
-        if (isEditableTarget(event.target) || state.canvas.isTextEditing) {
-          return;
-        }
         event.preventDefault();
-        if (!spacePressedRef.current) {
-          spacePressedRef.current = true;
-          spacePrevModeRef.current = state.canvas.mode;
-          if (state.canvas.mode !== "move") {
-            setMode("move");
-          }
-        }
-        return;
-      }
-
-      // Don't interfere with modifier keys for mode switching
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return;
-      }
-
-      if (isEditableTarget(event.target) || state.canvas.isTextEditing) {
+        holdSpaceForMove(state);
         return;
       }
 
       const key = event.key.toLowerCase();
-
-      if (key === "v") {
-        setMode("select");
+      const mode = MODE_HOTKEYS.get(key);
+      if (mode) {
+        setMode(mode);
         event.preventDefault();
         return;
       }
 
-      if (key === "f") {
-        setMode("frame");
+      if ((key === "backspace" || key === "delete") && state.selectedIds.length > 0) {
         event.preventDefault();
-        return;
-      }
-
-      if (key === "t") {
-        setMode("text");
-        event.preventDefault();
-        return;
-      }
-
-      if (key === "a") {
-        setMode("arrow");
-        event.preventDefault();
-        return;
-      }
-
-      if (key === "d") {
-        setMode("draw");
-        event.preventDefault();
-        return;
-      }
-
-      if (key === "backspace" || key === "delete") {
-        if (state.selectedIds.length > 0) {
-          event.preventDefault();
-          deleteSelectedBlocks();
-        }
+        deleteSelectedBlocks();
       }
     };
 

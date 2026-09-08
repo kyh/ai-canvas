@@ -28,22 +28,22 @@ const getDefaultPixelRatio = (): number => {
 /**
  * Bounding box type for export calculations
  */
-type Bounds = {
+interface Bounds {
   x: number;
   y: number;
   width: number;
   height: number;
-};
+}
 
 /**
  * Calculates the bounding box for selected blocks from block data.
  * Handles all block types including arrows which require special calculation.
  * Includes EXPORT_PADDING around the bounds.
  */
-export function calculateSelectedBlocksBounds(
+export const calculateSelectedBlocksBounds = (
   blocks: IEditorBlocks[],
   selectedIds: string[],
-): Bounds | null {
+): Bounds | null => {
   if (selectedIds.length === 0) {
     return null;
   }
@@ -70,17 +70,17 @@ export function calculateSelectedBlocksBounds(
       // For arrows, use the group position and arrow bounds
       // We'll apply rotation/scale transforms below
       bounds = {
+        height: arrowBounds.height,
+        width: arrowBounds.width,
         x: groupPos.x,
         y: groupPos.y,
-        width: arrowBounds.width,
-        height: arrowBounds.height,
       };
     } else {
       bounds = {
+        height: block.height,
+        width: block.width,
         x: block.x,
         y: block.y,
-        width: block.width,
-        height: block.height,
       };
     }
 
@@ -113,7 +113,7 @@ export function calculateSelectedBlocksBounds(
     let blockMaxX = -Infinity;
     let blockMaxY = -Infinity;
 
-    corners.forEach((corner) => {
+    for (const corner of corners) {
       const cos = Math.cos(rotation);
       const sin = Math.sin(rotation);
       const rotatedX = corner.x * cos - corner.y * sin;
@@ -125,7 +125,7 @@ export function calculateSelectedBlocksBounds(
       blockMinY = Math.min(blockMinY, worldY);
       blockMaxX = Math.max(blockMaxX, worldX);
       blockMaxY = Math.max(blockMaxY, worldY);
-    });
+    }
 
     minX = Math.min(minX, blockMinX);
     minY = Math.min(minY, blockMinY);
@@ -134,37 +134,36 @@ export function calculateSelectedBlocksBounds(
   }
 
   return {
+    height: maxY - minY + EXPORT_PADDING * 2,
+    width: maxX - minX + EXPORT_PADDING * 2,
     x: minX - EXPORT_PADDING,
     y: minY - EXPORT_PADDING,
-    width: maxX - minX + EXPORT_PADDING * 2,
-    height: maxY - minY + EXPORT_PADDING * 2,
   };
-}
+};
 
 /**
  * Waits for the next animation frame to ensure redraw is complete
  */
-async function waitForRedraw(): Promise<void> {
+const waitForRedraw = async (): Promise<void> => {
+  // oxlint-disable-next-line promise/avoid-new -- adapts requestAnimationFrame callbacks into a promise
   await new Promise((resolve) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(resolve);
     });
   });
-}
+};
 
 /**
  * Calculates the bounding box from visible selected nodes
  */
-function calculateVisibleNodesBounds(
+const calculateVisibleNodesBounds = (
   stage: Konva.Stage,
   selectedIds: string[],
   padding: number = EXPORT_PADDING,
-): Bounds | null {
+): Bounds | null => {
   const selectedNodes = selectedIds
     .map((id) => stage.findOne(`#${blockNodeId(id)}`))
-    .filter((node): node is Konva.Node => {
-      return node != null && node.visible();
-    });
+    .filter((node): node is Konva.Node => node !== undefined && node.visible());
 
   if (selectedNodes.length === 0) {
     return null;
@@ -175,30 +174,30 @@ function calculateVisibleNodesBounds(
   let maxX = -Infinity;
   let maxY = -Infinity;
 
-  selectedNodes.forEach((node) => {
+  for (const node of selectedNodes) {
     const box = node.getClientRect();
     minX = Math.min(minX, box.x);
     minY = Math.min(minY, box.y);
     maxX = Math.max(maxX, box.x + box.width);
     maxY = Math.max(maxY, box.y + box.height);
-  });
+  }
 
   return {
+    height: maxY - minY + padding * 2,
+    width: maxX - minX + padding * 2,
     x: minX - padding,
     y: minY - padding,
-    width: maxX - minX + padding * 2,
-    height: maxY - minY + padding * 2,
   };
-}
+};
 
 /**
  * Hides the transformer, UI-only layers, and all non-selected blocks, returns restore function
  */
-function hideNonSelectedElements(
+const hideNonSelectedElements = (
   stage: Konva.Stage,
   selectedIds: string[],
   blocks: IEditorBlocks[],
-): () => void {
+): (() => void) => {
   const visibilityStates = new Map<Konva.Node, boolean>();
   const layerVisibilityStates = new Map<Konva.Layer, boolean>();
 
@@ -212,7 +211,7 @@ function hideNonSelectedElements(
   // Hide layers that contain UI-only elements (hover outlines, selection outlines, placement previews)
   // Also hide the layer containing the transformer
   const layers = stage.getLayers();
-  layers.forEach((layer) => {
+  for (const layer of layers) {
     // Check if this layer contains any canvas-node elements
     const hasContentNodes = layer.find("canvas-node").length > 0;
 
@@ -240,14 +239,14 @@ function hideNonSelectedElements(
         layer.visible(false);
       }
     }
-  });
+  }
 
   // Hide all blocks that aren't selected
   // Use Set for O(1) lookup performance
   const selectedIdsSet = new Set(selectedIds);
 
   // Find all nodes with IDs matching block-* pattern
-  blocks.forEach((block) => {
+  for (const block of blocks) {
     const nodeId = blockNodeId(block.id);
     const node = stage.findOne(`#${nodeId}`);
 
@@ -261,14 +260,14 @@ function hideNonSelectedElements(
       // Show only if selected AND the block's visible property is true
       node.visible(isSelected && blockIsVisible);
     }
-  });
+  }
 
   // Hide any Rect elements that are hover/selection outlines
   // These are typically Rect elements with stroke but no fill
   const allRects = stage.find<Konva.Rect>("Rect");
   const selectedBlockIds = new Set(selectedIds);
 
-  allRects.forEach((rect) => {
+  for (const rect of allRects) {
     const rectName = rect.name();
     const rectId = rect.id();
 
@@ -277,7 +276,7 @@ function hideNonSelectedElements(
     if (isBlockRect) {
       const blockId = rectId.replace("block-", "");
       if (selectedBlockIds.has(blockId)) {
-        return; // This is part of a selected block, keep it visible
+        continue;
       }
     }
 
@@ -293,22 +292,26 @@ function hideNonSelectedElements(
         rect.visible(false);
       }
     }
-  });
+  }
 
   // Force redraw and wait for it to complete
-  stage.getLayers().forEach((layer) => layer.batchDraw());
+  for (const layer of stage.getLayers()) {
+    layer.batchDraw();
+  }
 
   // Return restore function
   return () => {
-    visibilityStates.forEach((wasVisible, node) => {
+    for (const [node, wasVisible] of visibilityStates) {
       node.visible(wasVisible);
-    });
-    layerVisibilityStates.forEach((wasVisible, layer) => {
+    }
+    for (const [layer, wasVisible] of layerVisibilityStates) {
       layer.visible(wasVisible);
-    });
-    stage.getLayers().forEach((layer) => layer.batchDraw());
+    }
+    for (const layer of stage.getLayers()) {
+      layer.batchDraw();
+    }
   };
-}
+};
 
 /**
  * Captures selected blocks as an image data URL.
@@ -349,11 +352,11 @@ export const captureSelectedBlocksAsImage = async (
     if (bounds) {
       // Export only the selected region
       return stage.toDataURL({
+        height: bounds.height,
         pixelRatio: getDefaultPixelRatio(),
+        width: bounds.width,
         x: bounds.x,
         y: bounds.y,
-        width: bounds.width,
-        height: bounds.height,
       });
     }
 
@@ -391,9 +394,9 @@ export const downloadStageAsImage = async (
   const link = document.createElement("a");
   link.href = dataUrl;
   link.download = "canvas.png";
-  document.body.appendChild(link);
+  document.body.append(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
 };
 
 export const exportCanvasAsJson = ({
@@ -407,9 +410,9 @@ export const exportCanvasAsJson = ({
 }) => {
   const data = JSON.stringify(
     {
+      background,
       blocks,
       size,
-      background,
     },
     null,
     2,
@@ -419,8 +422,8 @@ export const exportCanvasAsJson = ({
   const link = document.createElement("a");
   link.href = url;
   link.download = "canvas.json";
-  document.body.appendChild(link);
+  document.body.append(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(url);
 };

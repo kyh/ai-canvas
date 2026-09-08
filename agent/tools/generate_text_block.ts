@@ -41,11 +41,11 @@ export default defineTool({
 - Position text blocks thoughtfully relative to other canvas elements
 - Consider background colors or borders to make text stand out
 - Do not include an "id" field — it is generated for you`,
-  inputSchema: generateTextBlockInputSchema,
-  outputSchema: generatedBlockPayloadSchema,
   execute: (input) => ({
     block: blockSchema.parse({ ...input, id: generateId() }),
   }),
+  inputSchema: generateTextBlockInputSchema,
+  outputSchema: generatedBlockPayloadSchema,
   // The client applies the full block from `action.result`; the model only
   // needs a short ack (with the id so it can reference the block later).
   toModelOutput: (output) => ({

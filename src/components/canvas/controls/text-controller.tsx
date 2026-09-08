@@ -17,7 +17,7 @@ interface TextControllerProps {
   className?: string;
 }
 
-function TextController({ blockId, block, className }: TextControllerProps) {
+const TextController = ({ blockId, block, className }: TextControllerProps) => {
   const storeBlock = useEditorStore(selectTextBlock(blockId));
   const resolvedBlock = block ?? storeBlock;
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
@@ -49,6 +49,6 @@ function TextController({ blockId, block, className }: TextControllerProps) {
       <TextDecorationControl blockId={blockId} block={resolvedBlock} />
     </ControllerBox>
   );
-}
+};
 
 export default TextController;

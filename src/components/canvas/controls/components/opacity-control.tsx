@@ -1,4 +1,4 @@
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import ControllerRow from "./controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";
 
@@ -7,7 +7,7 @@ interface OpacityControlProps {
   className?: string;
 }
 
-function OpacityControl({ blockId, className }: OpacityControlProps) {
+const OpacityControl = ({ blockId, className }: OpacityControlProps) => {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!block) {
@@ -33,12 +33,12 @@ function OpacityControl({ blockId, className }: OpacityControlProps) {
         min={0}
         onChange={(event) => {
           updateBlockValues(blockId, {
-            opacity: Number.parseInt(event.target.value, 10),
+            opacity: Math.trunc(Number(event.target.value)),
           });
         }}
       />
     </ControllerRow>
   );
-}
+};
 
 export default OpacityControl;

@@ -13,9 +13,7 @@ export const EXPORT_PADDING = 20;
 /**
  * Calculate center position for a block on the default canvas
  */
-export function getCanvasCenterPosition(blockWidth: number, blockHeight: number) {
-  return {
-    x: (CANVAS_DEFAULT_WIDTH - blockWidth) / 2,
-    y: (CANVAS_DEFAULT_HEIGHT - blockHeight) / 2,
-  };
-}
+export const getCanvasCenterPosition = (blockWidth: number, blockHeight: number) => ({
+  x: (CANVAS_DEFAULT_WIDTH - blockWidth) / 2,
+  y: (CANVAS_DEFAULT_HEIGHT - blockHeight) / 2,
+});

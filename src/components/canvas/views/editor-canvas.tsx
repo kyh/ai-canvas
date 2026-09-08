@@ -43,6 +43,7 @@ import {
   selectTextBlock,
   useEditorStore,
 } from "../use-editor";
+import type { EditorStore } from "../use-editor";
 import { ensureBlockDefaults, MAX_IMAGE_DIMENSION } from "../services/templates";
 import { useCanvasStore } from "../hooks/use-canvas-store";
 import { useTransformerSync } from "../hooks/use-transformer-sync";
@@ -50,7 +51,10 @@ import { useCanvasZoomPan } from "../hooks/use-canvas-zoom-pan";
 import { useCanvasHotkeys } from "../hooks/use-canvas-hotkeys";
 import { Html } from "react-konva-utils";
 
-type PointerPosition = { x: number; y: number };
+interface PointerPosition {
+  x: number;
+  y: number;
+}
 
 interface SelectionRect {
   x: number;
@@ -79,7 +83,7 @@ const isTransformerNode = (node: Konva.Node | null, transformer: Konva.Transform
 };
 
 const getCornerRadius = (block: IEditorBlocks) => {
-  const radius = block.radius;
+  const { radius } = block;
   if (!radius) {
     return 0;
   }
@@ -105,7 +109,7 @@ const useImageElement = (src: string | undefined) => {
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.src = src;
-    const handleLoad = () => setLoaded({ src, image: img });
+    const handleLoad = () => setLoaded({ image: img, src });
     const handleError = () => setLoaded(null);
     img.addEventListener("load", handleLoad);
     img.addEventListener("error", handleError);
@@ -128,15 +132,15 @@ const getScaleWithFlip = (block: IEditorBlocks) => {
 };
 
 const getShadowProps = (block: IEditorBlocks) => {
-  const shadow = block.shadow;
+  const { shadow } = block;
   if (!shadow?.enabled) {
     return {};
   }
   return {
+    shadowBlur: shadow.blur ?? 0,
     shadowColor: shadow.color,
     shadowOffsetX: shadow.offsetX ?? 0,
     shadowOffsetY: shadow.offsetY ?? 0,
-    shadowBlur: shadow.blur ?? 0,
   };
 };
 
@@ -173,10 +177,10 @@ const getPointerPosition = (stage: Konva.Stage | null) => {
 };
 
 const rectFromPoints = (start: PointerPosition, end: PointerPosition): SelectionRect => ({
+  height: Math.abs(end.y - start.y),
+  width: Math.abs(end.x - start.x),
   x: Math.min(start.x, end.x),
   y: Math.min(start.y, end.y),
-  width: Math.abs(end.x - start.x),
-  height: Math.abs(end.y - start.y),
 });
 
 const blockIntersectsRect = (block: IEditorBlocks, rect: SelectionRect) => {
@@ -208,16 +212,16 @@ const calculateDrawBounds = (points: number[]) => {
   const maxY = Math.max(...ys);
 
   return {
-    minX,
-    minY,
+    height: Math.max(1, maxY - minY),
     maxX,
     maxY,
+    minX,
+    minY,
     width: Math.max(1, maxX - minX),
-    height: Math.max(1, maxY - minY),
   } as const;
 };
 
-function FrameNode({
+const FrameNode = ({
   block,
   onClick,
   onDragStart,
@@ -231,7 +235,7 @@ function FrameNode({
   onDragEnd: (position: { x: number; y: number }) => void;
   onHover: (hovering: boolean) => void;
   draggable: boolean;
-}) {
+}) => {
   const { scaleX, scaleY } = getScaleWithFlip(block);
   const fillProps = mapFillProps(block);
   const shadowProps = getShadowProps(block);
@@ -270,9 +274,9 @@ function FrameNode({
       perfectDrawEnabled={false}
     />
   );
-}
+};
 
-function TextNode({
+const TextNode = ({
   block,
   onClick,
   onDragStart,
@@ -286,7 +290,7 @@ function TextNode({
   onDragEnd: (position: { x: number; y: number }) => void;
   onHover: (hovering: boolean) => void;
   draggable: boolean;
-}) {
+}) => {
   const { scaleX, scaleY } = getScaleWithFlip(block);
 
   return (
@@ -324,9 +328,9 @@ function TextNode({
       perfectDrawEnabled={false}
     />
   );
-}
+};
 
-function ImageNode({
+const ImageNode = ({
   block,
   onClick,
   onDragStart,
@@ -340,7 +344,7 @@ function ImageNode({
   onDragEnd: (position: { x: number; y: number }) => void;
   onHover: (hovering: boolean) => void;
   draggable: boolean;
-}) {
+}) => {
   const image = useImageElement(block.url);
   const { scaleX, scaleY } = getScaleWithFlip(block);
   const shadowProps = getShadowProps(block);
@@ -379,9 +383,9 @@ function ImageNode({
       perfectDrawEnabled={false}
     />
   );
-}
+};
 
-function ArrowNode({
+const ArrowNode = ({
   block,
   onClick,
   onDragStart,
@@ -395,7 +399,7 @@ function ArrowNode({
   onDragEnd: (position: { x: number; y: number }) => void;
   onHover: (hovering: boolean) => void;
   draggable: boolean;
-}) {
+}) => {
   const { scaleX, scaleY } = getScaleWithFlip(block);
   const shadowProps = getShadowProps(block);
 
@@ -441,9 +445,9 @@ function ArrowNode({
       />
     </Group>
   );
-}
+};
 
-function DrawNode({
+const DrawNode = ({
   block,
   onClick,
   onDragStart,
@@ -457,7 +461,7 @@ function DrawNode({
   onDragEnd: (position: { x: number; y: number }) => void;
   onHover: (hovering: boolean) => void;
   draggable: boolean;
-}) {
+}) => {
   const { scaleX, scaleY } = getScaleWithFlip(block);
   const shadowProps = getShadowProps(block);
 
@@ -498,38 +502,37 @@ function DrawNode({
       />
     </Group>
   );
-}
+};
 
-const HtmlContent = React.memo(
-  ({ html }: { html: string }) => {
-    // Use a hash of the HTML as key to force iframe re-render when content changes
-    const htmlKey = React.useMemo(() => {
-      // Simple hash for key - forces re-render when HTML changes
-      return html.length + (html.substring(0, 100).replace(/\s/g, "").length % 1000);
-    }, [html]);
+const HtmlFrame = ({ html }: { html: string }) => {
+  // Use a hash of the HTML as key to force iframe re-render when content changes
+  const htmlKey = React.useMemo(
+    () => html.length + (html.slice(0, 100).replaceAll(/\s/gu, "").length % 1000),
+    [html],
+  );
 
-    return (
-      <iframe
-        key={htmlKey}
-        title="Generated HTML block"
-        // model-authored markup: allow it to script itself, but not to reach this origin
-        sandbox="allow-scripts"
-        srcDoc={html}
-        style={{
-          width: "100%",
-          height: "100%",
-          border: "none",
-          display: "block",
-        }}
-      />
-    );
-  },
-  (prev, next) => prev.html === next.html,
-);
+  return (
+    <iframe
+      key={htmlKey}
+      title="Generated HTML block"
+      // model-authored markup: allow it to script itself, but not to reach this origin
+      sandbox="allow-scripts"
+      srcDoc={html}
+      style={{
+        border: "none",
+        display: "block",
+        height: "100%",
+        width: "100%",
+      }}
+    />
+  );
+};
+
+const HtmlContent = React.memo(HtmlFrame, (prev, next) => prev.html === next.html);
 
 HtmlContent.displayName = "HtmlContent";
 
-function HtmlNode({
+const HtmlNode = ({
   block,
   onClick,
   onDragStart,
@@ -545,7 +548,7 @@ function HtmlNode({
   onHover: (hovering: boolean) => void;
   draggable: boolean;
   isSelecting: boolean;
-}) {
+}) => {
   const { scaleX, scaleY } = getScaleWithFlip(block);
   const fillProps = mapFillProps(block);
   const shadowProps = getShadowProps(block);
@@ -553,12 +556,12 @@ function HtmlNode({
   const htmlDivProps = React.useMemo(
     () => ({
       style: {
-        width: `${block.width}px`,
-        height: `${block.height}px`,
-        padding: "8px",
         boxSizing: "border-box" as const,
+        height: `${block.height}px`,
         overflow: "visible" as const,
+        padding: "8px",
         pointerEvents: isSelecting ? ("none" as const) : ("auto" as const),
+        width: `${block.width}px`,
       },
     }),
     [block.width, block.height, isSelecting],
@@ -609,7 +612,7 @@ function HtmlNode({
       </Html>
     </Group>
   );
-}
+};
 
 // Helper to get outline bounds for any block type - ensures consistency
 const getBlockOutlineBounds = (block: IEditorBlocks) => {
@@ -618,21 +621,21 @@ const getBlockOutlineBounds = (block: IEditorBlocks) => {
     const bounds = calculateArrowBounds(arrowBlock);
     const groupPos = blockPositionToGroupPosition(arrowBlock.x, arrowBlock.y, arrowBlock);
     return {
+      height: bounds.height,
+      width: bounds.width,
       x: groupPos.x,
       y: groupPos.y,
-      width: bounds.width,
-      height: bounds.height,
     };
   }
   return {
+    height: block.height,
+    width: block.width,
     x: block.x,
     y: block.y,
-    width: block.width,
-    height: block.height,
   };
 };
 
-function HoverOutline({ block, zoom }: { block: IEditorBlocks; zoom: number }) {
+const HoverOutline = ({ block, zoom }: { block: IEditorBlocks; zoom: number }) => {
   const { scaleX, scaleY } = getScaleWithFlip(block);
   const bounds = getBlockOutlineBounds(block);
 
@@ -653,9 +656,9 @@ function HoverOutline({ block, zoom }: { block: IEditorBlocks; zoom: number }) {
       opacity={0.8}
     />
   );
-}
+};
 
-function SelectionOutline({ rect, zoom }: { rect: SelectionRect | null; zoom: number }) {
+const SelectionOutline = ({ rect, zoom }: { rect: SelectionRect | null; zoom: number }) => {
   if (!rect) {
     return null;
   }
@@ -672,16 +675,40 @@ function SelectionOutline({ rect, zoom }: { rect: SelectionRect | null; zoom: nu
       listening={false}
     />
   );
-}
+};
 
 // Helper functions to calculate block placement - ensures preview and final placement match
 
 const DEFAULT_BLOCK_SIZES = {
-  text: { width: 320, height: 52 },
-  frame: { width: 240, height: 240 },
-  html: { width: 240, height: 240 },
-  arrow: { width: 200, height: 0 }, // Arrow uses points, not width/height
+  // Arrow uses points, not width/height
+  arrow: { height: 0, width: 200 },
+  frame: { height: 240, width: 240 },
+  html: { height: 240, width: 240 },
+  text: { height: 52, width: 320 },
 } as const;
+
+const defaultBlockSize = (
+  blockType: "text" | "frame" | "image",
+  pendingImageData?: { url: string; width: number; height: number } | null,
+) => {
+  if (blockType === "text") {
+    return DEFAULT_BLOCK_SIZES.text;
+  }
+  if (blockType === "frame") {
+    return DEFAULT_BLOCK_SIZES.frame;
+  }
+  if (blockType === "image" && pendingImageData) {
+    const scale = Math.min(
+      1,
+      MAX_IMAGE_DIMENSION / Math.max(pendingImageData.width, pendingImageData.height),
+    );
+    return {
+      height: Math.max(1, Math.round(pendingImageData.height * scale)),
+      width: Math.max(1, Math.round(pendingImageData.width * scale)),
+    };
+  }
+  return { height: 100, width: 100 };
+};
 
 const calculateBlockPlacement = (
   start: PointerPosition,
@@ -694,53 +721,27 @@ const calculateBlockPlacement = (
     return null;
   }
 
-  const dx = current.x - start.x;
-  const dy = current.y - start.y;
-
-  let width: number;
-  let height: number;
-  let x: number;
-  let y: number;
-
-  if (isDrag) {
-    width = Math.abs(dx);
-    height = Math.abs(dy);
-    x = Math.min(start.x, current.x);
-    y = Math.min(start.y, current.y);
-
-    // For images, maintain aspect ratio during drag
-    if (blockType === "image" && pendingImageData) {
-      const aspectRatio = pendingImageData.width / pendingImageData.height;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        height = width / aspectRatio;
-      } else {
-        width = height * aspectRatio;
-      }
-    }
-  } else {
-    // Default sizes
-    if (blockType === "text") {
-      width = DEFAULT_BLOCK_SIZES.text.width;
-      height = DEFAULT_BLOCK_SIZES.text.height;
-    } else if (blockType === "frame") {
-      width = DEFAULT_BLOCK_SIZES.frame.width;
-      height = DEFAULT_BLOCK_SIZES.frame.height;
-    } else if (blockType === "image" && pendingImageData) {
-      const scale = Math.min(
-        1,
-        MAX_IMAGE_DIMENSION / Math.max(pendingImageData.width, pendingImageData.height),
-      );
-      width = Math.max(1, Math.round(pendingImageData.width * scale));
-      height = Math.max(1, Math.round(pendingImageData.height * scale));
-    } else {
-      width = 100;
-      height = 100;
-    }
-    x = start.x;
-    y = start.y;
+  if (!isDrag) {
+    const { height, width } = defaultBlockSize(blockType, pendingImageData);
+    return { height, width, x: start.x, y: start.y };
   }
 
-  return { x, y, width, height };
+  const dx = current.x - start.x;
+  const dy = current.y - start.y;
+  let width = Math.abs(dx);
+  let height = Math.abs(dy);
+
+  // For images, maintain aspect ratio during drag
+  if (blockType === "image" && pendingImageData) {
+    const aspectRatio = pendingImageData.width / pendingImageData.height;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      height = width / aspectRatio;
+    } else {
+      width = height * aspectRatio;
+    }
+  }
+
+  return { height, width, x: Math.min(start.x, current.x), y: Math.min(start.y, current.y) };
 };
 
 const calculateArrowPlacement = (
@@ -755,24 +756,24 @@ const calculateArrowPlacement = (
   // Therefore, block.x should equal clickPosition.x (not adjusted)
 
   const tempBlock: IEditorBlockArrow = {
-    id: "",
-    type: "arrow",
-    label: "",
-    x: clickPosition.x,
-    y: clickPosition.y,
-    width: 0,
+    fill: "#000000",
     height: 0,
+    id: "",
+    label: "",
+    opacity: 100,
+    pointerLength: 20,
+    pointerWidth: 20,
+    points,
     rotation: 0,
     scaleX: 1,
     scaleY: 1,
-    points,
-    pointerLength: 20,
-    pointerWidth: 20,
-    fill: "#000000",
     stroke: "#000000",
     strokeWidth: 4,
+    type: "arrow",
     visible: true,
-    opacity: 100,
+    width: 0,
+    x: clickPosition.x,
+    y: clickPosition.y,
   };
   const bounds = calculateArrowBounds(tempBlock);
 
@@ -792,14 +793,14 @@ const calculateArrowPlacement = (
   const groupPos = blockPositionToGroupPosition(blockX, blockY, tempBlock);
 
   return {
-    blockPosition: { x: blockX, y: blockY },
-    groupPosition: groupPos,
-    bounds,
     adjustedPoints: bounds.adjustedPoints,
+    blockPosition: { x: blockX, y: blockY },
+    bounds,
+    groupPosition: groupPos,
   };
 };
 
-function PlacementPreview({
+const PlacementPreview = ({
   mode,
   start,
   current,
@@ -811,14 +812,14 @@ function PlacementPreview({
   current: PointerPosition | null;
   zoom: number;
   pendingImageData: { url: string; width: number; height: number } | null;
-}) {
+}) => {
   if (!current) {
     return null;
   }
 
   const dx = current.x - start.x;
   const dy = current.y - start.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
+  const distance = Math.hypot(dx, dy);
   const isDrag = distance > 5;
 
   if (mode === "arrow") {
@@ -870,9 +871,32 @@ function PlacementPreview({
       {...fillProps}
     />
   );
-}
+};
 
-function EditorCanvas() {
+type PlacementMode = React.ComponentProps<typeof PlacementPreview>["mode"];
+
+// `placementMode` carries the narrowing to the JSX below: a boolean helper
+// proves nothing to the compiler about `mode` at the use site, so keep the
+// narrowed value itself and derive the predicate from it.
+const toPlacementMode = (mode: EditorStore["canvas"]["mode"]): PlacementMode | null =>
+  mode === "text" || mode === "frame" || mode === "arrow" || mode === "image" ? mode : null;
+
+const stageCursor = (isMoveMode: boolean, isTextEditing: boolean, isStageDragging: boolean) => {
+  if (!isMoveMode || isTextEditing) {
+    return "default";
+  }
+  return isStageDragging ? "grabbing" : "grab";
+};
+
+const backgroundFillProps = (
+  background: string | undefined,
+  size: { width: number; height: number },
+) =>
+  background && background.toLowerCase().includes("gradient")
+    ? parseLinearGradientFill(background, size.width, size.height)
+    : { fill: background ?? "#ffffff" };
+
+const EditorCanvas = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const stageRef = React.useRef<Konva.Stage | null>(null);
   const transformerRef = React.useRef<Konva.Transformer | null>(null);
@@ -929,13 +953,13 @@ function EditorCanvas() {
   const pendingImageData = useEditorStore((state) => state.pendingImageData);
 
   const { applyZoom, handleWheel } = useCanvasZoomPan({
-    stageRef,
     containerRef,
-    stagePosition,
-    zoom,
     containerSize,
-    setStageZoom,
     setStagePosition,
+    setStageZoom,
+    stagePosition,
+    stageRef,
+    zoom,
   });
 
   const handleStageRef = React.useCallback(
@@ -948,23 +972,18 @@ function EditorCanvas() {
 
   const copySelectedBlocks = useEditorStore((state) => state.copySelectedBlocks);
   const pasteBlocks = useEditorStore((state) => state.pasteBlocks);
-  const stage = useEditorStore((state) => state.stage);
+  const editorStage = useEditorStore((state) => state.stage);
 
   useCanvasHotkeys({
-    setMode,
-    deleteSelectedBlocks,
     copySelectedBlocks,
+    deleteSelectedBlocks,
     pasteBlocks,
-    stage,
+    setMode,
+    stage: editorStage,
     zoom,
   });
 
-  // Mode helpers
-  // `placementMode` carries the narrowing to the JSX below: a boolean helper
-  // proves nothing to the compiler about `mode` at the use site, so keep the
-  // narrowed value itself and derive the predicate from it.
-  const placementMode: React.ComponentProps<typeof PlacementPreview>["mode"] | null =
-    mode === "text" || mode === "frame" || mode === "arrow" || mode === "image" ? mode : null;
+  const placementMode = toPlacementMode(mode);
   const isPlacementMode = React.useCallback(() => placementMode !== null, [placementMode]);
 
   const isSelectMode = mode === "select";
@@ -987,116 +1006,119 @@ function EditorCanvas() {
     (
       position: PointerPosition,
       endPosition?: PointerPosition,
-      size?: { width: number; height: number },
+      dragSize?: { width: number; height: number },
     ) => {
       const blockType = mode;
-      const blocks = selectOrderedBlocks(editorStoreApi.getState());
+      const currentBlocks = selectOrderedBlocks(editorStoreApi.getState());
 
       if (blockType === "text") {
         // Use shared calculation for consistency
-        const isDrag = !!size;
+        const isDrag = !!dragSize;
         const placement = calculateBlockPlacement(
           position,
           endPosition || position,
           "text",
           isDrag,
         );
-        if (!placement) return;
+        if (!placement) {
+          return;
+        }
 
         const defaultBlock = ensureBlockDefaults(
           textBlockSchema.parse({
-            id: generateId(),
-            type: "text",
-            label: `Text ${blocks.length + 1}`,
-            x: placement.x,
-            y: placement.y,
-            width: placement.width,
+            color: "#1f2933",
+            font: { family: "Poppins", weight: "500" },
+            fontSize: 24,
             height: placement.height,
+            id: generateId(),
+            label: `Text ${currentBlocks.length + 1}`,
+            letterSpacing: 0,
+            lineHeight: 32,
+            opacity: 100,
             rotation: 0,
             scaleX: 1,
             scaleY: 1,
             text: "New text",
-            color: "#1f2933",
-            fontSize: 24,
-            lineHeight: 32,
-            letterSpacing: 0,
             textAlign: "left",
-            font: { family: "Poppins", weight: "500" },
+            type: "text",
             visible: true,
-            opacity: 100,
+            width: placement.width,
+            x: placement.x,
+            y: placement.y,
           } satisfies IEditorBlockText),
         );
         editorStoreApi.getState().addBlock(defaultBlock);
         setMode("select");
       } else if (blockType === "frame") {
         // Use shared calculation for consistency
-        const isDrag = !!size;
+        const isDrag = !!dragSize;
         const placement = calculateBlockPlacement(
           position,
           endPosition || position,
           "frame",
           isDrag,
         );
-        if (!placement) return;
+        if (!placement) {
+          return;
+        }
 
         const defaultBlock = ensureBlockDefaults(
           frameBlockSchema.parse({
-            id: generateId(),
-            type: "frame",
-            label: `Frame ${blocks.length + 1}`,
-            x: placement.x,
-            y: placement.y,
-            width: placement.width,
-            height: placement.height,
-            rotation: 0,
-            scaleX: 1,
-            scaleY: 1,
             background: "#ffffff",
             border: {
               color: "#d1d5db",
               width: 1,
             },
-            radius: { tl: 16, tr: 16, br: 16, bl: 16 },
-            visible: true,
+            height: placement.height,
+            id: generateId(),
+            label: `Frame ${currentBlocks.length + 1}`,
             opacity: 100,
+            radius: { bl: 16, br: 16, tl: 16, tr: 16 },
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            type: "frame",
+            visible: true,
+            width: placement.width,
+            x: placement.x,
+            y: placement.y,
           } satisfies IEditorBlockFrame),
         );
         editorStoreApi.getState().addBlock(defaultBlock);
         setMode("select");
       } else if (blockType === "arrow") {
         // Use same calculation as preview
-        const points: [number, number, number, number] = size
-          ? [0, 0, size.width, size.height]
+        const points: [number, number, number, number] = dragSize
+          ? [0, 0, dragSize.width, dragSize.height]
           : [0, 0, 200, 0];
         const placement = calculateArrowPlacement(position, points);
-        const blocks = selectOrderedBlocks(editorStoreApi.getState());
         const defaultBlock = ensureBlockDefaults(
           arrowBlockSchema.parse({
-            id: generateId(),
-            type: "arrow",
-            label: `Arrow ${blocks.length + 1}`,
-            x: placement.blockPosition.x,
-            y: placement.blockPosition.y,
-            width: placement.bounds.width,
+            fill: "#000000",
             height: placement.bounds.height,
+            id: generateId(),
+            label: `Arrow ${currentBlocks.length + 1}`,
+            opacity: 100,
+            pointerLength: 20,
+            pointerWidth: 20,
+            points,
             rotation: 0,
             scaleX: 1,
             scaleY: 1,
-            points,
-            pointerLength: 20,
-            pointerWidth: 20,
-            fill: "#000000",
             stroke: "#000000",
             strokeWidth: 4,
+            type: "arrow",
             visible: true,
-            opacity: 100,
+            width: placement.bounds.width,
+            x: placement.blockPosition.x,
+            y: placement.blockPosition.y,
           } satisfies IEditorBlockArrow),
         );
         editorStoreApi.getState().addBlock(defaultBlock);
         setMode("select");
       } else if (blockType === "image" && pendingImageData) {
         // Use shared calculation for consistency
-        const isDrag = !!size;
+        const isDrag = !!dragSize;
         const placement = calculateBlockPlacement(
           position,
           endPosition || position,
@@ -1104,25 +1126,27 @@ function EditorCanvas() {
           isDrag,
           pendingImageData,
         );
-        if (!placement) return;
+        if (!placement) {
+          return;
+        }
 
         const defaultBlock = ensureBlockDefaults(
           imageBlockSchema.parse({
-            id: generateId(),
-            type: "image",
-            label: `Image ${blocks.length + 1}`,
-            x: placement.x,
-            y: placement.y,
-            width: placement.width,
+            fit: "contain",
             height: placement.height,
+            id: generateId(),
+            label: `Image ${currentBlocks.length + 1}`,
+            opacity: 100,
+            position: "center",
             rotation: 0,
             scaleX: 1,
             scaleY: 1,
+            type: "image",
             url: pendingImageData.url,
-            fit: "contain",
-            position: "center",
             visible: true,
-            opacity: 100,
+            width: placement.width,
+            x: placement.x,
+            y: placement.y,
           } satisfies IEditorBlockImage),
         );
         editorStoreApi.getState().addBlock(defaultBlock);
@@ -1152,25 +1176,25 @@ function EditorCanvas() {
       index % 2 === 0 ? value - bounds.minX : value - bounds.minY,
     );
 
-    const blocks = selectOrderedBlocks(editorStoreApi.getState());
+    const currentBlocks = selectOrderedBlocks(editorStoreApi.getState());
     const drawBlock = ensureBlockDefaults(
       drawBlockSchema.parse({
-        id: generateId(),
-        type: "draw",
-        label: `Draw ${blocks.length + 1}`,
-        x: bounds.minX,
-        y: bounds.minY,
-        width: bounds.width,
         height: bounds.height,
+        id: generateId(),
+        label: `Draw ${currentBlocks.length + 1}`,
+        opacity: 100,
+        points: relativePoints,
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
-        points: relativePoints,
         stroke: "#000000",
         strokeWidth: 3,
         tension: 0,
+        type: "draw",
         visible: true,
-        opacity: 100,
+        width: bounds.width,
+        x: bounds.minX,
+        y: bounds.minY,
       } satisfies IEditorBlockDraw),
     );
 
@@ -1181,12 +1205,12 @@ function EditorCanvas() {
 
   React.useEffect(() => {
     const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
+      const [entry] = entries;
       if (!entry) {
         return;
       }
       const { width, height } = entry.contentRect;
-      setCanvasContainerSize({ width, height });
+      setCanvasContainerSize({ height, width });
     });
     const node = containerRef.current;
     if (node) {
@@ -1261,10 +1285,10 @@ function EditorCanvas() {
       const canvasPoint = toCanvasCoordinates(stage, pointer, zoom);
       selectionStartRef.current = canvasPoint;
       setSelectionRect({
+        height: 0,
+        width: 0,
         x: canvasPoint.x,
         y: canvasPoint.y,
-        width: 0,
-        height: 0,
       });
       setIsSelecting(true);
     },
@@ -1278,7 +1302,7 @@ function EditorCanvas() {
         return;
       }
 
-      const target = event.target;
+      const { target } = event;
       const transformer = transformerRef.current;
       if (isTransformerNode(target, transformer)) {
         return;
@@ -1344,7 +1368,7 @@ function EditorCanvas() {
       const pointer = getPointerPosition(stage);
       if (pointer) {
         const canvasPoint = toCanvasCoordinates(stage, pointer, zoom);
-        const nextPoints = drawingPointsRef.current.concat([canvasPoint.x, canvasPoint.y]);
+        const nextPoints = [...drawingPointsRef.current, canvasPoint.x, canvasPoint.y];
         drawingPointsRef.current = nextPoints;
         setDrawingPoints(nextPoints);
       }
@@ -1361,7 +1385,7 @@ function EditorCanvas() {
         if (placementStart) {
           const dx = canvasPoint.x - placementStart.x;
           const dy = canvasPoint.y - placementStart.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          const distance = Math.hypot(dx, dy);
           if (distance > 2) {
             setPlacementHasMoved(true);
           }
@@ -1399,7 +1423,7 @@ function EditorCanvas() {
       if (placementCurrent) {
         const dx = placementCurrent.x - placementStart.x;
         const dy = placementCurrent.y - placementStart.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distance = Math.hypot(dx, dy);
 
         // If moved more than 5 pixels, treat as drag; otherwise single click
         if (distance > 5) {
@@ -1407,14 +1431,14 @@ function EditorCanvas() {
           if (mode === "arrow") {
             // For arrows, use the drag vector directly
             createBlockAtPosition(placementStart, placementCurrent, {
-              width: dx,
               height: dy,
+              width: dx,
             });
           } else {
             // For other blocks, pass start and end - helper will calculate position
             createBlockAtPosition(placementStart, placementCurrent, {
-              width: Math.abs(dx),
               height: Math.abs(dy),
+              width: Math.abs(dx),
             });
           }
         } else {
@@ -1447,9 +1471,11 @@ function EditorCanvas() {
         return newSelection;
       }
       const merged = new Set(current);
-      newSelection.forEach((id) => merged.add(id));
+      for (const id of newSelection) {
+        merged.add(id);
+      }
       selectionChangedRef.current = newSelection.length > 0;
-      return Array.from(merged);
+      return [...merged];
     });
     commitSelectionRect();
   }, [
@@ -1477,7 +1503,7 @@ function EditorCanvas() {
         selectionChangedRef.current = false;
         return;
       }
-      const target = event.target;
+      const { target } = event;
       const transformer = transformerRef.current;
       if (isTransformerNode(target, transformer)) {
         return;
@@ -1578,16 +1604,16 @@ function EditorCanvas() {
         pasteBlocks({ x: pasteX, y: pasteY });
 
         // Reset all selected blocks to their original positions
-        originalPositionsRef.current.forEach((originalPos, blockId) => {
+        for (const [blockId, storedPos] of originalPositionsRef.current) {
           const block = blocks.find((b) => b.id === blockId);
           if (block?.type === "arrow") {
             const arrowBlock = block;
-            const blockPos = groupPositionToBlockPosition(originalPos.x, originalPos.y, arrowBlock);
+            const blockPos = groupPositionToBlockPosition(storedPos.x, storedPos.y, arrowBlock);
             setBlockPosition(blockId, blockPos);
           } else {
-            setBlockPosition(blockId, originalPos);
+            setBlockPosition(blockId, storedPos);
           }
-        });
+        }
 
         // Reset Alt drag state
         isAltDragRef.current = false;
@@ -1613,12 +1639,11 @@ function EditorCanvas() {
     if (!transformer) {
       return;
     }
-    const nodes = transformer.nodes();
-    nodes.forEach((node) => {
+    for (const node of transformer.nodes()) {
       const id = node.id().replace("block-", "");
       const block = blocks.find((b) => b.id === id);
       if (!block) {
-        return;
+        continue;
       }
 
       // For text blocks, update width/height in real-time to prevent deformation
@@ -1634,7 +1659,7 @@ function EditorCanvas() {
         node.scaleX(1);
         node.scaleY(1);
       }
-    });
+    }
   }, [blocks]);
 
   const handleTransformEnd = React.useCallback(() => {
@@ -1642,12 +1667,11 @@ function EditorCanvas() {
     if (!transformer) {
       return;
     }
-    const nodes = transformer.nodes();
-    nodes.forEach((node) => {
+    for (const node of transformer.nodes()) {
       const id = node.id().replace("block-", "");
       const block = blocks.find((b) => b.id === id);
       if (!block) {
-        return;
+        continue;
       }
       const rotation = node.rotation();
 
@@ -1658,15 +1682,15 @@ function EditorCanvas() {
         const width = Math.max(1, node.width());
         const height = Math.max(1, node.height());
         updateBlockValues(id, {
-          x: node.x(),
-          y: node.y(),
-          width,
           height,
           rotation,
           scaleX: 1,
           scaleY: 1,
+          width,
+          x: node.x(),
+          y: node.y(),
         });
-        return;
+        continue;
       }
 
       const scaleX = node.scaleX();
@@ -1682,10 +1706,8 @@ function EditorCanvas() {
 
         // Calculate scale based on the bounding box diagonal change
         // This gives us a more accurate scale for the arrow length
-        const originalDiagonal = Math.sqrt(
-          arrowBlock.width * arrowBlock.width + arrowBlock.height * arrowBlock.height,
-        );
-        const newDiagonal = Math.sqrt(width * width + height * height);
+        const originalDiagonal = Math.hypot(arrowBlock.width, arrowBlock.height);
+        const newDiagonal = Math.hypot(width, height);
         const scale = originalDiagonal > 0 ? newDiagonal / originalDiagonal : 1;
 
         // Scale the arrow points (stem length only, arrowhead size stays constant)
@@ -1701,14 +1723,14 @@ function EditorCanvas() {
         // Convert Group position back to block position
         const blockPos = groupPositionToBlockPosition(node.x(), node.y(), tempBlock);
 
+        // Keep arrowhead size constant - don't update pointerLength or pointerWidth
         updateBlockValues(id, {
+          height: newBounds.height,
+          points: newPoints,
+          rotation,
+          width: newBounds.width,
           x: blockPos.x,
           y: blockPos.y,
-          width: newBounds.width,
-          height: newBounds.height,
-          rotation,
-          points: newPoints,
-          // Keep arrowhead size constant - don't update pointerLength or pointerWidth
         });
       } else if (block.type === "draw") {
         const drawBlock = block;
@@ -1717,25 +1739,25 @@ function EditorCanvas() {
         );
 
         updateBlockValues(id, {
-          x: node.x(),
-          y: node.y(),
-          width,
           height,
-          rotation,
           points: scaledPoints,
+          rotation,
           scaleX: 1,
           scaleY: 1,
+          width,
+          x: node.x(),
+          y: node.y(),
         });
       } else {
         updateBlockValues(id, {
-          x: node.x(),
-          y: node.y(),
-          width,
           height,
           rotation,
+          width,
+          x: node.x(),
+          y: node.y(),
         });
       }
-    });
+    }
   }, [updateBlockValues, blocks]);
 
   const handleStartTextEdit = React.useCallback(
@@ -1749,13 +1771,13 @@ function EditorCanvas() {
       const position = stagePosition ?? stage.position();
       const scale = zoom;
       setEditingText({
-        id: block.id,
-        value: block.text,
         clientX: rect.left + position.x + block.x * scale,
         clientY: rect.top + position.y + block.y * scale,
-        width: block.width * scale,
         height: block.height * scale,
+        id: block.id,
         scale,
+        value: block.text,
+        width: block.width * scale,
       });
       setIsTextEditing(true);
       setSelectedIds([block.id]);
@@ -1773,12 +1795,12 @@ function EditorCanvas() {
       setIsTextEditing(false);
       return;
     }
-    const value = editingText.value;
-    const lines = value.split(/\n/).length;
+    const { value } = editingText;
+    const lines = value.split(/\n/u).length;
     const newHeight = Math.max(block.lineHeight, lines * block.lineHeight);
     updateBlockValues(block.id, {
-      text: value,
       height: newHeight,
+      text: value,
     });
     setEditingText(null);
     setIsTextEditing(false);
@@ -1823,15 +1845,7 @@ function EditorCanvas() {
         onClick={handleStageClick}
         onWheel={handleWheel}
         onMouseLeave={() => setHoveredId(null)}
-        style={{
-          cursor: isMoveMode
-            ? isTextEditing
-              ? "default"
-              : isStageDragging
-                ? "grabbing"
-                : "grab"
-            : "default",
-        }}
+        style={{ cursor: stageCursor(isMoveMode, isTextEditing, isStageDragging) }}
       >
         <Layer listening={false}>
           <Rect
@@ -1839,9 +1853,7 @@ function EditorCanvas() {
             y={0}
             width={size.width}
             height={size.height}
-            {...(background && background.toLowerCase().includes("gradient")
-              ? parseLinearGradientFill(background, size.width, size.height)
-              : { fill: background ?? "#ffffff" })}
+            {...backgroundFillProps(background, size)}
             stroke="#d4d4d8"
             strokeWidth={1}
           />
@@ -1877,6 +1889,9 @@ function EditorCanvas() {
             };
 
             const dragHandlers = {
+              draggable: isSelectMode && !isTextEditing,
+              onDragEnd: (position: { x: number; y: number }) =>
+                handleNodeDragEnd(block.id, position),
               onDragStart: (evt: KonvaEventObject<DragEvent>) => {
                 evt.cancelBubble = true;
                 if (!isSelectMode) {
@@ -1902,7 +1917,7 @@ function EditorCanvas() {
                     ? editorStoreApi.getState().selectedIds
                     : [block.id];
                   originalPositionsRef.current.clear();
-                  currentSelectedIds.forEach((selectedId) => {
+                  for (const selectedId of currentSelectedIds) {
                     const selectedBlock = blocks.find((b) => b.id === selectedId);
                     if (selectedBlock) {
                       if (selectedBlock.type === "arrow") {
@@ -1924,16 +1939,13 @@ function EditorCanvas() {
                         });
                       }
                     }
-                  });
+                  }
                 } else {
                   isAltDragRef.current = false;
                   originalPositionsRef.current.clear();
                 }
               },
-              onDragEnd: (position: { x: number; y: number }) =>
-                handleNodeDragEnd(block.id, position),
               onHover: handleHover,
-              draggable: isSelectMode && !isTextEditing,
             };
             const handleBlockClick = (evt: KonvaEventObject<MouseEvent | TouchEvent>) =>
               handleNodeSelection(block, evt);
@@ -2066,22 +2078,22 @@ function EditorCanvas() {
       {editingText && editingBlock ? (
         <textarea
           style={{
-            position: "fixed",
-            left: editingText.clientX,
-            top: editingText.clientY,
-            width: editingText.width,
-            minHeight: editingText.height,
-            transformOrigin: "left top",
-            zIndex: 30,
-            fontSize: `${editingBlock.fontSize}px`,
-            lineHeight: `${editingBlock.lineHeight}px`,
-            fontFamily: editingBlock.font.family,
-            fontWeight: editingBlock.font.weight,
-            color: editingBlock.color,
-            border: "1px solid #4f46e5",
-            padding: "8px",
-            outline: "none",
             background: "white",
+            border: "1px solid #4f46e5",
+            color: editingBlock.color,
+            fontFamily: editingBlock.font.family,
+            fontSize: `${editingBlock.fontSize}px`,
+            fontWeight: editingBlock.font.weight,
+            left: editingText.clientX,
+            lineHeight: `${editingBlock.lineHeight}px`,
+            minHeight: editingText.height,
+            outline: "none",
+            padding: "8px",
+            position: "fixed",
+            top: editingText.clientY,
+            transformOrigin: "left top",
+            width: editingText.width,
+            zIndex: 30,
           }}
           value={editingText.value}
           onChange={(event) =>
@@ -2106,6 +2118,6 @@ function EditorCanvas() {
       <ZoomHandler zoomIn={zoomIn} zoomOut={zoomOut} resetZoom={resetZoom} />
     </div>
   );
-}
+};
 
 export default EditorCanvas;

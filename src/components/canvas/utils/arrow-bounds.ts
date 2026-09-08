@@ -25,7 +25,7 @@ export interface ArrowBounds {
   originalPoints: [number, number, number, number];
 }
 
-export function calculateArrowBounds(block: IEditorBlockArrow): ArrowBounds {
+export const calculateArrowBounds = (block: IEditorBlockArrow): ArrowBounds => {
   const pointerLength = block.pointerLength ?? 20;
   const pointerWidth = block.pointerWidth ?? 20;
   const strokeWidth = block.strokeWidth ?? 4;
@@ -39,7 +39,7 @@ export function calculateArrowBounds(block: IEditorBlockArrow): ArrowBounds {
   // Calculate arrow direction vector
   const dx = points[2] - points[0];
   const dy = points[3] - points[1];
-  const length = Math.sqrt(dx * dx + dy * dy);
+  const length = Math.hypot(dx, dy);
   const isHorizontal = Math.abs(dx) > Math.abs(dy);
 
   // Normalize direction vector
@@ -92,65 +92,61 @@ export function calculateArrowBounds(block: IEditorBlockArrow): ArrowBounds {
   ];
 
   return {
-    width: finalWidth,
+    adjustedPoints,
     height: finalHeight,
     offsetX: adjustedMinX,
     offsetY: adjustedMinY,
-    adjustedPoints,
     originalPoints: points,
+    width: finalWidth,
   };
-}
+};
 
 /**
  * Converts a Group position (which includes the offset) back to the block position.
  * This is used when dragging or transforming arrows.
  */
-export function groupPositionToBlockPosition(
+export const groupPositionToBlockPosition = (
   groupX: number,
   groupY: number,
   block: IEditorBlockArrow,
-) {
+) => {
   const bounds = calculateArrowBounds(block);
   return {
     x: groupX - bounds.offsetX,
     y: groupY - bounds.offsetY,
   };
-}
+};
 
 /**
  * Converts a block position to the Group position (which includes the offset).
  * This is used when positioning the Group for rendering.
  */
-export function blockPositionToGroupPosition(
+export const blockPositionToGroupPosition = (
   blockX: number,
   blockY: number,
   block: IEditorBlockArrow,
-) {
+) => {
   const bounds = calculateArrowBounds(block);
   return {
     x: blockX + bounds.offsetX,
     y: blockY + bounds.offsetY,
   };
-}
+};
 
 /**
  * Scales an arrow's points while keeping the start point fixed.
  * Used when resizing arrows - only the stem length changes, not the arrowhead size.
  */
-export function scaleArrowPoints(
+export const scaleArrowPoints = (
   block: IEditorBlockArrow,
   scale: number,
-): [number, number, number, number] {
+): [number, number, number, number] => {
   const originalDx = block.points[2] - block.points[0];
   const originalDy = block.points[3] - block.points[1];
 
   const newDx = originalDx * scale;
   const newDy = originalDy * scale;
 
-  return [
-    block.points[0], // Start point stays the same
-    block.points[1], // Start point stays the same
-    block.points[0] + newDx, // New end point
-    block.points[1] + newDy, // New end point
-  ];
-}
+  // The start point stays fixed; only the end point moves.
+  return [block.points[0], block.points[1], block.points[0] + newDx, block.points[1] + newDy];
+};

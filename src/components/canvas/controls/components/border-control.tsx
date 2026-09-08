@@ -1,5 +1,5 @@
 import * as React from "react";
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X as Cross2Icon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -13,22 +13,28 @@ interface BorderControlProps {
 }
 
 const DASH_PRESETS = {
-  solid: undefined,
   dashed: [12, 8],
   dotted: [2, 6],
+  solid: undefined,
 } satisfies Record<string, number[] | undefined>;
 
 const isDashPresetKey = (value: string): value is keyof typeof DASH_PRESETS =>
   value in DASH_PRESETS;
 
 const getDashKey = (dash?: number[]) => {
-  if (!dash || dash.length === 0) return "solid";
-  if (dash[0] === 12) return "dashed";
-  if (dash[0] === 2) return "dotted";
+  if (!dash || dash.length === 0) {
+    return "solid";
+  }
+  if (dash[0] === 12) {
+    return "dashed";
+  }
+  if (dash[0] === 2) {
+    return "dotted";
+  }
   return "custom";
 };
 
-function BorderControl({ blockId, className }: BorderControlProps) {
+const BorderControl = ({ blockId, className }: BorderControlProps) => {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   const [open, setOpen] = React.useState(false);
@@ -37,7 +43,7 @@ function BorderControl({ blockId, className }: BorderControlProps) {
     return null;
   }
 
-  const border = block.border;
+  const { border } = block;
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -52,8 +58,8 @@ function BorderControl({ blockId, className }: BorderControlProps) {
     updateBlockValues(blockId, {
       border: {
         color: "#1f2933",
-        width: 1,
         dash: undefined,
+        width: 1,
       },
     });
   };
@@ -162,6 +168,6 @@ function BorderControl({ blockId, className }: BorderControlProps) {
       </Popover>
     </ControllerRow>
   );
-}
+};
 
 export default BorderControl;

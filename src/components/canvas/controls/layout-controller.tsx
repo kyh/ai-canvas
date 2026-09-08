@@ -1,9 +1,9 @@
-import { NumberInput } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { cn } from "cn";
 import ControllerRow from "./components/controller-row";
 import { useEditorStore } from "@/components/canvas/use-editor";
 
-function LayoutController({ blockId, className }: { blockId: string; className?: string }) {
+const LayoutController = ({ blockId, className }: { blockId: string; className?: string }) => {
   const block = useEditorStore((state) => state.blocksById[blockId]);
   const updateBlockValues = useEditorStore((state) => state.updateBlockValues);
   if (!block) {
@@ -47,8 +47,8 @@ function LayoutController({ blockId, className }: { blockId: string; className?:
             if (block.type === "image") {
               const aspectRatio = block.width / block.height;
               updateBlockValues(blockId, {
+                height: Number((value / aspectRatio).toFixed(1)),
                 width: value,
-                height: Number.parseFloat((value / aspectRatio).toFixed(1)),
               });
             } else {
               updateBlockValues(blockId, { width: value });
@@ -67,7 +67,7 @@ function LayoutController({ blockId, className }: { blockId: string; className?:
               const aspectRatio = block.width / block.height;
               updateBlockValues(blockId, {
                 height: value,
-                width: Number.parseFloat((value * aspectRatio).toFixed(1)),
+                width: Number((value * aspectRatio).toFixed(1)),
               });
             } else {
               updateBlockValues(blockId, { height: value });
@@ -122,6 +122,6 @@ function LayoutController({ blockId, className }: { blockId: string; className?:
       </ControllerRow>
     </div>
   );
-}
+};
 
 export default LayoutController;

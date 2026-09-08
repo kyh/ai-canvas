@@ -10,35 +10,35 @@ export const useCanvasStore = () => {
   // Select other state with useShallow
   const state = useEditorStore(
     useShallow((s) => ({
-      selectedIds: s.selectedIds,
-      hoveredId: s.hoveredId,
-      mode: s.canvas.mode,
-      isTextEditing: s.canvas.isTextEditing,
-      zoom: s.canvas.zoom,
-      stagePosition: s.canvas.stagePosition,
-      containerSize: s.canvas.containerSize,
-      size: s.canvas.size,
       background: s.canvas.background,
+      containerSize: s.canvas.containerSize,
+      hoveredId: s.hoveredId,
+      isTextEditing: s.canvas.isTextEditing,
+      mode: s.canvas.mode,
+      selectedIds: s.selectedIds,
+      size: s.canvas.size,
+      stagePosition: s.canvas.stagePosition,
+      zoom: s.canvas.zoom,
     })),
   );
 
   // Select actions - these are stable function references
   const actions = useEditorStore(
     useShallow((s) => ({
-      setSelectedIds: s.setSelectedIds,
-      setHoveredId: s.setHoveredId,
-      setStage: s.setStage,
-      setStageZoom: s.setStageZoom,
-      setStagePosition: s.setStagePosition,
-      setCanvasContainerSize: s.setCanvasContainerSize,
-      setIsTextEditing: s.setIsTextEditing,
-      setMode: s.setMode,
-      addFrameBlock: s.addFrameBlock,
-      addTextBlock: s.addTextBlock,
       addArrowBlock: s.addArrowBlock,
+      addFrameBlock: s.addFrameBlock,
       addImageBlock: s.addImageBlock,
+      addTextBlock: s.addTextBlock,
       deleteSelectedBlocks: s.deleteSelectedBlocks,
       setBlockPosition: s.setBlockPosition,
+      setCanvasContainerSize: s.setCanvasContainerSize,
+      setHoveredId: s.setHoveredId,
+      setIsTextEditing: s.setIsTextEditing,
+      setMode: s.setMode,
+      setSelectedIds: s.setSelectedIds,
+      setStage: s.setStage,
+      setStagePosition: s.setStagePosition,
+      setStageZoom: s.setStageZoom,
       updateBlockValues: s.updateBlockValues,
     })),
   );

@@ -15,7 +15,7 @@ import { LOADING_HTML } from "./loading-html";
  * Positioned next to the selection when one exists, otherwise centered —
  * mirroring the placement rule the agent follows.
  */
-export function createLoadingBlock(selectionBounds: SelectionBounds | null) {
+export const createLoadingBlock = (selectionBounds: SelectionBounds | null) => {
   const centerPosition = getCanvasCenterPosition(
     LOADING_HTML_BLOCK_WIDTH,
     LOADING_HTML_BLOCK_HEIGHT,
@@ -24,21 +24,21 @@ export function createLoadingBlock(selectionBounds: SelectionBounds | null) {
   const y = selectionBounds ? selectionBounds.y : centerPosition.y;
 
   return htmlBlockSchema.parse({
-    type: "html",
+    background: "#ffffff",
+    border: { color: "#d1d5db", width: 1 },
+    height: LOADING_HTML_BLOCK_HEIGHT,
+    html: LOADING_HTML,
     id: generateId(),
     label: "HTML",
-    x,
-    y,
-    width: LOADING_HTML_BLOCK_WIDTH,
-    height: LOADING_HTML_BLOCK_HEIGHT,
+    opacity: 100,
+    radius: { bl: 16, br: 16, tl: 16, tr: 16 },
     rotation: 0,
     scaleX: 1,
     scaleY: 1,
+    type: "html",
     visible: true,
-    opacity: 100,
-    html: LOADING_HTML,
-    background: "#ffffff",
-    border: { color: "#d1d5db", width: 1 },
-    radius: { tl: 16, tr: 16, br: 16, bl: 16 },
+    width: LOADING_HTML_BLOCK_WIDTH,
+    x,
+    y,
   });
-}
+};
