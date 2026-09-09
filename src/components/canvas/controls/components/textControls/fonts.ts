@@ -32,7 +32,6 @@ interface FontFamilyModule {
 // `getInfo().fonts.normal` before passing it (font-picker.tsx,
 // services/fonts.ts), so the widened signature can't receive an unsupported
 // weight at runtime.
-// oxlint-disable-next-line typescript/consistent-type-assertions
 const asLoadedFont = (mod: FontFamilyModule) => mod as LoadedFont;
 
 interface FontEntry {
