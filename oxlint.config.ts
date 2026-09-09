@@ -7,7 +7,7 @@ import react from "ultracite/oxlint/react";
 export default defineConfig({
   extends: [core, react, next, antiSlop],
   ignorePatterns: [
-    ...(core.ignorePatterns ?? []),
+    ...core.ignorePatterns,
     ".eve",
     ".workflow-data",
     ".output",
