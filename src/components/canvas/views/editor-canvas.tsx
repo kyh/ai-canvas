@@ -2110,7 +2110,6 @@ const EditorCanvas = () => {
               commitTextEdit();
             }
           }}
-          // oxlint-disable-next-line jsx-a11y/no-autofocus -- text-edit overlay replaces the block the user just double-clicked
           autoFocus
         />
       ) : null}
