@@ -3,7 +3,7 @@ export const siteConfig = {
   creator: "@kaiyuhsu",
   description:
     "Forkable Next.js template featuring an AI design canvas — generate, edit, and compose on an infinite canvas in natural language.",
-  email: "im.kaiyu@gmail.com",
+  email: "kai@kyh.io",
   name: "AI Canvas",
   repository: "https://github.com/kyh/ai-canvas",
   sameAs: ["https://github.com/kyh/ai-canvas", "https://github.com/kyh", "https://x.com/kaiyuhsu"],

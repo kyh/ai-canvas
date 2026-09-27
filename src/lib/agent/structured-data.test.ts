@@ -16,7 +16,7 @@ describe("buildOrganization", () => {
     assert.equal(org.name, "AI Canvas");
     assert.equal(org.url, "https://canvas.kyh.io");
     assert.ok(org.sameAs.length > 0);
-    assert.equal(org.contactPoint[0]?.email, "im.kaiyu@gmail.com");
+    assert.equal(org.contactPoint[0]?.email, "kai@kyh.io");
     assert.equal(org.contactPoint[0]?.contactType, "customer support");
     assert.equal("address" in org, false);
     assert.equal("telephone" in org, false);
