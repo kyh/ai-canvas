@@ -29,7 +29,7 @@
     "format": "oxfmt --check",
     "format:fix": "oxfmt --write",
     "test": "node --import tsx --test 'src/**/*.test.ts'",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format"
+    "verify": "pnpm typecheck && pnpm lint && pnpm format && pnpm test"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
