@@ -1,16 +1,21 @@
-"use client";
+import type { Metadata } from "next";
 
-import { ThemeProvider } from "../components/theme-provider";
-import { demoTemplate1 } from "../data/template-1";
-import Canvas from "../components/canvas";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { CanvasApp } from "@/components/canvas-app";
+import { JsonLd } from "@/components/json-ld";
+import { SiteIntro } from "@/components/site-intro";
+import { canonicalAlternates } from "@/lib/agent/page-metadata";
+import { buildHomeGraph } from "@/lib/agent/structured-data";
+
+export const metadata: Metadata = {
+  alternates: canonicalAlternates("/"),
+};
 
 const Page = () => (
-  <ThemeProvider>
-    <TooltipProvider>
-      <Canvas template={demoTemplate1} />
-    </TooltipProvider>
-  </ThemeProvider>
+  <>
+    <JsonLd node={buildHomeGraph()} />
+    <SiteIntro />
+    <CanvasApp />
+  </>
 );
 
 export default Page;
