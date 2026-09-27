@@ -21,7 +21,7 @@ jobs:
           cache: true
 
       # The gates of `pnpm verify`, kept as separate steps so a failure names
-      # the gate that broke. No Test step: this repo has no test files yet.
+      # the gate that broke.
       - name: Typecheck
         run: pnpm typecheck
 
@@ -30,6 +30,9 @@ jobs:
 
       - name: Format
         run: pnpm format
+
+      - name: Test
+        run: pnpm test
 
       - name: Build
         run: pnpm build
