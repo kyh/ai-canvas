@@ -20,7 +20,7 @@ export const SiteIntro = () => (
     <h2>When to use {siteConfig.name}</h2>
     <ul>
       {whenToUse.map((item) => (
-        <ProseItem key={item.label} item={item} />
+        <ProseItem key={item.label} item={item} focus="untabbable" />
       ))}
     </ul>
     {siteUsageParagraphs.map((paragraph) => (
@@ -29,7 +29,7 @@ export const SiteIntro = () => (
     <nav aria-label="Site">
       <ul>
         {sitePageLinks.map((item) => (
-          <ProseItem key={item.label} item={item} />
+          <ProseItem key={item.label} item={item} focus="untabbable" />
         ))}
       </ul>
     </nav>

@@ -5,10 +5,27 @@ import { rendersOutsideRouter } from "@/lib/agent/site-pages";
 
 const className = "text-foreground hover:text-primary underline underline-offset-4 transition";
 
-export const ProseLink = ({ href, children }: { href: string; children: ReactNode }) => {
+/** `untabbable` is for links inside visually hidden blocks, so keyboard focus never lands on something invisible. */
+export type LinkFocus = "tabbable" | "untabbable";
+
+export const ProseLink = ({
+  href,
+  children,
+  focus = "tabbable",
+}: {
+  href: string;
+  children: ReactNode;
+  focus?: LinkFocus;
+}) => {
+  const tabIndex = focus === "untabbable" ? -1 : undefined;
   if (!rendersOutsideRouter(href)) {
     return (
-      <Link className={className} href={href}>
+      <Link
+        className={className}
+        href={href}
+        prefetch={focus === "untabbable" ? false : undefined}
+        tabIndex={tabIndex}
+      >
         {children}
       </Link>
     );
@@ -19,6 +36,7 @@ export const ProseLink = ({ href, children }: { href: string; children: ReactNod
       className={className}
       href={href}
       rel={offSite ? "noreferrer" : undefined}
+      tabIndex={tabIndex}
       target={offSite ? "_blank" : undefined}
     >
       {children}

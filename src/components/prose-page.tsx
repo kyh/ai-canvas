@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import type { ReactNode } from "react";
 
 import { ProseLink } from "@/components/prose-link";
+import type { LinkFocus } from "@/components/prose-link";
 import { sitePageLinks } from "@/lib/agent/site-overview";
 
 import type { ProseBlock, ProseListItem, ProsePage } from "@/lib/agent/site-pages";
@@ -18,10 +19,12 @@ export const withInlineCode = (text: string): ReactNode =>
     ),
   );
 
-export const ProseItem = ({ item }: { item: ProseListItem }) => (
+export const ProseItem = ({ item, focus }: { item: ProseListItem; focus?: LinkFocus }) => (
   <li>
     {item.href ? (
-      <ProseLink href={item.href}>{item.label}</ProseLink>
+      <ProseLink href={item.href} focus={focus}>
+        {item.label}
+      </ProseLink>
     ) : (
       <span className="text-foreground">{item.label}</span>
     )}
