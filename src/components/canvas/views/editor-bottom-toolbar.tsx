@@ -16,7 +16,7 @@ import {
   Undo,
 } from "lucide-react";
 import type { UserContent } from "ai";
-import type { SubagentChildEventStreamEvent } from "eve/client";
+import type { MessageStreamEvent } from "eve/client";
 import { useEveAgent } from "eve/react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -109,9 +109,6 @@ const toolResultEventSchema = z.object({
   type: z.literal("action.result"),
 });
 
-/** A session's own stream event, or one a `subagent.event` wraps (unstamped). */
-type AgentStreamEvent = SubagentChildEventStreamEvent["data"]["event"];
-
 /** callId -> placeholder block id for in-flight build_html_block calls. */
 const pendingHtmlBuilds = new Map<string, string>();
 
@@ -182,14 +179,7 @@ const applyToolOutput = (
   }
 };
 
-const applyAgentEvent = (event: AgentStreamEvent): void => {
-  // Delegation is forbidden by the instructions, but if the model strays,
-  // unwrap the child's events so its tool results still reach the canvas.
-  if (event.type === "subagent.event") {
-    applyAgentEvent(event.data.event);
-    return;
-  }
-
+const applyAgentEvent = (event: MessageStreamEvent): void => {
   const store = useEditorStore.getState();
 
   // Tool call requested: drop a spinner placeholder for HTML builds so the

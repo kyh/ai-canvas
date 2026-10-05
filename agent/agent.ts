@@ -34,6 +34,6 @@ export default defineAgent({
   }),
   // eve 0.27 removed `limits.maxSubagentDepth`: the built-in `agent` tool is
   // root-only, so a delegated child session can no longer delegate again.
-  // The instructions forbid delegation outright, and the UI bridge unwraps
-  // `subagent.event` so a stray delegated tool call still lands in the UI.
+  // The instructions forbid delegation outright: a delegated child's tool
+  // results stream on the child session, so they would never reach the UI.
 });
