@@ -100,6 +100,7 @@ Notes that make this actually work:
 - **Lint is a clean gate.** `oxlint.config.ts` extends the ultracite presets (`ultracite/oxlint/core`, `react`, `next`, `anti-slop`); every rule is an error and `lint` fails on the first one. `no-await-in-loop` is the one deliberate override (sequential awaits are intentional), plus `agent/tools/**` pinned to snake_case filenames. Prefer fixing code over `oxlint-disable` comments; when a rule is genuinely wrong for a line, disable that line with a `-- reason`.
 - **No `any`, no non-null `!`, no `as` casts.** All three are errors, so `pnpm lint` enforces them — zod-parse at boundaries (stream events, tool payloads, localStorage). The font table in `src/components/canvas/controls/components/textControls/fonts.ts` funnels its one unavoidable widening through `asLoadedFont`; add no new casts.
 - Never commit `.env` / `.env.local`. New env vars go in `.env.example`.
+- **`cacheComponents` and `partialPrefetching` are on** (`next.config.ts`). Route segment config (`dynamic`, `revalidate`, …) is a build error under them; anything reading the clock or the request at render time needs `"use cache"` or `<Suspense>` (see `src/app/sitemap.ts`).
 
 ## Map
 

@@ -4,6 +4,8 @@ import { withEve } from "eve/next";
 const nextConfig: NextConfig = {
   // next dev rewrites AGENTS.md/CLAUDE.md when it detects an agent; we own those files
   agentRules: false,
+  cacheComponents: true,
+  partialPrefetching: true,
 };
 
 // withEve mounts the eve agent runtime behind the Next.js origin: `next dev`
